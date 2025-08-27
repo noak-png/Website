@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v6.5.4</title>
+<title>Call Checkpoints v1.1.1</title>
 
 <!-- 
-  Call Checkpoints — v6.5.4
-  Changes from v6.5.3:
-    • IMPROVED - Saved Pattern Feedback: Loading a saved pattern now displays its name in the Preset dropdown for clear confirmation.
-    • IMPROVED - Wallpaper Size Limit: Added a helper message indicating a 5 MB recommended image size limit and implemented validation to prevent oversized uploads.
+  Call Checkpoints — v1.1.1
+  Changes:
+    • FIXED - Heart Burst preset now correctly applies the heart shape.
+    • RENAMED - "Developer Mode" is now "Advanced Mode".
  -->
 
 <style>
@@ -523,56 +523,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     <div class="section" id="secAppearance">
       <details>
         <summary>
-          Appearance <span class="hint">logo, font, glass & background</span>
+          Appearance <span class="hint">glass & background</span>
         </summary>
         <div class="content">
-          <div class="stack">
-              <label for="appNameInput">App Name</label>
-              <div class="row">
-                  <input type="text" id="appNameInput" value="Call Checkpoints" style="flex-grow:1;">
-                  <button id="appNameResetBtn" type="button" title="Reset name to default">Reset</button>
-              </div>
-          </div>
-          <div class="stack">
-              <label for="logoThemeSelect">Logo Theme</label>
-              <select id="logoThemeSelect">
-                  <option value="default" selected>Default</option>
-                  <option value="google">Google</option>
-                  <option value="cocacola">Coca-Cola</option>
-                  <option value="nasa">NASA</option>
-                  <option value="ibm">IBM</option>
-                  <option value="facebook">Facebook</option>
-                  <option value="microsoft">Microsoft</option>
-                  <option value="apple">Apple</option>
-              </select>
-          </div>
-          <div class="hr"></div>
-          <label for="fontSizeSelect">Font Size</label>
-          <select id="fontSizeSelect">
-            <option value="14px">Small</option>
-            <option value="16px" selected>Medium (default)</option>
-            <option value="18px">Large</option>
-            <option value="20px">X-Large</option>
-          </select>
-
-          <label for="fontFamilySelect">Font Family</label>
-          <select id="fontFamilySelect">
-            <option value="system-ui, sans-serif">System UI</option>
-            <option value="'Arial', sans-serif">Arial</option>
-            <option value="'Verdana', sans-serif">Verdana</option>
-            <option value="'Tahoma', sans-serif">Tahoma</option>
-            <option value="'Courier New', monospace">Courier New</option>
-            <option value="'Georgia', serif">Georgia</option>
-            <option value="'Times New Roman', serif">Times New Roman</option>
-            <option value="'Lucida Console', monospace">Lucida Console</option>
-            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-            <option value="'Impact', sans-serif">Impact</option>
-            <option value="'Comic Sans MS', sans-serif">Comic Sans MS</option>
-            <option value="'Palatino', serif">Palatino</option>
-          </select>
-
-          <div class="hr"></div>
-
+          <!-- REMOVED: App Name, Logo Theme, Font Size, Font Family customization controls -->
+          
           <div class="slider-row">
             <label for="glassOpacity">Glass Opacity</label>
             <input type="range" id="glassOpacity" min="10" max="95" value="75" />
@@ -795,7 +750,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                 </div>
                 <div class="hr"></div>
                 <div class="stack">
-                    <label><input type="checkbox" id="developerModeToggle"> Developer Mode</label>
+                    <label><input type="checkbox" id="developerModeToggle"> Advanced Mode</label>
                     <div class="helper">Enable to see all customization options. Disabling will simplify the UI and turn off visual effects.</div>
                 </div>
                 <div class="hr"></div>
@@ -822,7 +777,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   </div>
   <div class="clock-display glass" id="clockDisplay" style="display:none;"></div>
 
-  <div class="version" id="versionTag">v6.5.4</div>
+  <div class="version" id="versionTag">v1.1.1</div>
 
 <script>
 (function(){
@@ -910,11 +865,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const windDirectionRow = document.getElementById('windDirectionRow');
 
   // Appearance
-  const appNameInput = document.getElementById('appNameInput');
-  const appNameResetBtn = document.getElementById('appNameResetBtn');
-  const logoThemeSelect = document.getElementById('logoThemeSelect');
-  const fontSizeSelect = document.getElementById('fontSizeSelect');
-  const fontFamilySelect = document.getElementById('fontFamilySelect');
+  // REMOVED: appNameInput, appNameResetBtn, logoThemeSelect, fontSizeSelect, fontFamilySelect
 
   // Glass controls
   const glassOpacity = document.getElementById('glassOpacity');
@@ -1058,9 +1009,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
     store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); store('endlessEnabled',enableEndless.checked);
-    store('appName', appNameInput.value); store('logoTheme', logoThemeSelect.value);
-    store('darkMode',document.documentElement.classList.contains('dark')); store('fontSize',fontSizeSelect.value);
-    store('fontFamily',fontFamilySelect.value); store('glassOpacity', glassOpacity.value);
+    // REMOVED: appName, logoTheme, fontSize, fontFamily
+    store('darkMode',document.documentElement.classList.contains('dark')); store('glassOpacity', glassOpacity.value);
     store('ambianceEnabled', enableAmbiance.checked);
     store('ambianceEffect', ambianceSelect.value);
     store('snowDensity', snowDensity.value); store('snowSize', snowSize.value); store('snowSpeed', snowSpeed.value);
@@ -1076,7 +1026,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('naturalSlide', enableNaturalSlide.checked);
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
     store('clockDetail', clockDetail.value); store('clockFontFamily', clockFontFamily.value);
-    store('developerMode', developerModeToggle.checked);
+    store('advancedMode', developerModeToggle.checked);
     store('hasLaunchedBefore', 'true');
     localStorage.setItem('callcheckpoints.savedPatterns', JSON.stringify(savedPatterns));
 
@@ -1107,9 +1057,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     enableSecCounter.checked = (get('secCounter','false')==='true'); enableClickCounter.checked = (get('clickCounter','false')==='true');
     totalClicks = parseInt(get('clickCount','0'),10)||0; seconds = parseInt(get('seconds','0'),10)||0;
     if(get('darkMode','false')==='true'){ document.documentElement.classList.add('dark'); darkToggle.textContent='☀️ Light Mode'; }
-    appNameInput.value = get('appName', 'Call Checkpoints');
-    logoThemeSelect.value = get('logoTheme', 'default');
-    fontSizeSelect.value = get('fontSize', '16px'); fontFamilySelect.value = get('fontFamily', 'system-ui, sans-serif');
+    // REMOVED: appName, logoTheme, fontSize, fontFamily loading
     glassOpacity.value = get('glassOpacity', '75');
     enableAmbiance.checked = (get('ambianceEnabled', 'false') === 'true');
     ambianceSelect.value = get('ambianceEffect', 'none');
@@ -1126,7 +1074,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     enableNaturalSlide.checked = (get('naturalSlide','true')==='true'); slideSpeed.value = get('slideSpeed','800');
     enableClock.checked = (get('clockEnabled', 'false')==='true'); clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime'); clockFontFamily.value = get('clockFontFamily', 'system-ui, sans-serif');
-    developerModeToggle.checked = (get('developerMode', 'false') === 'true');
+    developerModeToggle.checked = (get('advancedMode', get('developerMode', 'false')) === 'true'); // Support old key for migration
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
     const detailsElements = document.querySelectorAll('.menu-panel details');
@@ -1150,7 +1098,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function applyAllSettings() {
-    updatePercentages(); syncColorControlVisibility(); syncWindControls(); applyFontSettings(); applyGlassOpacity();
+    updatePercentages(); syncColorControlVisibility(); syncWindControls(); applyGlassOpacity();
     updateWallpaper(); applyClockSettings(); updateCountersVisibility(); applyAmbianceSettings(); renderPatternsList();
     syncAnimationSettingsUI(); applyLogoTheme();
     populatePresetSelector(animationStyleSelect.value);
@@ -1174,101 +1122,25 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 
   /* ---------- Logo & Title ---------- */
   function applyLogoTheme() {
-      const theme = logoThemeSelect.value;
-      const text = appNameInput.value;
       const h1 = appTitle;
-
+      
+      // Reset all styles and classes to default state
       h1.style.fontFamily = ''; h1.style.fontWeight = ''; h1.style.color = '';
       h1.style.textShadow = ''; h1.style.letterSpacing = ''; h1.className = '';
-      h1.innerHTML = '';
+      h1.innerHTML = ''; // Clear previous content
 
-      if (theme === 'default') {
-        titleWrap.classList.remove('custom-logo', 'no-glass');
-        titleWrap.classList.add('glass');
-      } else {
-        titleWrap.classList.add('custom-logo', 'no-glass');
-        titleWrap.classList.remove('glass');
-      }
+      titleWrap.classList.remove('custom-logo', 'no-glass');
+      titleWrap.classList.add('glass');
 
-      switch(theme) {
-          case 'google':
-              h1.style.fontFamily = "Arial, sans-serif";
-              h1.style.fontWeight = '400';
-              h1.classList.add('logo-google');
-              const googleColors = ['#4285F4', '#EA4335', '#FBBC05', '#4285F4', '#34A853', '#EA4335'];
-              text.split('').forEach((char, i) => {
-                  const span = document.createElement('span');
-                  span.textContent = char;
-                  span.style.color = googleColors[i % googleColors.length];
-                  h1.appendChild(span);
-              });
-              break;
-          case 'cocacola':
-              h1.style.fontFamily = "'cursive', 'Lobster', 'Times New Roman'";
-              h1.style.fontWeight = 'bold';
-              h1.style.color = '#F40009';
-              h1.style.textShadow = '2px 2px 4px rgba(0,0,0,0.2)';
-              h1.textContent = text;
-              break;
-          case 'nasa':
-              h1.style.fontFamily = "'Avant Garde', 'Futura', 'Century Gothic', sans-serif";
-              h1.style.fontWeight = '500';
-              h1.style.letterSpacing = '1px';
-              h1.style.color = '#FC3D21';
-              h1.textContent = text;
-              break;
-          case 'ibm':
-              h1.style.fontFamily = "'Courier New', Courier, monospace";
-              h1.style.fontWeight = '900';
-              h1.style.color = '#0530AD';
-              h1.style.letterSpacing = '2px';
-              h1.textContent = text;
-              break;
-          case 'facebook':
-              h1.style.fontFamily = "Helvetica, Arial, sans-serif";
-              h1.style.fontWeight = 'bold';
-              h1.style.color = '#1877F2';
-              h1.textContent = text;
-              break;
-          case 'microsoft':
-              h1.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-              h1.style.fontWeight = '600';
-              h1.classList.add('logo-microsoft');
-              const msColors = ['#F25022', '#7FBA00', '#00A4EF', '#FFB900'];
-              for (let i = 0; i < 4; i++) {
-                const span = document.createElement('span');
-                span.className = 'ms-quad';
-                span.style.backgroundColor = msColors[i];
-                h1.appendChild(span);
-              }
-              const textSpan = document.createElement('span');
-              textSpan.className = 'ms-text';
-              textSpan.textContent = text;
-              textSpan.style.color = 'var(--muted)';
-              h1.appendChild(textSpan);
-              break;
-          case 'apple':
-              h1.style.fontFamily = "'-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif";
-              h1.style.fontWeight = '400';
-              h1.style.color = 'var(--muted)';
-              h1.textContent = text;
-              break;
-          case 'default':
-          default:
-              h1.style.fontFamily = 'system-ui, sans-serif';
-              h1.style.fontWeight = '700';
-              h1.style.color = 'var(--text)';
-              h1.textContent = text;
-              break;
-      }
+      // Set default theme
+      h1.style.fontFamily = 'system-ui, sans-serif';
+      h1.style.fontWeight = '700';
+      h1.style.color = 'var(--text)';
+      h1.textContent = 'Call Checkpoints';
   }
 
   /* ---------- Appearance ---------- */
-  function applyFontSettings(){
-    document.documentElement.style.setProperty('--font-size', fontSizeSelect.value);
-    document.documentElement.style.setProperty('--font-family', fontFamilySelect.value);
-    document.documentElement.style.fontSize = fontSizeSelect.value;
-  }
+  // REMOVED: applyFontSettings() function
 
   function applyGlassOpacity(){
     const val = Math.max(0, Math.min(100, parseInt(glassOpacity.value,10)||75));
@@ -1486,7 +1358,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     versionTag.classList.toggle('pos-bottom-right', positionClass === 'pos-bottom-right');
   }
 
-  /* ---------- Simplified (Non-Developer) Mode ---------- */
+  /* ---------- Simplified (Non-Advanced) Mode ---------- */
   function applySimplifiedMode(on, silent=false){
     if(on){
       if (!lastSnapshot) lastSnapshot = collectSettings();
@@ -1507,7 +1379,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked },
-      appearance: { appName: appNameInput.value, logoTheme: logoThemeSelect.value, fontSize: fontSizeSelect.value, fontFamily: fontFamilySelect.value, glassOpacity: glassOpacity.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
+      appearance: { glassOpacity: glassOpacity.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
       slideSpeed: slideSpeed.value,
       clock: { position: clockPosition.value, detail: clockDetail.value, font: clockFontFamily.value },
@@ -1536,8 +1408,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           enableAmbiance.checked = s.toggles.ambiance;
       }
       if (s.appearance) {
-          appNameInput.value = s.appearance.appName; logoThemeSelect.value = s.appearance.logoTheme;
-          fontSizeSelect.value = s.appearance.fontSize; fontFamilySelect.value = s.appearance.fontFamily;
           glassOpacity.value = s.appearance.glassOpacity;
           document.documentElement.classList.toggle('dark', s.appearance.dark);
           darkToggle.textContent = s.appearance.dark ? '☀️ Light Mode' : '🌙 Dark Mode';
@@ -1704,10 +1574,16 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     const preset = animationPresets[style]?.[presetIndex];
     if (!preset) return;
 
+    if (!enableAnimations.checked) {
+        enableAnimations.checked = true;
+    }
+
     Object.keys(preset.settings).forEach(key => {
         let el;
         if (key === 'bubbleLife') {
             el = document.getElementById('bubbleLifeSlider');
+        } else if (key === 'shape') { // FIX: Correctly target shape select
+            el = document.getElementById('shapeSelect');
         } else {
             el = document.getElementById(key) || document.getElementById(`bubble${key.charAt(0).toUpperCase() + key.slice(1)}`);
         }
@@ -1735,6 +1611,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function resetAnimationToDefault() {
+    if (!enableAnimations.checked) {
+        enableAnimations.checked = true;
+    }
     loadPreset(animationStyleSelect.value, 0);
   }
 
@@ -1976,6 +1855,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
   function loadPattern(id) {
       const pattern = savedPatterns.find(p => p.id === id); if (!pattern) return;
+
+      if (!enableAnimations.checked) {
+        enableAnimations.checked = true;
+      }
+      
       const s = pattern.settings;
       animationStyleSelect.value = s.animationStyle || 'bubbles'; animIntensity.value = s.animIntensity; emissionScale.value = s.emissionScale; holdRate.value = s.holdRate;
       bubbleSize.value = s.bubbleSize; bubbleSpeed.value = s.bubbleSpeed; bubbleLifeSlider.value = s.bubbleLife;
@@ -2163,14 +2047,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   });
 
   document.querySelectorAll('select:not(#animationStyleSelect):not(#animationPresetSelect):not(#shapeSelect):not(#bubbleOutline):not(#colorMode):not(#windPattern)').forEach(el=> el.addEventListener('change', ()=>{ 
-      if(el===logoThemeSelect) applyLogoTheme();
-      if(el===fontSizeSelect || el===fontFamilySelect) applyFontSettings(); if(el===ambianceSelect) applyAmbianceSettings();
+      // REMOVED: logoThemeSelect, fontSizeSelect, fontFamilySelect handlers
+      if(el===ambianceSelect) applyAmbianceSettings();
       if(el===backgroundType || el===colorWallpaperType) updateWallpaperUI();
       if(el===wallpaperFit){ const data = localStorage.getItem('callcheckpoints.wallpaperDataUrl'); if(data){ applyImageWallpaper(data, wallpaperFit.value); } } 
       saveData(); 
   }));
-  appNameInput.addEventListener('input', ()=>{ applyLogoTheme(); saveData(); });
-  appNameResetBtn.addEventListener('click', ()=>{ appNameInput.value = 'Call Checkpoints'; applyLogoTheme(); saveData(); });
+  // REMOVED: appNameInput and appNameResetBtn event listeners
   [wallpaperColor1, wallpaperColor2, wallpaperColor3, orbsColor, matrixColor].forEach(el => el.addEventListener('input', ()=>{ if (el.id.startsWith('wallpaper')) applyColorWallpaper(); saveData(); }));
   [gradientAngle, gradientSpread].forEach(el => el.addEventListener('input', () => { if (el === gradientAngle && !gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } applyColorWallpaper(); updatePercentages(); saveData(); }));
   gradientSpinToggle.addEventListener('change', ()=>{ if(gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } else { gradientAngle.value = Math.round(gradientAnimationAngle); updatePercentages(); } gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none'; saveData(); });
