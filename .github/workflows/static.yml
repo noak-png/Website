@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v1.2</title>
+<title>Call Checkpoints v1.2 (with Scan Line Effect)</title>
 
 <!-- 
-  Call Checkpoints — v1.2
+  Call Checkpoints — v1.2 (with Scan Line Effect)
   Changes:
     • ADDED - Enhanced "Glass" material with sliders for Blur, Saturation, and Border Opacity.
+    • ADDED - "Scan Line" completion effect on top of the existing inner pulse.
     • FIXED - Custom background now properly clears and resets settings when disabled.
     • FIXED - Slider percentage values are no longer cut off on mobile devices.
     • REMOVED - "Metal" material has been retired to simplify the UI.
@@ -149,7 +150,7 @@ body{
 
 /* Task list */
 ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
-.item{ position:relative; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px dashed var(--border); border-radius:12px; transition:box-shadow .2s, filter .2s, background .2s; background:transparent; }
+.item{ position:relative; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px dashed var(--border); border-radius:12px; transition:box-shadow .2s, filter .2s, background .2s; background:transparent; overflow: hidden; }
 .item:last-child{ border-bottom:none; }
 .item[draggable="true"]{ cursor:grab; }
 .item.dragging{ opacity:.6; }
@@ -172,6 +173,34 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 @keyframes innerRingPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--ok-strong) 38%, transparent), inset 0 0 0 2px var(--ok);} 45%{box-shadow:inset 0 0 0 6px color-mix(in srgb, var(--ok-strong) 22%, transparent), inset 0 0 0 2px var(--ok);} 100%{box-shadow:inset 0 0 0 6px color-mix(in srgb, var(--ok) 10%, transparent), inset 0 0 0 2px var(--ok);} }
 .item.warn{ box-shadow: inset 0 0 0 2px var(--danger), inset 0 0 0 6px color-mix(in srgb, var(--danger) 10%, transparent); animation:innerWarnPulse .8s ease-out; }
 @keyframes innerWarnPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--danger-strong) 42%, transparent), inset 0 0 0 2px var(--danger);} 55%{box-shadow:inset 0 0 0 6px color-mix(in srgb, var(--danger-strong) 18%, transparent), inset 0 0 0 2px var(--danger);} 100%{box-shadow:inset 0 0 0 0 color-mix(in srgb, var(--danger) 0%, transparent);} }
+
+/* New Scan Line Effect Styles */
+.item > * {
+    position: relative;
+    z-index: 2;
+}
+.item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    transform: translateY(-100%);
+}
+.item.scan-effect-done::after {
+    animation: scanLine 0.6s forwards cubic-bezier(.16,1,.3,1);
+    background: linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--ok-strong) 40%, transparent) 50%, transparent 100%);
+}
+@keyframes scanLine {
+    to { transform: translateY(100%); opacity: 0; }
+}
+.item.scan-effect-warn::after {
+    animation: scanLineWarn 0.5s forwards ease-out;
+    background: linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--danger-strong) 40%, transparent) 50%, transparent 100%);
+}
+@keyframes scanLineWarn {
+    to { transform: translateY(100%); opacity: 0; }
+}
 
 /* Control bar */
 .controls{ width:100%; display:flex; flex-wrap:wrap; justify-content:space-between; margin-top:8px; gap:10px; padding:8px 10px; border-radius:14px; }
@@ -1410,16 +1439,27 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     if(done) li.classList.add('done');
 
     cb.onchange = function(){
+      // Clean up animation classes to allow re-triggering
+      li.classList.remove('scan-effect-done', 'scan-effect-warn', 'pulse', 'warn');
+
       if(cb.checked){
-        li.classList.add('done','pulse');
-        setTimeout(()=>li.classList.remove('pulse'), 900);
+        li.classList.add('done', 'pulse', 'scan-effect-done');
         badge.textContent='Done';
         if(enableAnimations.checked){ spawnParticlesFromEl(cb); }
-      }else{
+        
+        // Remove temporary classes after animations finish
+        setTimeout(() => li.classList.remove('pulse'), 900);
+        setTimeout(() => li.classList.remove('scan-effect-done'), 600);
+
+      } else {
         li.classList.remove('done');
         badge.textContent='Pending';
-        li.classList.add('warn');
-        setTimeout(()=>li.classList.remove('warn'), 820);
+        li.classList.add('warn', 'scan-effect-warn');
+        
+        // Remove temporary classes after animations finish
+        setTimeout(() => {
+            li.classList.remove('warn', 'scan-effect-warn');
+        }, 820);
       }
       saveData();
     };
