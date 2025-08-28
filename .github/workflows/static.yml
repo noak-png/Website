@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v1.1.2</title>
+<title>Call Checkpoints v1.2</title>
 
 <!-- 
-  Call Checkpoints — v1.1.2
+  Call Checkpoints — v1.2
   Changes:
-    • FIXED - Acrylic material is now fully opaque, theme-aware, and its "Edge Highlight" slider is functional.
-    • ADDED - Expanded color styles for the Acrylic material.
-    • FIXED - Mobile UI overflow where percentages were cut off.
+    • ADDED - Enhanced "Glass" material with sliders for Blur, Saturation, and Border Opacity.
+    • FIXED - Custom background now properly clears and resets settings when disabled.
+    • FIXED - Slider percentage values are no longer cut off on mobile devices.
+    • REMOVED - "Metal" material has been retired to simplify the UI.
  -->
 
 <style>
@@ -39,9 +40,6 @@
   --glass-shadow: 0 8px 28px rgba(0,0,0,.12);
   --glass-backdrop-sat: 150%;
   --glass-backdrop-blur: 8px;
-  --acrylic-grain-opacity: 0.05;
-  --acrylic-depth-strength: 4px;
-  --acrylic-depth-color: rgba(0,0,0,0.1);
 
   /* Sticky title chip backdrop */
   --header-backdrop: rgba(255,255,255,.75);
@@ -71,9 +69,6 @@
   --glass-shadow: 0 18px 56px rgba(0,0,0,.55);
   --glass-backdrop-sat: 160%;
   --glass-backdrop-blur: 10px;
-  --acrylic-grain-opacity: 0.06;
-  --acrylic-depth-strength: 2px;
-  --acrylic-depth-color: rgba(255,255,255,0.1);
 
   --header-backdrop: rgba(10,14,18,.55);
   --header-border: rgba(255,255,255,.08);
@@ -109,12 +104,6 @@ body{
   box-shadow: var(--glass-shadow);
   position: relative;
   overflow: hidden;
-}
-.glass.metal {
-    background: rgb(var(--glass-tint));
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    box-shadow: var(--shadow);
 }
 .glass, .glass *{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
@@ -292,8 +281,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   .menu-panel { padding: 12px; }
   .menu-panel summary { padding: 10px 12px; }
   .menu-panel .content { padding: 8px 10px 12px; gap: 8px; }
-  .slider-row label { min-width: 120px; }
-  .slider-row { flex-wrap: wrap; }
+  .slider-row label { flex-shrink: 0; min-width: auto; }
   .menu-notch { padding: 10px 0 6px; margin-top: 8px; gap: 6px; }
   .menu-notch button { padding: 10px 14px; }
   .menu-footnote { font-size: 11px; margin-bottom: 0; }
@@ -549,13 +537,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                 <summary>User Interface Customizations</summary>
                 <div class="content">
                     <div class="stack">
-                        <label for="uiMaterialSelect">Material</label>
-                        <select id="uiMaterialSelect">
-                            <option value="glass" selected>Glass</option>
-                            <option value="metal">Metal</option>
-                        </select>
-                    </div>
-                    <div class="stack">
                         <label for="uiStyleSelect">Style</label>
                         <select id="uiStyleSelect"></select>
                     </div>
@@ -565,19 +546,24 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                           <input type="range" id="glassOpacity" min="10" max="100" value="75" />
                           <span class="pct" id="glassOpacityPct">0%</span>
                         </div>
-                    </div>
-                    <div id="acrylicControlsWrapper" class="stack">
-                        <div class="slider-row">
-                            <label for="acrylicGrainSlider">Grain</label>
-                            <input type="range" id="acrylicGrainSlider" min="0" max="100" value="50" />
+                         <div class="slider-row">
+                          <label for="glassBlurSlider">Blur Intensity</label>
+                          <input type="range" id="glassBlurSlider" min="0" max="20" value="8" />
+                          <span class="pct" id="glassBlurPct">8px</span>
                         </div>
                         <div class="slider-row">
-                            <label for="acrylicDepthSlider">Edge Highlight</label>
-                            <input type="range" id="acrylicDepthSlider" min="0" max="100" value="50" />
+                          <label for="glassSaturationSlider">Backdrop Saturation</label>
+                          <input type="range" id="glassSaturationSlider" min="50" max="200" value="150" />
+                          <span class="pct" id="glassSaturationPct">150%</span>
+                        </div>
+                        <div class="slider-row">
+                          <label for="glassBorderSlider">Border Opacity</label>
+                          <input type="range" id="glassBorderSlider" min="0" max="100" value="8" />
+                          <span class="pct" id="glassBorderPct">8%</span>
                         </div>
                     </div>
                     <div class="row">
-                      <button id="uiStyleResetBtn" type="button" title="Reset UI Material and Opacity to default">Reset UI Style</button>
+                      <button id="uiStyleResetBtn" type="button" title="Reset UI Style and Opacity to default">Reset UI Style</button>
                     </div>
                     <div class="hr"></div>
                     <div class="stack">
@@ -823,7 +809,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   </div>
   <div class="clock-display glass" id="clockDisplay" style="display:none;"></div>
 
-  <div class="version" id="versionTag">v1.1.2</div>
+  <div class="version" id="versionTag">v1.2</div>
 
 <script>
 (function(){
@@ -873,6 +859,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     windI: document.getElementById('windIntensityPct'),
     windDir: document.getElementById('windDirectionPct'),
     glass: document.getElementById('glassOpacityPct'),
+    glassBlur: document.getElementById('glassBlurPct'),
+    glassSaturation: document.getElementById('glassSaturationPct'),
+    glassBorder: document.getElementById('glassBorderPct'),
     slide: document.getElementById('slideSpeedPct'),
     snowDensity: document.getElementById('snowDensityPct'),
     snowSize: document.getElementById('snowSizePct'),
@@ -911,15 +900,14 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const windDirectionRow = document.getElementById('windDirectionRow');
 
   // Appearance
-  const uiMaterialSelect = document.getElementById('uiMaterialSelect');
   const uiStyleSelect = document.getElementById('uiStyleSelect');
   const opacityControlsWrapper = document.getElementById('opacityControlsWrapper');
-  const acrylicControlsWrapper = document.getElementById('acrylicControlsWrapper');
-  const acrylicGrainSlider = document.getElementById('acrylicGrainSlider');
-  const acrylicDepthSlider = document.getElementById('acrylicDepthSlider');
-
+  
   // Glass controls
   const glassOpacity = document.getElementById('glassOpacity');
+  const glassBlurSlider = document.getElementById('glassBlurSlider');
+  const glassSaturationSlider = document.getElementById('glassSaturationSlider');
+  const glassBorderSlider = document.getElementById('glassBorderSlider');
   const uiStyleResetBtn = document.getElementById('uiStyleResetBtn');
 
   // Wallpaper
@@ -1041,17 +1029,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
               'yellow':   { name: 'Yellow',    light: '255,250,235', dark: '50,45,25' },
               'green':    { name: 'Green',     light: '240,255,240', dark: '20,40,25' }
           }
-      },
-      metal: {
-          name: 'Metal',
-          styles: {
-              'steel':    { name: 'Steel',    light: '211,211,211', dark: '70,70,80' },
-              'aluminum': { name: 'Aluminum', light: '229,231,235', dark: '55,65,81' },
-              'gold':     { name: 'Gold',     light: '250,237,203', dark: '85,70,30' },
-              'copper':   { name: 'Copper',   light: '248,222,209', dark: '106,64,48' },
-              'bronze':   { name: 'Bronze',   light: '222,205,170', dark: '100,80,45' },
-              'graphite': { name: 'Graphite', light: '110,110,120', dark: '40,40,45' }
-          }
       }
   };
   
@@ -1091,11 +1068,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
     store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); store('endlessEnabled',enableEndless.checked);
-    store('darkMode',document.documentElement.classList.contains('dark')); store('glassOpacity', glassOpacity.value);
-    store('uiMaterial', uiMaterialSelect.value);
+    store('darkMode',document.documentElement.classList.contains('dark')); 
+    store('glassOpacity', glassOpacity.value);
+    store('glassBlur', glassBlurSlider.value);
+    store('glassSaturation', glassSaturationSlider.value);
+    store('glassBorder', glassBorderSlider.value);
     store('uiStyle', uiStyleSelect.value);
-    store('acrylicGrain', acrylicGrainSlider.value);
-    store('acrylicDepth', acrylicDepthSlider.value);
     store('enableCustomBackground', enableCustomBackground.checked);
     store('ambianceEnabled', enableAmbiance.checked);
     store('ambianceEffect', ambianceSelect.value);
@@ -1144,11 +1122,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     totalClicks = parseInt(get('clickCount','0'),10)||0; seconds = parseInt(get('seconds','0'),10)||0;
     if(get('darkMode','false')==='true'){ document.documentElement.classList.add('dark'); darkToggle.textContent='☀️ Light Mode'; }
     glassOpacity.value = get('glassOpacity', '75');
-    uiMaterialSelect.value = get('uiMaterial', 'glass');
-    populateStyleSelector(uiMaterialSelect.value);
+    glassBlurSlider.value = get('glassBlur', '8');
+    glassSaturationSlider.value = get('glassSaturation', '150');
+    glassBorderSlider.value = get('glassBorder', '8');
+    populateStyleSelector('glass');
     uiStyleSelect.value = get('uiStyle', 'default');
-    acrylicGrainSlider.value = get('acrylicGrain', '20');
-    acrylicDepthSlider.value = get('acrylicDepth', '30');
     enableCustomBackground.checked = (get('enableCustomBackground', 'false') === 'true');
     enableAmbiance.checked = (get('ambianceEnabled', 'false') === 'true');
     ambianceSelect.value = get('ambianceEffect', 'none');
@@ -1189,11 +1167,25 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function applyAllSettings() {
-    updatePercentages(); syncColorControlVisibility(); syncWindControls(); applyGlassOpacity(); applyMaterialStyle(); applyAcrylicGrain(); applyAcrylicDepth();
-    updateWallpaper(); applyClockSettings(); updateCountersVisibility(); applyAmbianceSettings(); renderPatternsList();
-    syncAnimationSettingsUI(); applyLogoTheme();
-    syncMaterialControlsVisibility(); syncCustomBackgroundVisibility();
-    clickCount.textContent = totalClicks; updateSecondCounter(); applySlideSpeed();
+    updatePercentages(); 
+    syncColorControlVisibility(); 
+    syncWindControls(); 
+    applyGlassOpacity(); 
+    applyGlassBlur();
+    applyGlassSaturation();
+    applyGlassBorderOpacity();
+    applyMaterialStyle();
+    updateWallpaper(); 
+    applyClockSettings(); 
+    updateCountersVisibility(); 
+    applyAmbianceSettings(); 
+    renderPatternsList();
+    syncAnimationSettingsUI(); 
+    applyLogoTheme();
+    syncCustomBackgroundVisibility();
+    clickCount.textContent = totalClicks; 
+    updateSecondCounter(); 
+    applySlideSpeed();
     gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none';
     bubbleLifeSlider.dispatchEvent(new Event('input'));
   }
@@ -1229,9 +1221,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   /* ---------- Appearance ---------- */
-    function populateStyleSelector(material) {
+    function populateStyleSelector() {
         uiStyleSelect.innerHTML = '';
-        const styles = materialPresets[material]?.styles || {};
+        const styles = materialPresets.glass.styles || {};
         for (const [key, value] of Object.entries(styles)) {
             const option = document.createElement('option');
             option.value = key;
@@ -1240,87 +1232,90 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
         }
     }
 
-    function syncMaterialControlsVisibility() {
-        const material = uiMaterialSelect.value;
-        opacityControlsWrapper.style.display = material === 'glass' ? 'flex' : 'none';
-        acrylicControlsWrapper.style.display = 'none';
-    }
-
   function applyMaterialStyle() {
-    const material = uiMaterialSelect.value;
     const style = uiStyleSelect.value;
     const isDark = document.documentElement.classList.contains('dark');
     const root = document.documentElement;
-
+    
     document.querySelectorAll('.glass').forEach(el => {
-        el.classList.remove('acrylic');
-        el.classList.toggle('metal', material === 'metal');
+        el.classList.remove('metal');
     });
 
-    const preset = materialPresets[material]?.styles[style];
+    const preset = materialPresets.glass.styles[style];
     if (!preset) return;
     
     const rgbString = isDark ? preset.dark : preset.light;
     
-    if (material === 'metal') {
-        root.style.setProperty('--glass-tint', rgbString);
-        root.style.setProperty('--glass-alpha', 1);
-        root.style.setProperty('--glass-backdrop-blur', '0px');
-        root.style.setProperty('--glass-backdrop-sat', '100%');
-    } else { // glass
-        root.style.setProperty('--glass-tint', rgbString);
-        root.style.setProperty('--glass-backdrop-blur', isDark ? '10px' : '8px');
-        root.style.setProperty('--glass-backdrop-sat', isDark ? '160%' : '150%');
-        applyGlassOpacity(); // Restore variable opacity
-    }
+    root.style.setProperty('--glass-tint', rgbString);
   }
-
-    function applyAcrylicGrain() {
-        const val = parseInt(acrylicGrainSlider.value, 10);
-        const opacity = (val / 100) * 0.15; // Max opacity 0.15
-        document.documentElement.style.setProperty('--acrylic-grain-opacity', opacity.toFixed(3));
+    
+    function applyGlassOpacity(){
+      const val = Math.max(10, Math.min(100, parseInt(glassOpacity.value,10)||75));
+      const alpha = (val/100).toFixed(2);
+      document.documentElement.style.setProperty('--glass-alpha', alpha);
+      pct.glass.textContent = val + '%';
     }
 
-    function applyAcrylicDepth() {
-        const val = parseInt(acrylicDepthSlider.value, 10);
-        const strength = (val / 100) * 4; // Max depth 4px
-        document.documentElement.style.setProperty('--acrylic-depth-strength', `${strength.toFixed(1)}px`);
+    function applyGlassBlur(){
+      const val = parseInt(glassBlurSlider.value, 10);
+      document.documentElement.style.setProperty('--glass-backdrop-blur', `${val}px`);
+      pct.glassBlur.textContent = `${val}px`;
     }
 
-  function applyGlassOpacity(){
-    const val = Math.max(10, Math.min(100, parseInt(glassOpacity.value,10)||75));
-    const alpha = (val/100).toFixed(2);
-    document.documentElement.style.setProperty('--glass-alpha', alpha);
-    pct.glass.textContent = val + '%';
-  }
+    function applyGlassSaturation(){
+      const val = parseInt(glassSaturationSlider.value, 10);
+      document.documentElement.style.setProperty('--glass-backdrop-sat', `${val}%`);
+      pct.glassSaturation.textContent = `${val}%`;
+    }
+    
+    function applyGlassBorderOpacity() {
+        const val = parseInt(glassBorderSlider.value, 10);
+        const isDark = document.documentElement.classList.contains('dark');
+        const baseColor = isDark ? '255,255,255' : '0,0,0';
+        document.documentElement.style.setProperty('--glass-stroke', `rgba(${baseColor}, ${val / 100})`);
+        pct.glassBorder.textContent = `${val}%`;
+    }
+
 
   function resetUiStyleToDefault(){
-    uiMaterialSelect.value = 'glass';
-    populateStyleSelector('glass');
     uiStyleSelect.value = 'default';
     
     const isDark = document.documentElement.classList.contains('dark');
-    const defaultVal = isDark ? 55 : 75;
-    glassOpacity.value = defaultVal;
-    acrylicGrainSlider.value = 20;
-    acrylicDepthSlider.value = 30;
+    glassOpacity.value = isDark ? 55 : 75;
+    glassBlurSlider.value = isDark ? 10 : 8;
+    glassSaturationSlider.value = isDark ? 160 : 150;
+    glassBorderSlider.value = 8;
 
     applyMaterialStyle();
-    applyAcrylicGrain();
-    applyAcrylicDepth();
-    syncMaterialControlsVisibility();
+    applyGlassOpacity();
+    applyGlassBlur();
+    applyGlassSaturation();
+    applyGlassBorderOpacity();
   }
 
   /* ---------- Wallpaper ---------- */
   function syncCustomBackgroundVisibility() {
-    customBackgroundOptions.style.display = enableCustomBackground.checked ? 'flex' : 'none';
+    const isChecked = enableCustomBackground.checked;
+    customBackgroundOptions.style.display = isChecked ? 'flex' : 'none';
+    if (!isChecked) {
+        backgroundType.value = 'theme';
+    }
     updateWallpaper();
   }
 
+  function clearAllBackgroundStyles() {
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundColor = '';
+      document.body.style.backgroundSize = '';
+      document.body.style.backgroundPosition = '';
+      document.body.style.backgroundRepeat = '';
+      document.body.style.backgroundAttachment = '';
+  }
+
+
   function updateWallpaper() {
     if (!enableCustomBackground.checked) {
-        document.body.style.backgroundImage = 'none';
-        document.body.style.backgroundColor = '';
+        clearAllBackgroundStyles();
         return;
     }
 
@@ -1329,8 +1324,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     colorWallpaperControls.style.display = type === 'color' ? 'flex' : 'none';
     
     if (type === 'theme') {
-      document.body.style.backgroundImage = 'none';
-      document.body.style.backgroundColor = '';
+      clearAllBackgroundStyles();
     } else if (type === 'image') {
       const wpData = localStorage.getItem('callcheckpoints.wallpaperDataUrl');
       if (wpData) applyImageWallpaper(wpData, wallpaperFit.value);
@@ -1353,7 +1347,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function clearImageWallpaper() {
-    document.body.style.backgroundImage = 'none';
+    clearAllBackgroundStyles();
   }
 
   function applyColorWallpaper() {
@@ -1482,6 +1476,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     darkToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
     applyMaterialStyle();
     applyLogoTheme();
+    applyGlassBorderOpacity(); // Re-apply border for theme change
     saveData();
   };
 
@@ -1549,7 +1544,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
-      appearance: { glassOpacity: glassOpacity.value, uiMaterial: uiMaterialSelect.value, uiStyle: uiStyleSelect.value, acrylicGrain: acrylicGrainSlider.value, acrylicDepth: acrylicDepthSlider.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
+      appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
       slideSpeed: slideSpeed.value,
       clock: { position: clockPosition.value, detail: clockDetail.value },
@@ -1580,11 +1575,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       }
       if (s.appearance) {
           glassOpacity.value = s.appearance.glassOpacity;
-          uiMaterialSelect.value = s.appearance.uiMaterial;
-          populateStyleSelector(s.appearance.uiMaterial);
+          glassBlurSlider.value = s.appearance.glassBlur;
+          glassSaturationSlider.value = s.appearance.glassSaturation;
+          glassBorderSlider.value = s.appearance.glassBorder;
+          populateStyleSelector();
           uiStyleSelect.value = s.appearance.uiStyle;
-          acrylicGrainSlider.value = s.appearance.acrylicGrain;
-          acrylicDepthSlider.value = s.appearance.acrylicDepth;
           document.documentElement.classList.toggle('dark', s.appearance.dark);
           darkToggle.textContent = s.appearance.dark ? '☀️ Light Mode' : '🌙 Dark Mode';
           backgroundType.value = s.appearance.backgroundType; wallpaperFit.value = s.appearance.wallpaperFit;
@@ -2213,9 +2208,10 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 
   document.querySelectorAll('input[type=range]:not(#animIntensity, #emissionScale, #holdRate, #bubbleSize, #bubbleSpeed, #bubbleLifeSlider, #windIntensity, #windDirection)').forEach(el=> el.addEventListener('input', ()=>{ 
       if(el===glassOpacity) applyGlassOpacity(); 
+      if(el===glassBlurSlider) applyGlassBlur();
+      if(el===glassSaturationSlider) applyGlassSaturation();
+      if(el===glassBorderSlider) applyGlassBorderOpacity();
       if(el===slideSpeed) applySlideSpeed();
-      if(el===acrylicGrainSlider) applyAcrylicGrain();
-      if(el===acrylicDepthSlider) applyAcrylicDepth();
       updatePercentages(); 
       saveData();
   }));
@@ -2230,20 +2226,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     saveData();
   });
 
-    uiMaterialSelect.addEventListener('change', () => {
-        populateStyleSelector(uiMaterialSelect.value);
-        applyMaterialStyle();
-        syncMaterialControlsVisibility();
-        saveData();
-    });
-
-    uiStyleSelect.addEventListener('change', () => {
-        applyMaterialStyle();
-        saveData();
-    });
+  uiStyleSelect.addEventListener('change', () => {
+      applyMaterialStyle();
+      saveData();
+  });
 
 
-  document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiMaterialSelect, #uiStyleSelect)').forEach(el=> el.addEventListener('change', ()=>{ 
+  document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiStyleSelect)').forEach(el=> el.addEventListener('change', ()=>{ 
       if(el===ambianceSelect) applyAmbianceSettings();
       if(el===backgroundType || el===colorWallpaperType) updateWallpaperUI();
       if(el===wallpaperFit){ const data = localStorage.getItem('callcheckpoints.wallpaperDataUrl'); if(data){ applyImageWallpaper(data, wallpaperFit.value); } } 
