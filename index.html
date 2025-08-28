@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v1.1.1</title>
+<title>Call Checkpoints v1.1.2</title>
 
 <!-- 
-  Call Checkpoints — v1.1.1
+  Call Checkpoints — v1.1.2
   Changes:
-    • FIXED - Heart Burst preset now correctly applies the heart shape.
-    • RENAMED - "Developer Mode" is now "Advanced Mode".
+    • FIXED - Acrylic material is now fully opaque, theme-aware, and its "Edge Highlight" slider is functional.
+    • ADDED - Expanded color styles for the Acrylic material.
+    • FIXED - Mobile UI overflow where percentages were cut off.
  -->
 
 <style>
@@ -38,6 +39,9 @@
   --glass-shadow: 0 8px 28px rgba(0,0,0,.12);
   --glass-backdrop-sat: 150%;
   --glass-backdrop-blur: 8px;
+  --acrylic-grain-opacity: 0.05;
+  --acrylic-depth-strength: 4px;
+  --acrylic-depth-color: rgba(0,0,0,0.1);
 
   /* Sticky title chip backdrop */
   --header-backdrop: rgba(255,255,255,.75);
@@ -67,6 +71,9 @@
   --glass-shadow: 0 18px 56px rgba(0,0,0,.55);
   --glass-backdrop-sat: 160%;
   --glass-backdrop-blur: 10px;
+  --acrylic-grain-opacity: 0.06;
+  --acrylic-depth-strength: 2px;
+  --acrylic-depth-color: rgba(255,255,255,0.1);
 
   --header-backdrop: rgba(10,14,18,.55);
   --header-border: rgba(255,255,255,.08);
@@ -100,6 +107,14 @@ body{
   -webkit-backdrop-filter: saturate(var(--glass-backdrop-sat)) blur(var(--glass-backdrop-blur));
   border: 1px solid var(--glass-stroke);
   box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+.glass.metal {
+    background: rgb(var(--glass-tint));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: var(--shadow);
 }
 .glass, .glass *{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
@@ -233,7 +248,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 .menu-notch{
   position:sticky; bottom:0;
   display:flex; flex-direction:column; justify-content:center; align-items:center;
-  padding:8px 0 10px; margin-top:8px; gap:6px;
+  padding:12px 0 2px; margin-top:8px; gap:8px;
 }
 .menu-notch button{
   border:none; cursor:pointer; font-weight:600;
@@ -278,7 +293,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   .menu-panel summary { padding: 10px 12px; }
   .menu-panel .content { padding: 8px 10px 12px; gap: 8px; }
   .slider-row label { min-width: 120px; }
-  .menu-notch { padding: 6px 0 8px; margin-top: 6px; gap: 4px; }
+  .slider-row { flex-wrap: wrap; }
+  .menu-notch { padding: 10px 0 6px; margin-top: 8px; gap: 6px; }
   .menu-notch button { padding: 10px 14px; }
   .menu-footnote { font-size: 11px; margin-bottom: 0; }
   .counter-display, .click-counter, .clock-display { padding: 6px 10px; border-radius: 10px; }
@@ -523,179 +539,222 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     <div class="section" id="secAppearance">
       <details>
         <summary>
-          Appearance <span class="hint">glass & background</span>
+          Appearance <span class="hint">UI, background & animations</span>
         </summary>
         <div class="content">
-          <!-- REMOVED: App Name, Logo Theme, Font Size, Font Family customization controls -->
           
-          <div class="slider-row">
-            <label for="glassOpacity">Glass Opacity</label>
-            <input type="range" id="glassOpacity" min="10" max="95" value="75" />
-            <span class="pct" id="glassOpacityPct">0%</span>
-          </div>
-          <div class="row">
-            <button id="glassResetBtn" type="button" title="Reset glass transparency to theme default">Reset Glass</button>
-          </div>
-          
-          <div class="hr"></div>
-
-          <label><input type="checkbox" id="enableNaturalSlide"> Natural Slide Gestures</label>
-          <div class="slider-row">
-            <label for="slideSpeed">Slide Speed</label>
-            <input type="range" id="slideSpeed" min="200" max="1400" value="800" />
-            <span class="pct" id="slideSpeedPct">800ms</span>
-          </div>
-
-          <div class="hr"></div>
-          
-          <!-- Ambiance / Background Effects -->
-          <div class="stack">
-            <label><input type="checkbox" id="enableAmbiance"> Enable Background Effect</label>
-            <div id="ambianceSettings" class="stack" style="display:none; margin-top: 10px; gap: 10px;">
-                <label for="ambianceSelect">Effect Type</label>
-                <select id="ambianceSelect">
-                    <option value="none" selected>None</option>
-                    <option value="snowflakes">Snowflakes</option>
-                    <option value="orbs">Floating Orbs</option>
-                    <option value="starfield">Starfield</option>
-                    <option value="matrix">Matrix Rain</option>
-                </select>
-                <div id="ambianceControls" class="stack" style="display:none; border:1px solid var(--border); border-radius:8px; padding:10px; gap: 10px;">
-                    <!-- Snow Controls -->
-                    <div id="snowControls" class="stack" style="display:none; gap: 10px;">
+          <!-- UI Customizations Sub-Section -->
+          <div class="sub-section">
+            <details id="secUICustomizations">
+                <summary>User Interface Customizations</summary>
+                <div class="content">
+                    <div class="stack">
+                        <label for="uiMaterialSelect">Material</label>
+                        <select id="uiMaterialSelect">
+                            <option value="glass" selected>Glass</option>
+                            <option value="metal">Metal</option>
+                        </select>
+                    </div>
+                    <div class="stack">
+                        <label for="uiStyleSelect">Style</label>
+                        <select id="uiStyleSelect"></select>
+                    </div>
+                    <div id="opacityControlsWrapper" class="stack">
                         <div class="slider-row">
-                            <label for="snowDensity">Density</label>
-                            <input type="range" id="snowDensity" min="0" max="300" value="100">
-                            <span class="pct" id="snowDensityPct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="snowSize">Size</label>
-                            <input type="range" id="snowSize" min="10" max="40" value="20">
-                            <span class="pct" id="snowSizePct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="snowSpeed">Speed</label>
-                            <input type="range" id="snowSpeed" min="10" max="100" value="30">
-                            <span class="pct" id="snowSpeedPct">0%</span>
+                          <label for="glassOpacity">Opacity</label>
+                          <input type="range" id="glassOpacity" min="10" max="100" value="75" />
+                          <span class="pct" id="glassOpacityPct">0%</span>
                         </div>
                     </div>
-                    <!-- Orb Controls -->
-                    <div id="orbsControls" class="stack" style="display:none; gap: 10px;">
+                    <div id="acrylicControlsWrapper" class="stack">
                         <div class="slider-row">
-                            <label for="orbsDensity">Density</label>
-                            <input type="range" id="orbsDensity" min="10" max="300" value="80">
-                            <span class="pct" id="orbsDensityPct">0%</span>
+                            <label for="acrylicGrainSlider">Grain</label>
+                            <input type="range" id="acrylicGrainSlider" min="0" max="100" value="50" />
                         </div>
                         <div class="slider-row">
-                            <label for="orbsSize">Size</label>
-                            <input type="range" id="orbsSize" min="20" max="150" value="70">
-                            <span class="pct" id="orbsSizePct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="orbsSpeed">Speed</label>
-                            <input type="range" id="orbsSpeed" min="5" max="100" value="20">
-                            <span class="pct" id="orbsSpeedPct">0%</span>
-                        </div>
-                        <label>Orb Color: <input type="color" id="orbsColor" value="#9aa4b2"></label>
-                    </div>
-                    <!-- Starfield Controls -->
-                    <div id="starfieldControls" class="stack" style="display:none; gap: 10px;">
-                        <div class="slider-row">
-                            <label for="starfieldDensity">Density</label>
-                            <input type="range" id="starfieldDensity" min="50" max="1500" value="500">
-                            <span class="pct" id="starfieldDensityPct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="starfieldSize">Size</label>
-                            <input type="range" id="starfieldSize" min="1" max="10" value="3">
-                            <span class="pct" id="starfieldSizePct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="starfieldSpeed">Speed</label>
-                            <input type="range" id="starfieldSpeed" min="1" max="100" value="25">
-                            <span class="pct" id="starfieldSpeedPct">0%</span>
+                            <label for="acrylicDepthSlider">Edge Highlight</label>
+                            <input type="range" id="acrylicDepthSlider" min="0" max="100" value="50" />
                         </div>
                     </div>
-                    <!-- Matrix Controls -->
-                    <div id="matrixControls" class="stack" style="display:none; gap: 10px;">
-                        <div class="slider-row">
-                            <label for="matrixDensity">Density</label>
-                            <input type="range" id="matrixDensity" min="10" max="300" value="100">
-                            <span class="pct" id="matrixDensityPct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="matrixSize">Size</label>
-                            <input type="range" id="matrixSize" min="8" max="24" value="14">
-                            <span class="pct" id="matrixSizePct">0%</span>
-                        </div>
-                        <div class="slider-row">
-                            <label for="matrixSpeed">Speed</label>
-                            <input type="range" id="matrixSpeed" min="5" max="100" value="40">
-                            <span class="pct" id="matrixSpeedPct">0%</span>
-                        </div>
-                        <label>Rain Color: <input type="color" id="matrixColor" value="#00ff47"></label>
+                    <div class="row">
+                      <button id="uiStyleResetBtn" type="button" title="Reset UI Material and Opacity to default">Reset UI Style</button>
+                    </div>
+                    <div class="hr"></div>
+                    <div class="stack">
+                        <label><input type="checkbox" id="enableNaturalSlide"> Natural Slide Gestures</label>
+                        <div class="helper">Enables smooth, fluid animations when adding or removing items.</div>
+                    </div>
+                    <div class="slider-row">
+                      <label for="slideSpeed">Slide Speed</label>
+                      <input type="range" id="slideSpeed" min="200" max="1400" value="800" />
+                      <span class="pct" id="slideSpeedPct">800ms</span>
                     </div>
                 </div>
-            </div>
+            </details>
           </div>
-          
-          <div class="hr"></div>
 
-          <!-- Background Controls -->
-          <div class="stack">
-            <label for="backgroundType">Background Type</label>
-            <select id="backgroundType">
-              <option value="theme" selected>Theme Default</option>
-              <option value="image">Image</option>
-              <option value="color">Color / Gradient</option>
-            </select>
-          </div>
-          <div id="imageWallpaperControls" class="stack" style="display:none; margin-top: 10px;">
-            <label for="wallpaperFile">Choose Image</label>
-            <input type="file" id="wallpaperFile" accept="image/jpeg,.jpg,.jpeg,image/png,image/webp,image/*" />
-            <div class="helper">Recommended: images under 5 MB for stability.</div>
-            <label for="wallpaperFit">Image Format</label>
-            <select id="wallpaperFit">
-              <option value="cover" selected>Cover (fill, crop)</option>
-              <option value="contain">Contain (fit inside)</option>
-              <option value="fill">Stretch to Fill</option>
-              <option value="center">Center (no scale)</option>
-              <option value="tile">Tile</option>
-            </select>
-            <div class="row">
-              <button id="wallpaperResetBtn" type="button" title="Remove custom wallpaper">Remove Image</button>
-            </div>
-          </div>
-          <div id="colorWallpaperControls" class="stack" style="display:none; margin-top: 10px;">
-            <label for="colorWallpaperType">Color Type</label>
-            <select id="colorWallpaperType">
-              <option value="solid">Solid</option>
-              <option value="gradient">Gradient</option>
-            </select>
-            <div id="solidColorControls" class="stack">
-              <label>Color: <input type="color" id="wallpaperColor1" value="#2c3e50"></label>
-            </div>
-            <div id="gradientColorControls" class="stack" style="display:none;">
-              <label>Start Color: <input type="color" id="wallpaperColor2" value="#3498db"></label>
-              <label>End Color: <input type="color" id="wallpaperColor3" value="#13223a"></label>
-              <div class="slider-row">
-                <label for="gradientAngle">Angle</label>
-                <input type="range" id="gradientAngle" min="0" max="360" value="145">
-                <span class="pct" id="gradientAnglePct">145°</span>
-              </div>
-              <div class="slider-row">
-                <label for="gradientSpread">Gradient Spread</label>
-                <input type="range" id="gradientSpread" min="0" max="100" value="0">
-                <span class="pct" id="gradientSpreadPct">0%</span>
-              </div>
-              <div class="hr"></div>
-              <label><input type="checkbox" id="gradientSpinToggle"> Enable Spinning</label>
-              <div class="slider-row" id="gradientSpinControls" style="display:none;">
-                  <label for="gradientSpinSpeed">Spin Speed</label>
-                  <input type="range" id="gradientSpinSpeed" min="1" max="100" value="10">
-                  <span class="pct" id="gradientSpinSpeedPct">10%</span>
-              </div>
-            </div>
+          <!-- Background Sub-Section -->
+          <div class="sub-section">
+            <details id="secBackground">
+                <summary>Background</summary>
+                <div class="content">
+                    <div class="stack">
+                        <label><input type="checkbox" id="enableCustomBackground"> Enable Custom Background</label>
+                    </div>
+                    <div id="customBackgroundOptions" class="stack" style="display:none;">
+                        <div class="hr"></div>
+                        <!-- Background Controls -->
+                        <div class="stack">
+                            <label for="backgroundType">Background Type</label>
+                            <select id="backgroundType">
+                              <option value="theme" selected>Theme Default</option>
+                              <option value="image">Image</option>
+                              <option value="color">Color / Gradient</option>
+                            </select>
+                        </div>
+                        <div id="imageWallpaperControls" class="stack" style="display:none; margin-top: 10px;">
+                            <label for="wallpaperFile">Choose Image</label>
+                            <input type="file" id="wallpaperFile" accept="image/jpeg,.jpg,.jpeg,image/png,image/webp,image/*" />
+                            <div class="helper">Recommended: images under 5 MB for stability.</div>
+                            <label for="wallpaperFit">Image Format</label>
+                            <select id="wallpaperFit">
+                              <option value="cover" selected>Cover (fill, crop)</option>
+                              <option value="contain">Contain (fit inside)</option>
+                              <option value="fill">Stretch to Fill</option>
+                              <option value="center">Center (no scale)</option>
+                              <option value="tile">Tile</option>
+                            </select>
+                            <div class="row">
+                              <button id="wallpaperResetBtn" type="button" title="Remove custom wallpaper">Remove Image</button>
+                            </div>
+                        </div>
+                        <div id="colorWallpaperControls" class="stack" style="display:none; margin-top: 10px;">
+                            <label for="colorWallpaperType">Color Type</label>
+                            <select id="colorWallpaperType">
+                              <option value="solid">Solid</option>
+                              <option value="gradient">Gradient</option>
+                            </select>
+                            <div id="solidColorControls" class="stack">
+                              <label>Color: <input type="color" id="wallpaperColor1" value="#2c3e50"></label>
+                            </div>
+                            <div id="gradientColorControls" class="stack" style="display:none;">
+                              <label>Start Color: <input type="color" id="wallpaperColor2" value="#3498db"></label>
+                              <label>End Color: <input type="color" id="wallpaperColor3" value="#13223a"></label>
+                              <div class="slider-row">
+                                <label for="gradientAngle">Angle</label>
+                                <input type="range" id="gradientAngle" min="0" max="360" value="145">
+                                <span class="pct" id="gradientAnglePct">145°</span>
+                              </div>
+                              <div class="slider-row">
+                                <label for="gradientSpread">Gradient Spread</label>
+                                <input type="range" id="gradientSpread" min="0" max="100" value="0">
+                                <span class="pct" id="gradientSpreadPct">0%</span>
+                              </div>
+                              <div class="hr"></div>
+                              <label><input type="checkbox" id="gradientSpinToggle"> Enable Spinning</label>
+                              <div class="slider-row" id="gradientSpinControls" style="display:none;">
+                                  <label for="gradientSpinSpeed">Spin Speed</label>
+                                  <input type="range" id="gradientSpinSpeed" min="1" max="100" value="10">
+                                  <span class="pct" id="gradientSpinSpeedPct">10%</span>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hr"></div>
+    
+                    <!-- Ambiance / Background Effects -->
+                    <div class="stack">
+                        <label><input type="checkbox" id="enableAmbiance"> Enable Background Live Effects</label>
+                        <div id="ambianceSettings" class="stack" style="display:none; margin-top: 10px; gap: 10px;">
+                            <label for="ambianceSelect">Effect Type</label>
+                            <select id="ambianceSelect">
+                                <option value="none" selected>None</option>
+                                <option value="snowflakes">Snowflakes</option>
+                                <option value="orbs">Floating Orbs</option>
+                                <option value="starfield">Starfield</option>
+                                <option value="matrix">Matrix Rain</option>
+                            </select>
+                            <div id="ambianceControls" class="stack" style="display:none; border:1px solid var(--border); border-radius:8px; padding:10px; gap: 10px;">
+                                <!-- Snow Controls -->
+                                <div id="snowControls" class="stack" style="display:none; gap: 10px;">
+                                    <div class="slider-row">
+                                        <label for="snowDensity">Density</label>
+                                        <input type="range" id="snowDensity" min="0" max="300" value="100">
+                                        <span class="pct" id="snowDensityPct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="snowSize">Size</label>
+                                        <input type="range" id="snowSize" min="10" max="40" value="20">
+                                        <span class="pct" id="snowSizePct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="snowSpeed">Speed</label>
+                                        <input type="range" id="snowSpeed" min="10" max="100" value="30">
+                                        <span class="pct" id="snowSpeedPct">0%</span>
+                                    </div>
+                                </div>
+                                <!-- Orb Controls -->
+                                <div id="orbsControls" class="stack" style="display:none; gap: 10px;">
+                                    <div class="slider-row">
+                                        <label for="orbsDensity">Density</label>
+                                        <input type="range" id="orbsDensity" min="10" max="300" value="80">
+                                        <span class="pct" id="orbsDensityPct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="orbsSize">Size</label>
+                                        <input type="range" id="orbsSize" min="20" max="150" value="70">
+                                        <span class="pct" id="orbsSizePct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="orbsSpeed">Speed</label>
+                                        <input type="range" id="orbsSpeed" min="5" max="100" value="20">
+                                        <span class="pct" id="orbsSpeedPct">0%</span>
+                                    </div>
+                                    <label>Orb Color: <input type="color" id="orbsColor" value="#9aa4b2"></label>
+                                </div>
+                                <!-- Starfield Controls -->
+                                <div id="starfieldControls" class="stack" style="display:none; gap: 10px;">
+                                    <div class="slider-row">
+                                        <label for="starfieldDensity">Density</label>
+                                        <input type="range" id="starfieldDensity" min="50" max="1500" value="500">
+                                        <span class="pct" id="starfieldDensityPct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="starfieldSize">Size</label>
+                                        <input type="range" id="starfieldSize" min="1" max="10" value="3">
+                                        <span class="pct" id="starfieldSizePct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="starfieldSpeed">Speed</label>
+                                        <input type="range" id="starfieldSpeed" min="1" max="100" value="25">
+                                        <span class="pct" id="starfieldSpeedPct">0%</span>
+                                    </div>
+                                </div>
+                                <!-- Matrix Controls -->
+                                <div id="matrixControls" class="stack" style="display:none; gap: 10px;">
+                                    <div class="slider-row">
+                                        <label for="matrixDensity">Density</label>
+                                        <input type="range" id="matrixDensity" min="10" max="300" value="100">
+                                        <span class="pct" id="matrixDensityPct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="matrixSize">Size</label>
+                                        <input type="range" id="matrixSize" min="8" max="24" value="14">
+                                        <span class="pct" id="matrixSizePct">0%</span>
+                                    </div>
+                                    <div class="slider-row">
+                                        <label for="matrixSpeed">Speed</label>
+                                        <input type="range" id="matrixSpeed" min="5" max="100" value="40">
+                                        <span class="pct" id="matrixSpeedPct">0%</span>
+                                    </div>
+                                    <label>Rain Color: <input type="color" id="matrixColor" value="#00ff47"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
           </div>
         </div>
       </details>
@@ -715,38 +774,25 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                 </div>
                 <div class="hr"></div>
                 <div class="stack">
-                    <label><input type="checkbox" id="enableClock"> Enable Glass Clock</label>
-                    <label for="clockPosition">Position</label>
-                    <select id="clockPosition">
-                        <option value="pos-top-left">Top Left</option>
-                        <option value="pos-top-center">Top Center</option>
-                        <option value="pos-top-right" selected>Top Right</option>
-                        <option value="pos-bottom-left">Bottom Left</option>
-                        <option value="pos-bottom-center">Bottom Center</option>
-                        <option value="pos-bottom-right">Bottom Right</option>
-                    </select>
-                    <label for="clockDetail">Detail Level</label>
-                    <select id="clockDetail">
-                        <option value="time">Time (HH:MM)</option>
-                        <option value="timeSec">Time with Seconds (HH:MM:SS)</option>
-                        <option value="dateTime" selected>Date &amp; Time</option>
-                        <option value="full">Full Details</option>
-                    </select>
-                    <label for="clockFontFamily">Font</label>
-                    <select id="clockFontFamily">
-                        <option value="system-ui, sans-serif">System UI</option>
-                        <option value="'Arial', sans-serif">Arial</option>
-                        <option value="'Verdana', sans-serif">Verdana</option>
-                        <option value="'Tahoma', sans-serif">Tahoma</option>
-                        <option value="'Courier New', monospace">Courier New</option>
-                        <option value="'Georgia', serif">Georgia</option>
-                        <option value="'Times New Roman', serif">Times New Roman</option>
-                        <option value="'Lucida Console', monospace">Lucida Console</option>
-                        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                        <option value="'Impact', sans-serif">Impact</option>
-                        <option value="'Comic Sans MS', sans-serif">Comic Sans MS</option>
-                        <option value="'Palatino', serif">Palatino</option>
-                    </select>
+                    <label><input type="checkbox" id="enableClock"> Enable Clock</label>
+                    <div id="clockOptionsWrapper" class="stack">
+                        <label for="clockPosition">Position</label>
+                        <select id="clockPosition">
+                            <option value="pos-top-left">Top Left</option>
+                            <option value="pos-top-center">Top Center</option>
+                            <option value="pos-top-right" selected>Top Right</option>
+                            <option value="pos-bottom-left">Bottom Left</option>
+                            <option value="pos-bottom-center">Bottom Center</option>
+                            <option value="pos-bottom-right">Bottom Right</option>
+                        </select>
+                        <label for="clockDetail">Detail Level</label>
+                        <select id="clockDetail">
+                            <option value="time">Time (HH:MM)</option>
+                            <option value="timeSec">Time with Seconds (HH:MM:SS)</option>
+                            <option value="dateTime" selected>Date &amp; Time</option>
+                            <option value="full">Full Details</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="hr"></div>
                 <div class="stack">
@@ -777,7 +823,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   </div>
   <div class="clock-display glass" id="clockDisplay" style="display:none;"></div>
 
-  <div class="version" id="versionTag">v1.1.1</div>
+  <div class="version" id="versionTag">v1.1.2</div>
 
 <script>
 (function(){
@@ -865,13 +911,20 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const windDirectionRow = document.getElementById('windDirectionRow');
 
   // Appearance
-  // REMOVED: appNameInput, appNameResetBtn, logoThemeSelect, fontSizeSelect, fontFamilySelect
+  const uiMaterialSelect = document.getElementById('uiMaterialSelect');
+  const uiStyleSelect = document.getElementById('uiStyleSelect');
+  const opacityControlsWrapper = document.getElementById('opacityControlsWrapper');
+  const acrylicControlsWrapper = document.getElementById('acrylicControlsWrapper');
+  const acrylicGrainSlider = document.getElementById('acrylicGrainSlider');
+  const acrylicDepthSlider = document.getElementById('acrylicDepthSlider');
 
   // Glass controls
   const glassOpacity = document.getElementById('glassOpacity');
-  const glassResetBtn = document.getElementById('glassResetBtn');
+  const uiStyleResetBtn = document.getElementById('uiStyleResetBtn');
 
   // Wallpaper
+  const enableCustomBackground = document.getElementById('enableCustomBackground');
+  const customBackgroundOptions = document.getElementById('customBackgroundOptions');
   const backgroundType = document.getElementById('backgroundType');
   const imageWallpaperControls = document.getElementById('imageWallpaperControls');
   const colorWallpaperControls = document.getElementById('colorWallpaperControls');
@@ -911,7 +964,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const clockDisplay = document.getElementById('clockDisplay');
   const clockPosition = document.getElementById('clockPosition');
   const clockDetail = document.getElementById('clockDetail');
-  const clockFontFamily = document.getElementById('clockFontFamily');
+  const clockOptionsWrapper = document.getElementById('clockOptionsWrapper');
   const versionTag = document.getElementById('versionTag');
 
   // Saved Patterns
@@ -959,6 +1012,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const secAnimStyle = document.getElementById('secAnimStyle');
   const secWind = document.getElementById('secWind');
   const secPatterns = document.getElementById('secPatterns');
+  const secBackground = document.getElementById('secBackground');
 
   /* ---------- GLOBALS ---------- */
   const PARTICLE_CAP = 25000;
@@ -973,6 +1027,34 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   let screenFlash = 0;
   let lightningBolts = [];
 
+  const materialPresets = {
+      glass: {
+          name: 'Glass',
+          styles: {
+              'default':  { name: 'Default',   light: '255,255,255', dark: '15,20,24' },
+              'graphite': { name: 'Graphite',  light: '240,240,245', dark: '35,35,40' },
+              'blue':     { name: 'Blue',      light: '235,245,255', dark: '20,30,45' },
+              'purple':   { name: 'Purple',    light: '245,240,255', dark: '35,25,45' },
+              'pink':     { name: 'Pink',      light: '255,240,245', dark: '50,25,35' },
+              'red':      { name: 'Red',       light: '255,240,240', dark: '50,25,25' },
+              'orange':   { name: 'Orange',    light: '255,245,235', dark: '55,35,20' },
+              'yellow':   { name: 'Yellow',    light: '255,250,235', dark: '50,45,25' },
+              'green':    { name: 'Green',     light: '240,255,240', dark: '20,40,25' }
+          }
+      },
+      metal: {
+          name: 'Metal',
+          styles: {
+              'steel':    { name: 'Steel',    light: '211,211,211', dark: '70,70,80' },
+              'aluminum': { name: 'Aluminum', light: '229,231,235', dark: '55,65,81' },
+              'gold':     { name: 'Gold',     light: '250,237,203', dark: '85,70,30' },
+              'copper':   { name: 'Copper',   light: '248,222,209', dark: '106,64,48' },
+              'bronze':   { name: 'Bronze',   light: '222,205,170', dark: '100,80,45' },
+              'graphite': { name: 'Graphite', light: '110,110,120', dark: '40,40,45' }
+          }
+      }
+  };
+  
   /* ---------- UTILS ---------- */
   function resizeCanvas(cv){
     cv.style.width = window.innerWidth+'px';
@@ -1009,8 +1091,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
     store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); store('endlessEnabled',enableEndless.checked);
-    // REMOVED: appName, logoTheme, fontSize, fontFamily
     store('darkMode',document.documentElement.classList.contains('dark')); store('glassOpacity', glassOpacity.value);
+    store('uiMaterial', uiMaterialSelect.value);
+    store('uiStyle', uiStyleSelect.value);
+    store('acrylicGrain', acrylicGrainSlider.value);
+    store('acrylicDepth', acrylicDepthSlider.value);
+    store('enableCustomBackground', enableCustomBackground.checked);
     store('ambianceEnabled', enableAmbiance.checked);
     store('ambianceEffect', ambianceSelect.value);
     store('snowDensity', snowDensity.value); store('snowSize', snowSize.value); store('snowSpeed', snowSpeed.value);
@@ -1025,7 +1111,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('seconds',seconds);
     store('naturalSlide', enableNaturalSlide.checked);
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
-    store('clockDetail', clockDetail.value); store('clockFontFamily', clockFontFamily.value);
+    store('clockDetail', clockDetail.value);
     store('advancedMode', developerModeToggle.checked);
     store('hasLaunchedBefore', 'true');
     localStorage.setItem('callcheckpoints.savedPatterns', JSON.stringify(savedPatterns));
@@ -1057,8 +1143,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     enableSecCounter.checked = (get('secCounter','false')==='true'); enableClickCounter.checked = (get('clickCounter','false')==='true');
     totalClicks = parseInt(get('clickCount','0'),10)||0; seconds = parseInt(get('seconds','0'),10)||0;
     if(get('darkMode','false')==='true'){ document.documentElement.classList.add('dark'); darkToggle.textContent='☀️ Light Mode'; }
-    // REMOVED: appName, logoTheme, fontSize, fontFamily loading
     glassOpacity.value = get('glassOpacity', '75');
+    uiMaterialSelect.value = get('uiMaterial', 'glass');
+    populateStyleSelector(uiMaterialSelect.value);
+    uiStyleSelect.value = get('uiStyle', 'default');
+    acrylicGrainSlider.value = get('acrylicGrain', '20');
+    acrylicDepthSlider.value = get('acrylicDepth', '30');
+    enableCustomBackground.checked = (get('enableCustomBackground', 'false') === 'true');
     enableAmbiance.checked = (get('ambianceEnabled', 'false') === 'true');
     ambianceSelect.value = get('ambianceEffect', 'none');
     snowDensity.value = get('snowDensity', '100'); snowSize.value = get('snowSize', '20'); snowSpeed.value = get('snowSpeed', '30');
@@ -1073,7 +1164,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     gradientSpinSpeed.value = get('gradientSpinSpeed', '10');
     enableNaturalSlide.checked = (get('naturalSlide','true')==='true'); slideSpeed.value = get('slideSpeed','800');
     enableClock.checked = (get('clockEnabled', 'false')==='true'); clockPosition.value = get('clockPosition', 'pos-top-right');
-    clockDetail.value = get('clockDetail', 'dateTime'); clockFontFamily.value = get('clockFontFamily', 'system-ui, sans-serif');
+    clockDetail.value = get('clockDetail', 'dateTime');
     developerModeToggle.checked = (get('advancedMode', get('developerMode', 'false')) === 'true'); // Support old key for migration
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
@@ -1098,10 +1189,10 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function applyAllSettings() {
-    updatePercentages(); syncColorControlVisibility(); syncWindControls(); applyGlassOpacity();
+    updatePercentages(); syncColorControlVisibility(); syncWindControls(); applyGlassOpacity(); applyMaterialStyle(); applyAcrylicGrain(); applyAcrylicDepth();
     updateWallpaper(); applyClockSettings(); updateCountersVisibility(); applyAmbianceSettings(); renderPatternsList();
     syncAnimationSettingsUI(); applyLogoTheme();
-    populatePresetSelector(animationStyleSelect.value);
+    syncMaterialControlsVisibility(); syncCustomBackgroundVisibility();
     clickCount.textContent = totalClicks; updateSecondCounter(); applySlideSpeed();
     gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none';
     bubbleLifeSlider.dispatchEvent(new Event('input'));
@@ -1124,15 +1215,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   function applyLogoTheme() {
       const h1 = appTitle;
       
-      // Reset all styles and classes to default state
       h1.style.fontFamily = ''; h1.style.fontWeight = ''; h1.style.color = '';
       h1.style.textShadow = ''; h1.style.letterSpacing = ''; h1.className = '';
-      h1.innerHTML = ''; // Clear previous content
+      h1.innerHTML = '';
 
       titleWrap.classList.remove('custom-logo', 'no-glass');
       titleWrap.classList.add('glass');
 
-      // Set default theme
       h1.style.fontFamily = 'system-ui, sans-serif';
       h1.style.fontWeight = '700';
       h1.style.color = 'var(--text)';
@@ -1140,23 +1229,101 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   /* ---------- Appearance ---------- */
-  // REMOVED: applyFontSettings() function
+    function populateStyleSelector(material) {
+        uiStyleSelect.innerHTML = '';
+        const styles = materialPresets[material]?.styles || {};
+        for (const [key, value] of Object.entries(styles)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = value.name;
+            uiStyleSelect.appendChild(option);
+        }
+    }
+
+    function syncMaterialControlsVisibility() {
+        const material = uiMaterialSelect.value;
+        opacityControlsWrapper.style.display = material === 'glass' ? 'flex' : 'none';
+        acrylicControlsWrapper.style.display = 'none';
+    }
+
+  function applyMaterialStyle() {
+    const material = uiMaterialSelect.value;
+    const style = uiStyleSelect.value;
+    const isDark = document.documentElement.classList.contains('dark');
+    const root = document.documentElement;
+
+    document.querySelectorAll('.glass').forEach(el => {
+        el.classList.remove('acrylic');
+        el.classList.toggle('metal', material === 'metal');
+    });
+
+    const preset = materialPresets[material]?.styles[style];
+    if (!preset) return;
+    
+    const rgbString = isDark ? preset.dark : preset.light;
+    
+    if (material === 'metal') {
+        root.style.setProperty('--glass-tint', rgbString);
+        root.style.setProperty('--glass-alpha', 1);
+        root.style.setProperty('--glass-backdrop-blur', '0px');
+        root.style.setProperty('--glass-backdrop-sat', '100%');
+    } else { // glass
+        root.style.setProperty('--glass-tint', rgbString);
+        root.style.setProperty('--glass-backdrop-blur', isDark ? '10px' : '8px');
+        root.style.setProperty('--glass-backdrop-sat', isDark ? '160%' : '150%');
+        applyGlassOpacity(); // Restore variable opacity
+    }
+  }
+
+    function applyAcrylicGrain() {
+        const val = parseInt(acrylicGrainSlider.value, 10);
+        const opacity = (val / 100) * 0.15; // Max opacity 0.15
+        document.documentElement.style.setProperty('--acrylic-grain-opacity', opacity.toFixed(3));
+    }
+
+    function applyAcrylicDepth() {
+        const val = parseInt(acrylicDepthSlider.value, 10);
+        const strength = (val / 100) * 4; // Max depth 4px
+        document.documentElement.style.setProperty('--acrylic-depth-strength', `${strength.toFixed(1)}px`);
+    }
 
   function applyGlassOpacity(){
-    const val = Math.max(0, Math.min(100, parseInt(glassOpacity.value,10)||75));
+    const val = Math.max(10, Math.min(100, parseInt(glassOpacity.value,10)||75));
     const alpha = (val/100).toFixed(2);
     document.documentElement.style.setProperty('--glass-alpha', alpha);
     pct.glass.textContent = val + '%';
   }
-  function resetGlassOpacityToDefault(){
+
+  function resetUiStyleToDefault(){
+    uiMaterialSelect.value = 'glass';
+    populateStyleSelector('glass');
+    uiStyleSelect.value = 'default';
+    
     const isDark = document.documentElement.classList.contains('dark');
-    const defaultVal = Math.round((isDark ? 0.55 : 0.75) * 100);
+    const defaultVal = isDark ? 55 : 75;
     glassOpacity.value = defaultVal;
-    applyGlassOpacity();
+    acrylicGrainSlider.value = 20;
+    acrylicDepthSlider.value = 30;
+
+    applyMaterialStyle();
+    applyAcrylicGrain();
+    applyAcrylicDepth();
+    syncMaterialControlsVisibility();
   }
 
   /* ---------- Wallpaper ---------- */
+  function syncCustomBackgroundVisibility() {
+    customBackgroundOptions.style.display = enableCustomBackground.checked ? 'flex' : 'none';
+    updateWallpaper();
+  }
+
   function updateWallpaper() {
+    if (!enableCustomBackground.checked) {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = '';
+        return;
+    }
+
     const type = backgroundType.value;
     imageWallpaperControls.style.display = type === 'image' ? 'flex' : 'none';
     colorWallpaperControls.style.display = type === 'color' ? 'flex' : 'none';
@@ -1313,12 +1480,15 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     document.documentElement.classList.toggle('dark');
     const isDark = document.documentElement.classList.contains('dark');
     darkToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-    applyGlassOpacity();
+    applyMaterialStyle();
     applyLogoTheme();
     saveData();
   };
 
   /* ---------- Counters & Clock ---------- */
+  function syncClockOptionsVisibility() {
+      clockOptionsWrapper.style.display = enableClock.checked ? 'flex' : 'none';
+  }
   function updateCountersVisibility(){ 
     secCounter.style.display = enableSecCounter.checked ? 'flex' : 'none'; 
     clickCounter.style.display = enableClickCounter.checked ? 'block' : 'none';
@@ -1351,10 +1521,10 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
   function applyClockSettings(){
     clockDisplay.style.display = enableClock.checked ? 'block' : 'none';
+    syncClockOptionsVisibility();
     if (enableClock.checked) startClock(); else stopClock();
     const positionClass = clockPosition.value || 'pos-top-right';
     clockDisplay.className = `clock-display glass ${positionClass}`;
-    clockDisplay.style.fontFamily = clockFontFamily.value || 'system-ui, sans-serif';
     versionTag.classList.toggle('pos-bottom-right', positionClass === 'pos-bottom-right');
   }
 
@@ -1378,12 +1548,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     return {
       animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
-      toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked },
-      appearance: { glassOpacity: glassOpacity.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
+      toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
+      appearance: { glassOpacity: glassOpacity.value, uiMaterial: uiMaterialSelect.value, uiStyle: uiStyleSelect.value, acrylicGrain: acrylicGrainSlider.value, acrylicDepth: acrylicDepthSlider.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
       slideSpeed: slideSpeed.value,
-      clock: { position: clockPosition.value, detail: clockDetail.value, font: clockFontFamily.value },
-      sections: { checkmark: secCheckmarkAnims.querySelector('details').open, animStyle: secAnimStyle.open, wind: secWind.open, patterns: secPatterns.open, appearance: secAppearance.querySelector('details').open, utility: secUtility.querySelector('details').open }
+      clock: { position: clockPosition.value, detail: clockDetail.value },
+      sections: { checkmark: secCheckmarkAnims.querySelector('details').open, animStyle: secAnimStyle.open, wind: secWind.open, patterns: secPatterns.open, appearance: secAppearance.querySelector('details').open, background: secBackground.open, utility: secUtility.querySelector('details').open }
     };
   }
 
@@ -1406,9 +1576,15 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           enableNaturalSlide.checked = s.toggles.naturalSlide;
           enableClock.checked = s.toggles.clock;
           enableAmbiance.checked = s.toggles.ambiance;
+          enableCustomBackground.checked = s.toggles.customBackground;
       }
       if (s.appearance) {
           glassOpacity.value = s.appearance.glassOpacity;
+          uiMaterialSelect.value = s.appearance.uiMaterial;
+          populateStyleSelector(s.appearance.uiMaterial);
+          uiStyleSelect.value = s.appearance.uiStyle;
+          acrylicGrainSlider.value = s.appearance.acrylicGrain;
+          acrylicDepthSlider.value = s.appearance.acrylicDepth;
           document.documentElement.classList.toggle('dark', s.appearance.dark);
           darkToggle.textContent = s.appearance.dark ? '☀️ Light Mode' : '🌙 Dark Mode';
           backgroundType.value = s.appearance.backgroundType; wallpaperFit.value = s.appearance.wallpaperFit;
@@ -1426,12 +1602,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           matrixDensity.value = s.ambiance.matrixDensity; matrixSize.value = s.ambiance.matrixSize; matrixSpeed.value = s.ambiance.matrixSpeed; matrixColor.value = s.ambiance.matrixColor;
       }
       if (s.clock) {
-          clockPosition.value = s.clock.position; clockDetail.value = s.clock.detail; clockFontFamily.value = s.clock.font;
+          clockPosition.value = s.clock.position; clockDetail.value = s.clock.detail;
       }
       if (s.sections) {
         secCheckmarkAnims.querySelector('details').open = s.sections.checkmark; secAnimStyle.open = s.sections.animStyle;
         secWind.open = s.sections.wind; secPatterns.open = s.sections.patterns;
-        secAppearance.querySelector('details').open = s.sections.appearance; secUtility.querySelector('details').open = s.sections.utility;
+        secAppearance.querySelector('details').open = s.sections.appearance; secBackground.open = s.sections.background;
+        secUtility.querySelector('details').open = s.sections.utility;
       }
       slideSpeed.value = s.slideSpeed || '800';
       applyAllSettings();
@@ -1446,7 +1623,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     pct.anim.textContent=pctOf(animIntensity)+'%'; pct.escale.textContent=pctOf(emissionScale)+'%'; pct.hold.textContent=pctOf(holdRate)+'%'; 
     pct.size.textContent=pctOf(bubbleSize)+'%'; pct.speed.textContent=pctOf(bubbleSpeed)+'%';
     pct.windI.textContent=pctOf(windIntensity)+'%'; pct.windDir.textContent=pctOf(windDirection)+'%';
-    pct.glass.textContent=Math.max(10, Math.min(95, parseInt(glassOpacity.value,10)||75)) + '%'; 
+    pct.glass.textContent=Math.max(10, Math.min(100, parseInt(glassOpacity.value,10)||75)) + '%'; 
     pct.slide.textContent = slideSpeed.value + 'ms';
     pct.snowDensity.textContent=pctOf(snowDensity)+'%'; pct.snowSize.textContent=pctOf(snowSize)+'%'; pct.snowSpeed.textContent=pctOf(snowSpeed)+'%';
     pct.orbsDensity.textContent=pctOf(orbsDensity)+'%'; pct.orbsSize.textContent=pctOf(orbsSize)+'%'; pct.orbsSpeed.textContent=pctOf(orbsSpeed)+'%';
@@ -2034,7 +2211,14 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     el.addEventListener('change', saveData);
   });
 
-  document.querySelectorAll('input[type=range]:not(#animIntensity, #emissionScale, #holdRate, #bubbleSize, #bubbleSpeed, #bubbleLifeSlider, #windIntensity, #windDirection)').forEach(el=> el.addEventListener('input', ()=>{ if(el===glassOpacity) applyGlassOpacity(); if(el===slideSpeed) applySlideSpeed(); updatePercentages(); saveData(); }));
+  document.querySelectorAll('input[type=range]:not(#animIntensity, #emissionScale, #holdRate, #bubbleSize, #bubbleSpeed, #bubbleLifeSlider, #windIntensity, #windDirection)').forEach(el=> el.addEventListener('input', ()=>{ 
+      if(el===glassOpacity) applyGlassOpacity(); 
+      if(el===slideSpeed) applySlideSpeed();
+      if(el===acrylicGrainSlider) applyAcrylicGrain();
+      if(el===acrylicDepthSlider) applyAcrylicDepth();
+      updatePercentages(); 
+      saveData();
+  }));
   
   animationStyleSelect.addEventListener('change', (e) => {
     populatePresetSelector(e.target.value);
@@ -2046,21 +2230,38 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     saveData();
   });
 
-  document.querySelectorAll('select:not(#animationStyleSelect):not(#animationPresetSelect):not(#shapeSelect):not(#bubbleOutline):not(#colorMode):not(#windPattern)').forEach(el=> el.addEventListener('change', ()=>{ 
-      // REMOVED: logoThemeSelect, fontSizeSelect, fontFamilySelect handlers
+    uiMaterialSelect.addEventListener('change', () => {
+        populateStyleSelector(uiMaterialSelect.value);
+        applyMaterialStyle();
+        syncMaterialControlsVisibility();
+        saveData();
+    });
+
+    uiStyleSelect.addEventListener('change', () => {
+        applyMaterialStyle();
+        saveData();
+    });
+
+
+  document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiMaterialSelect, #uiStyleSelect)').forEach(el=> el.addEventListener('change', ()=>{ 
       if(el===ambianceSelect) applyAmbianceSettings();
       if(el===backgroundType || el===colorWallpaperType) updateWallpaperUI();
       if(el===wallpaperFit){ const data = localStorage.getItem('callcheckpoints.wallpaperDataUrl'); if(data){ applyImageWallpaper(data, wallpaperFit.value); } } 
+      if(el===clockPosition || el===clockDetail) applyClockSettings();
       saveData(); 
   }));
-  // REMOVED: appNameInput and appNameResetBtn event listeners
+
   [wallpaperColor1, wallpaperColor2, wallpaperColor3, orbsColor, matrixColor].forEach(el => el.addEventListener('input', ()=>{ if (el.id.startsWith('wallpaper')) applyColorWallpaper(); saveData(); }));
   [gradientAngle, gradientSpread].forEach(el => el.addEventListener('input', () => { if (el === gradientAngle && !gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } applyColorWallpaper(); updatePercentages(); saveData(); }));
   gradientSpinToggle.addEventListener('change', ()=>{ if(gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } else { gradientAngle.value = Math.round(gradientAnimationAngle); updatePercentages(); } gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none'; saveData(); });
-  [enableClock, clockPosition, clockDetail, clockFontFamily].forEach(el => el.addEventListener('change', ()=>{ applyClockSettings(); saveData(); }));
-  [enableNaturalSlide, enableAmbiance, containParticles].forEach(el => el.addEventListener('change', ()=>{ if (el === enableAmbiance) applyAmbianceSettings(); saveData(); }));
+  enableClock.addEventListener('change', ()=>{ applyClockSettings(); saveData(); });
+  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground].forEach(el => el.addEventListener('change', ()=>{ 
+      if (el === enableAmbiance) applyAmbianceSettings(); 
+      if (el === enableCustomBackground) syncCustomBackgroundVisibility();
+      saveData(); 
+  }));
   developerModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('callcheckpoints.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(!developerModeToggle.checked); saveData(); });
-  glassResetBtn.addEventListener('click', ()=>{ resetGlassOpacityToDefault(); saveData(); });
+  uiStyleResetBtn.addEventListener('click', ()=>{ resetUiStyleToDefault(); saveData(); });
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
   panicResetBtn.addEventListener('click', panicReset);
   savePatternBtn.addEventListener('click', saveCurrentPattern);
@@ -2099,7 +2300,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   wallpaperFile.addEventListener('change', ()=>{
     const file = wallpaperFile.files && wallpaperFile.files[0]; if(!file) return;
     
-    // FIX: Add file size validation
     const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
     if (file.size > MAX_SIZE) {
         alert('Image is too large (over 5 MB). Please choose a smaller file.');
