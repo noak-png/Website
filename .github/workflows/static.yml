@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v1.3 (with Pattern Export)</title>
+<title>MySparkList</title>
 
 <style>
 /* ========== Base Theme Variables ========== */
@@ -341,18 +341,267 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 @media (max-width:600px){
   .card { max-height: calc(100vh - 160px); }
 }
+
+/* ========== Welcome Prompt ========== */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.welcome-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+.welcome-prompt {
+  background: var(--card);
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+.welcome-prompt .remove {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+.welcome-overlay.visible .welcome-prompt {
+    transform: scale(1);
+}
+.welcome-prompt h2 {
+  margin-top: 0;
+  font-size: 24px;
+}
+.welcome-prompt p {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.list-type-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.list-type-option {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.list-type-option:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.list-type-option h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+.list-type-option p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+.list-type-option:hover p {
+  color: rgba(255, 255, 255, 0.8);
+}
+.list-name-prompt {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.list-name-prompt input {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+    font-size: 16px;
+}
+.list-name-prompt button {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    background: var(--accent);
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 16px;
+}
+
+/* ========== Multi-list Tabs ========== */
+.tab-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1050;
+}
+.tabs-container {
+  display: flex;
+  gap: 8px;
+}
+.tab {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+.tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.tab-name {
+  display: inline-block;
+}
+.tab-edit-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.tab-input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  outline: none;
+}
+.tab-edit-container .remove {
+    padding: 2px 6px;
+    font-size: 14px;
+    line-height: 1;
+}
+.tab.active .tab-input {
+  color: white;
+}
+.add-tab-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 24px;
+  line-height: 36px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+/* ========== Tab Context Menu ========== */
+#tabContextMenu {
+    position: fixed;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    z-index: 3000;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+}
+.context-menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.context-menu-item:hover {
+    background: var(--accent);
+    color: white;
+}
+.context-menu-item.danger:hover {
+    background: var(--danger);
+}
+.context-color-input {
+    /* Visually hide the color input but keep it functional */
+    opacity: 0;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: none;
+    position: absolute;
+    right: 12px; /* Position it under the cursor */
+}
 </style>
 </head>
 <body>
+  <div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-prompt glass" id="welcomePrompt">
+      <div id="listTypeStep">
+          <h2>Welcome to MySparkList!</h2>
+          <p>What kind of list are you creating today?</p>
+          <div class="list-type-options">
+            <div class="list-type-option" data-type="General Tasks">
+              <h3>General Tasks</h3>
+              <p>Cleaning, daily to-dos, errands, etc.</p>
+            </div>
+            <div class="list-type-option" data-type="Milestones">
+              <h3>Milestones</h3>
+              <p>Life goals, long-term objectives, etc.</p>
+            </div>
+            <div class="list-type-option" data-type="Educational">
+              <h3>Educational</h3>
+              <p>Study topics, learning goals, etc.</p>
+            </div>
+            <div class="list-type-option" data-type="Call Behaviors">
+              <h3>Call Behaviors</h3>
+              <p>For call center agents and support.</p>
+            </div>
+          </div>
+      </div>
+      <div id="listNameStep" style="display: none;">
+          <button class="remove" id="backToListTypeBtn" aria-label="Go back">✖</button>
+          <h2>Name Your List</h2>
+          <p id="listNamePromptText">Give your new list a name.</p>
+          <div class="list-name-prompt">
+              <input type="text" id="newListNameInput" placeholder="E.g., 'Weekly Chores'">
+              <button id="createListBtn">Create List</button>
+          </div>
+      </div>
+    </div>
+  </div>
+
   <canvas id="ambianceCanvas"></canvas>
 
   <div class="app" id="app">
-    <div class="title-wrap glass" id="titleWrap"><h1 id="appTitle">Call Checkpoints</h1></div>
+    <div class="title-wrap glass" id="titleWrap"><h1 id="appTitle">MySparkList</h1></div>
 
     <main class="card glass" role="main" aria-label="Checklist">
       <div class="addbar">
-        <input id="newItem" type="text" placeholder="Add a checkpoint…" aria-label="New checkpoint" />
-        <button id="addBtn" aria-label="Add checkpoint">Add</button>
+        <input id="newItem" type="text" placeholder="Add an item…" aria-label="New item" />
+        <button id="addBtn" aria-label="Add item">Add</button>
       </div>
       <ul id="list" aria-live="polite"></ul>
     </main>
@@ -360,10 +609,24 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     <canvas id="bubblesCanvas"></canvas>
 
     <div class="controls glass" id="controlsBar">
-      <button id="clearBtn" class="ctrl clear-btn"><strong>New Call</strong> (Clear)</button>
+      <button id="clearBtn" class="ctrl clear-btn"><strong>Clear List</strong></button>
       <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark Mode</button>
       <button id="menuBtn" class="ctrl menu-btn" aria-controls="menuPanel" aria-expanded="false">Menu</button>
     </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tabs-container" id="tabsContainer"></div>
+    <button class="add-tab-btn" id="addTabBtn">+</button>
+  </div>
+
+  <div id="tabContextMenu" style="display: none;">
+    <div class="context-menu-item" id="ctxRename">Rename</div>
+    <div class="context-menu-item" id="ctxSetColor">
+        Set Color
+        <input type="color" id="ctxColorInput" class="context-color-input">
+    </div>
+    <div class="context-menu-item danger" id="ctxDelete">Delete List</div>
   </div>
 
   <div class="menu-panel glass" id="menuPanel" aria-hidden="true">
@@ -806,7 +1069,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
             </summary>
             <div class="content">
                 <div class="stack">
-                    <label><input type="checkbox" id="enableSecCounter"> Call Second Counter</label>
+                    <label><input type="checkbox" id="enableSecCounter"> Second Counter</label>
                     <label><input type="checkbox" id="enableClickCounter"> Click Counter</label>
                     <button id="resetClickCounter" type="button">Reset Click Counter</button>
                 </div>
@@ -875,6 +1138,27 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const menuBtn = document.getElementById('menuBtn');
   const menuPanel = document.getElementById('menuPanel');
   const closeMenuNotch = document.getElementById('closeMenuNotch');
+  
+  // Welcome Prompt
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const welcomePrompt = document.getElementById('welcomePrompt');
+  const listTypeStep = document.getElementById('listTypeStep');
+  const listNameStep = document.getElementById('listNameStep');
+  const listTypeOptions = document.querySelectorAll('.list-type-option');
+  const newListNameInput = document.getElementById('newListNameInput');
+  const createListBtn = document.getElementById('createListBtn');
+  const backToListTypeBtn = document.getElementById('backToListTypeBtn');
+
+  // Tabs
+  const tabsContainer = document.getElementById('tabsContainer');
+  const addTabBtn = document.getElementById('addTabBtn');
+  
+  // Tab Context Menu
+  const tabContextMenu = document.getElementById('tabContextMenu');
+  const ctxRename = document.getElementById('ctxRename');
+  const ctxSetColor = document.getElementById('ctxSetColor');
+  const ctxColorInput = document.getElementById('ctxColorInput');
+  const ctxDelete = document.getElementById('ctxDelete');
 
   // Animation Style
   const animationStyleSelect = document.getElementById('animationStyleSelect');
@@ -1074,6 +1358,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   let gradientAnimationAngle = 0;
   let screenFlash = 0;
   let lightningBolts = [];
+  
+  let lists = [];
+  let activeListIndex = 0;
+  let listCreationCallback = null;
+  let temp_listType = '';
+  let contextListIndex = -1;
 
   const materialPresets = {
       glass: {
@@ -1109,16 +1399,18 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   function lerp(a,b,t){ return a+(b-a)*t; }
   function lerpColor(hexA,hexB,t){ const A=hexToRgb(hexA), B=hexToRgb(hexB); if (!A || !B) return '#000000'; return rgbToHex(lerp(A.r,B.r,t), lerp(A.g,B.g,t), lerp(A.b,B.b,t)); }
   function gaussianRand(){ let u=0,v=0; while(u===0) u=Math.random(); while(v===0) v=Math.random(); return Math.sqrt(-2.0*Math.log(u))*Math.cos(2.0*Math.PI*v); }
+  function isColorDark(hexColor) {
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) return false;
+    // Formula for perceived brightness (luminance)
+    const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+    return luminance < 0.5;
+  }
 
   function saveData(){
-    localStorage.setItem('callcheckpoints.list', JSON.stringify(
-      [...list.querySelectorAll('li')].map(li=>({
-        text: li.querySelector('.text').textContent,
-        done: li.querySelector('input[type=checkbox]').checked
-      }))
-    ));
-
-    const store = (k,v)=>localStorage.setItem('callcheckpoints.'+k, String(v));
+    localStorage.setItem('mysparklist.lists', JSON.stringify(lists));
+    localStorage.setItem('mysparklist.activeListIndex', activeListIndex);
+    const store = (k,v)=>localStorage.setItem('mysparklist.'+k, String(v));
 
     store('animationStyle', animationStyleSelect.value);
     store('animIntensity',animIntensity.value); store('emissionScale',emissionScale.value); store('holdRate',holdRate.value);
@@ -1157,7 +1449,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('clockDetail', clockDetail.value);
     store('advancedMode', developerModeToggle.checked);
     store('hasLaunchedBefore', 'true');
-    localStorage.setItem('callcheckpoints.savedPatterns', JSON.stringify(savedPatterns));
+    localStorage.setItem('mysparklist.savedPatterns', JSON.stringify(savedPatterns));
 
     const detailsElements = document.querySelectorAll('.menu-panel details');
     detailsElements.forEach(el => {
@@ -1168,10 +1460,28 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function loadData(){
-    const get = (k, fallback) => localStorage.getItem('callcheckpoints.'+k) ?? fallback;
+    const get = (k, fallback) => localStorage.getItem('mysparklist.'+k) ?? fallback;
+    const hasLaunchedBefore = (get('hasLaunchedBefore', 'false') === 'true');
     
-    const data = JSON.parse(get('list', '[]'));
-    data.forEach(d => addItem(d.text, d.done, true));
+    lists = JSON.parse(get('lists', '[]'));
+    activeListIndex = parseInt(get('activeListIndex', '0'), 10);
+    
+    if (lists.length === 0) {
+      if (!hasLaunchedBefore) {
+        showListCreationPrompt(true, (newListData) => {
+            lists.push({ ...newListData, items: [] });
+            activeListIndex = 0;
+            localStorage.setItem('mysparklist.hasLaunchedBefore', 'true');
+            updateUIForActiveList();
+            saveData();
+        });
+      } else {
+        lists = [{ name: 'My First List', type: 'General Tasks', items: [] }];
+        activeListIndex = 0;
+      }
+    }
+    
+    updateUIForActiveList();
 
     animationStyleSelect.value = get('animationStyle', 'bubbles');
     animIntensity.value = get('animIntensity', '6'); emissionScale.value = get('emissionScale', '70'); holdRate.value = get('holdRate', '35');
@@ -1185,7 +1495,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     enableAnimations.checked = (get('animationsEnabled','true')==='true'); enableEndless.checked = (get('endlessEnabled','false')==='true');
     enableSecCounter.checked = (get('secCounter','false')==='true'); enableClickCounter.checked = (get('clickCounter','false')==='true');
     totalClicks = parseInt(get('clickCount','0'),10)||0; seconds = parseInt(get('seconds','0'),10)||0;
-    if(get('darkMode','false')==='true'){ document.documentElement.classList.add('dark'); darkToggle.textContent='☀️ Light Mode'; }
+    
+    const darkModePreference = get('darkMode', hasLaunchedBefore ? 'false' : 'true');
+    if(darkModePreference === 'true'){ 
+        document.documentElement.classList.add('dark'); 
+        darkToggle.textContent='☀️ Light Mode'; 
+    }
+
     glassOpacity.value = get('glassOpacity', '75');
     glassBlurSlider.value = get('glassBlur', '8');
     glassSaturationSlider.value = get('glassSaturation', '150');
@@ -1226,11 +1542,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 
     applyAllSettings();
     
-    const hasLaunched = (get('hasLaunchedBefore', 'false') === 'true');
-    if (!hasLaunched) {
-        loadPreset(animationStyleSelect.value, 0);
-    }
-    updateSectionVisibility(hasLaunched);
+    updateSectionVisibility(hasLaunchedBefore);
 
     if (!developerModeToggle.checked) {
       applySimplifiedMode(true, true);
@@ -1289,7 +1601,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       h1.style.fontFamily = 'system-ui, sans-serif';
       h1.style.fontWeight = '700';
       h1.style.color = 'var(--text)';
-      h1.textContent = 'Call Checkpoints';
+      h1.textContent = 'MySparkList';
   }
 
   /* ---------- Appearance ---------- */
@@ -1433,7 +1745,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     if (type === 'theme') {
       clearAllBackgroundStyles();
     } else if (type === 'image') {
-      const wpData = localStorage.getItem('callcheckpoints.wallpaperDataUrl');
+      const wpData = localStorage.getItem('mysparklist.wallpaperDataUrl');
       if (wpData) applyImageWallpaper(wpData, wallpaperFit.value);
       else clearImageWallpaper();
     } else if (type === 'color') {
@@ -1470,7 +1782,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       const endPos = 100 + spreadValue;
       const angle = gradientSpinToggle.checked ? gradientAnimationAngle : gradientAngle.value;
       document.body.style.backgroundColor = '';
-      document.body.style.backgroundImage = `linear-gradient(${angle}deg, ${wallpaperColor2.value} ${-spread}%, ${wallpaperColor3.value} ${endPos}%)`;
+      document.body.style.backgroundImage = `linear-gradient(${angle}deg, ${wallpaperColor2.value} ${startPos}%, ${wallpaperColor3.value} ${endPos}%)`;
     }
   }
 
@@ -1547,6 +1859,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
             }
         }, parseInt(completionSpeed.value, 10) + 50);
       }
+      
+      const itemText = li.querySelector('.text').textContent;
+      const currentList = lists[activeListIndex];
+      const itemIndex = Array.from(list.children).indexOf(li);
+      currentList.items[itemIndex].done = cb.checked;
+      
       saveData();
     };
 
@@ -1557,12 +1875,26 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     });
     ['pointerup','pointercancel','pointerleave'].forEach(ev=>{ cb.addEventListener(ev,(e)=>{ stopParticleStream(e.pointerId); },{passive:true}); });
 
-    rm.onclick = ()=>{ streams = streams.filter(s=>!(s.el===cb)); animateRemove(li, saveData); };
+    rm.onclick = ()=>{ 
+      const itemIndex = Array.from(list.children).indexOf(li);
+      lists[activeListIndex].items.splice(itemIndex, 1);
+      
+      streams = streams.filter(s=>!(s.el===cb)); 
+      animateRemove(li, saveData); 
+    };
     li.ondragstart = e=>{ li.classList.add('dragging'); e.dataTransfer.setData('text/plain',''); };
     li.ondragend = ()=> li.classList.remove('dragging');
   }
 
-  addBtn.onclick = ()=>{ if(input.value.trim()){ addItem(input.value.trim()); input.value=''; saveData(); } };
+  addBtn.onclick = ()=>{ 
+    if(input.value.trim()){ 
+      const newItem = { text: input.value.trim(), done: false };
+      lists[activeListIndex].items.push(newItem);
+      addItem(newItem.text, newItem.done); 
+      input.value=''; 
+      saveData(); 
+    } 
+  };
   input.onkeydown = e=>{ if(e.key==='Enter') addBtn.click(); };
 
   list.ondragover = e=>{
@@ -1582,8 +1914,19 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   clearBtn.onclick = ()=>{
-    list.querySelectorAll('input[type=checkbox]').forEach(cb=>{ cb.checked=false; cb.dispatchEvent(new Event('change')); });
-    seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter(); saveData();
+    const currentListType = lists[activeListIndex]?.type;
+    
+    if (currentListType === 'Call Behaviors') {
+        lists[activeListIndex].items.forEach(item => item.done = false);
+    } else {
+        lists[activeListIndex].items = [];
+    }
+    renderList();
+    saveData();
+
+    if (currentListType === 'Call Behaviors') {
+        seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter();
+    }
   };
 
   function setMenu(open){
@@ -1927,10 +2270,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function panicReset(){
-      if(confirm("WARNING: Are you sure you want to perform a Panic Reset?\n\nThis will permanently delete all checkpoints, remove your wallpaper, and reset every setting to its factory default.\n\nYour saved animation patterns WILL NOT be deleted.")){
-          list.innerHTML = '';
+      if(confirm("WARNING: Are you sure you want to perform a Panic Reset?\n\nThis will permanently delete all lists and items, remove your wallpaper, and reset every setting to its factory default.\n\nYour saved animation patterns WILL NOT be deleted.")){
           Object.keys(localStorage)
-            .filter(key => key.startsWith('callcheckpoints.') && key !== 'callcheckpoints.savedPatterns')
+            .filter(key => key.startsWith('mysparklist.') && key !== 'mysparklist.savedPatterns')
             .forEach(key => localStorage.removeItem(key));
           location.reload();
       }
@@ -2401,7 +2743,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiStyleSelect)').forEach(el=> el.addEventListener('change', ()=>{ 
       if(el===ambianceSelect) applyAmbianceSettings();
       if(el===backgroundType || el===colorWallpaperType) updateWallpaperUI();
-      if(el===wallpaperFit){ const data = localStorage.getItem('callcheckpoints.wallpaperDataUrl'); if(data){ applyImageWallpaper(data, wallpaperFit.value); } } 
+      if(el===wallpaperFit){ const data = localStorage.getItem('mysparklist.wallpaperDataUrl'); if(data){ applyImageWallpaper(data, wallpaperFit.value); } } 
       if(el===clockPosition || el===clockDetail) applyClockSettings();
       saveData(); 
   }));
@@ -2415,7 +2757,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       if (el === enableCustomBackground) syncCustomBackgroundVisibility();
       saveData(); 
   }));
-  developerModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('callcheckpoints.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(!developerModeToggle.checked); saveData(); });
+  developerModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(!developerModeToggle.checked); saveData(); });
   uiStyleResetBtn.addEventListener('click', ()=>{ resetUiStyleToDefault(); saveData(); });
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
   panicResetBtn.addEventListener('click', panicReset);
@@ -2427,7 +2769,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const date = new Date().toISOString().slice(0, 10);
-    a.download = `call-checkpoints-patterns-${date}.json`;
+    a.download = `mysparklist-patterns-${date}.json`;
     a.href = url;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
@@ -2464,10 +2806,10 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 
     if(!/image\/(jpeg|png|webp)/i.test(file.type)){ alert('Unsupported image type.'); wallpaperFile.value=''; return; }
     const reader = new FileReader();
-    reader.onload = (e)=>{ localStorage.setItem('callcheckpoints.wallpaperDataUrl', e.target.result); updateWallpaper(); saveData(); };
+    reader.onload = (e)=>{ localStorage.setItem('mysparklist.wallpaperDataUrl', e.target.result); updateWallpaper(); saveData(); };
     reader.readAsDataURL(file);
   });
-  wallpaperResetBtn.addEventListener('click', ()=>{ localStorage.removeItem('callcheckpoints.wallpaperDataUrl'); wallpaperFile.value = ''; updateWallpaper(); saveData(); });
+  wallpaperResetBtn.addEventListener('click', ()=>{ localStorage.removeItem('mysparklist.wallpaperDataUrl'); wallpaperFile.value = ''; updateWallpaper(); saveData(); });
   function syncAnimationSettingsUI() {
       const style = animationStyleSelect.value;
       const isBoomerang = style === 'boomerang';
@@ -2481,6 +2823,291 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       else if (isLightning) { bubbleSpeedLabel.textContent = 'Strike Speed'; animIntensityLabel.textContent = 'Bolt Count'; emissionScaleLabel.textContent = 'Branch Spread'; bubbleSizeLabel.textContent = 'Bolt Thickness'; }
       else { bubbleSpeedLabel.textContent = 'Pop'; animIntensityLabel.textContent = 'Density'; emissionScaleLabel.textContent = 'Emission Scale'; bubbleSizeLabel.textContent = 'Size'; }
   }
+
+  /* ---------- List Creation Prompt Logic ---------- */
+  function showListCreationPrompt(isFirstLaunch, callback) {
+      listCreationCallback = callback;
+      document.getElementById('listNamePromptText').textContent = isFirstLaunch 
+          ? "First, let's give your new list a name."
+          : "Give your new list a name.";
+      listTypeStep.style.display = 'block';
+      listNameStep.style.display = 'none';
+      welcomeOverlay.classList.add('visible');
+  }
+
+  function hideListCreationPrompt() {
+      welcomeOverlay.classList.remove('visible');
+  }
+
+  listTypeOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      temp_listType = option.dataset.type;
+      newListNameInput.value = temp_listType;
+      listTypeStep.style.display = 'none';
+      listNameStep.style.display = 'block';
+      newListNameInput.focus();
+      newListNameInput.select();
+    });
+  });
+
+  backToListTypeBtn.addEventListener('click', () => {
+    listNameStep.style.display = 'none';
+    listTypeStep.style.display = 'block';
+  });
+
+  function handleCreateList() {
+      const name = newListNameInput.value.trim();
+      if (name && temp_listType) {
+          if (listCreationCallback) {
+              listCreationCallback({ name, type: temp_listType, items: [] });
+          }
+          hideListCreationPrompt();
+          listCreationCallback = null;
+          temp_listType = '';
+      }
+  }
+
+  createListBtn.addEventListener('click', handleCreateList);
+  newListNameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        handleCreateList();
+    }
+  });
+
+  /* ---------- Multi-list & UI Logic ---------- */
+    const placeholders = {
+        "General Tasks": "Add a task...",
+        "Milestones": "Add a milestone...",
+        "Educational": "Add a learning goal...",
+        "Call Behaviors": "Add a checkpoint..."
+    };
+
+    function updateUIForActiveList() {
+        if (lists.length === 0) {
+            showListCreationPrompt(false, (newListData) => {
+                lists.push(newListData);
+                activeListIndex = 0;
+                updateUIForActiveList();
+                saveData();
+            });
+            document.getElementById('app').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('app').style.display = 'flex';
+
+        if (activeListIndex >= lists.length) {
+            activeListIndex = lists.length - 1;
+        }
+        if (activeListIndex < 0) {
+            activeListIndex = 0;
+        }
+
+        const currentList = lists[activeListIndex];
+        if (!currentList) return;
+
+        input.placeholder = placeholders[currentList.type] || "Add an item...";
+
+        if (currentList.type === 'Call Behaviors') {
+            clearBtn.innerHTML = '<strong>New Call</strong>';
+        } else {
+            clearBtn.innerHTML = '<strong>Clear List</strong>';
+        }
+
+        renderList();
+        renderTabs();
+    }
+
+  function renderList() {
+    list.innerHTML = '';
+    const currentList = lists[activeListIndex];
+    if (currentList && currentList.items) {
+      currentList.items.forEach(item => {
+        addItem(item.text, item.done, true);
+      });
+    }
+  }
+
+  function triggerTabRename(index) {
+    if (index < 0 || index >= lists.length) return;
+    
+    const tabEl = tabsContainer.querySelector(`.tab[data-index='${index}']`);
+    const tabNameSpan = tabEl ? tabEl.querySelector('.tab-name') : null;
+    
+    if (!tabEl || !tabNameSpan) return;
+
+    const originalName = lists[index].name;
+    
+    const editContainer = document.createElement('div');
+    editContainer.className = 'tab-edit-container';
+
+    const inputEl = document.createElement('input');
+    inputEl.type = 'text';
+    inputEl.className = 'tab-input';
+    inputEl.value = originalName;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'remove';
+    deleteBtn.textContent = '✖';
+    
+    // Prevent blur when clicking the delete button
+    deleteBtn.addEventListener('mousedown', e => e.preventDefault());
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteList(index);
+    });
+
+    editContainer.appendChild(inputEl);
+    editContainer.appendChild(deleteBtn);
+    tabNameSpan.replaceWith(editContainer);
+    
+    inputEl.focus();
+    inputEl.select();
+
+    const finishEditing = () => {
+        const newName = inputEl.value.trim();
+        lists[index].name = newName || "Untitled List";
+        
+        const newTabNameSpan = document.createElement('span');
+        newTabNameSpan.className = 'tab-name';
+        newTabNameSpan.textContent = lists[index].name;
+        editContainer.replaceWith(newTabNameSpan);
+        
+        saveData();
+    };
+
+    inputEl.addEventListener('blur', finishEditing);
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            inputEl.blur();
+        } else if (e.key === 'Escape') {
+            inputEl.value = originalName;
+            inputEl.blur();
+        }
+    });
+  }
+
+  function renderTabs() {
+    tabsContainer.innerHTML = '';
+    lists.forEach((listData, index) => {
+      const tab = document.createElement('div');
+      tab.className = 'tab';
+      if (index === activeListIndex) {
+        tab.classList.add('active');
+      }
+      tab.dataset.index = index;
+      
+      const tabName = document.createElement('span');
+      tabName.className = 'tab-name';
+      tabName.textContent = listData.name;
+      tab.appendChild(tabName);
+
+      if (listData.color) {
+          tab.style.backgroundColor = listData.color;
+          const useWhiteText = isColorDark(listData.color);
+          tab.style.color = useWhiteText ? '#ffffff' : 'var(--text)';
+          tab.style.borderColor = listData.color;
+          if (index === activeListIndex) {
+              tab.style.color = '#ffffff';
+          }
+      } else if (index === activeListIndex) {
+          tab.style.backgroundColor = '';
+          tab.style.color = '';
+          tab.style.borderColor = '';
+      }
+      
+      tab.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+            activeListIndex = index;
+            updateUIForActiveList();
+            saveData();
+        }
+      });
+      
+      tab.addEventListener('dblclick', () => triggerTabRename(index));
+
+      tab.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        contextListIndex = index;
+        showContextMenu(e.clientX, e.clientY);
+      });
+
+      tabsContainer.appendChild(tab);
+    });
+  }
+
+  addTabBtn.addEventListener('click', () => {
+    showListCreationPrompt(false, (newListData) => {
+        lists.push(newListData);
+        activeListIndex = lists.length - 1;
+        updateUIForActiveList();
+        saveData();
+    });
+  });
+
+  /* ---------- Tab Management Logic ---------- */
+  function deleteList(index) {
+    if (index < 0 || index >= lists.length) return;
+    
+    const listNameToDelete = lists[index].name;
+    if (confirm(`Are you sure you want to permanently delete the list "${listNameToDelete}"?`)) {
+        lists.splice(index, 1);
+        
+        if (activeListIndex >= index && activeListIndex > 0) {
+            activeListIndex--;
+        }
+        
+        updateUIForActiveList();
+        saveData();
+    }
+  }
+
+  function showContextMenu(x, y) {
+    tabContextMenu.style.left = `${x}px`;
+    tabContextMenu.style.top = `${y}px`;
+    tabContextMenu.style.display = 'flex';
+  }
+
+  function hideContextMenu() {
+    tabContextMenu.style.display = 'none';
+    contextListIndex = -1;
+  }
+
+  document.addEventListener('click', (e) => {
+      if (!tabContextMenu.contains(e.target)) {
+          hideContextMenu();
+      }
+  });
+  document.addEventListener('contextmenu', (e) => {
+      if (!e.target.closest('.tab')) {
+          hideContextMenu();
+      }
+  });
+
+  ctxRename.addEventListener('click', () => {
+    if (contextListIndex !== -1) {
+        triggerTabRename(contextListIndex);
+    }
+  });
+
+  ctxSetColor.addEventListener('click', () => {
+    ctxColorInput.click();
+  });
+
+  ctxColorInput.addEventListener('input', (e) => {
+    if (contextListIndex !== -1) {
+        lists[contextListIndex].color = e.target.value;
+        renderTabs();
+        saveData();
+    }
+  });
+
+  ctxDelete.addEventListener('click', () => {
+    if (contextListIndex !== -1) {
+        deleteList(contextListIndex);
+    }
+  });
+
 
   /* ---------- Init ---------- */
   resizeCanvas(bubblesCanvas); resizeCanvas(ambianceCanvas);
