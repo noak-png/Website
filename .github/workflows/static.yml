@@ -47,6 +47,7 @@
   --completion-danger-color: #ef4444;
   --completion-danger-strong-color: #f87171;
   --completion-glow-spread: 6px;
+  --scan-line-angle: 180deg; /* Default scan angle */
 }
 
 .dark{
@@ -191,7 +192,7 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 }
 .item.scan-effect-done::after {
     animation: scanLine var(--completion-duration) forwards cubic-bezier(.16,1,.3,1);
-    background: linear-gradient(to bottom, transparent 0%, var(--completion-ok-strong-color) 50%, transparent 100%);
+    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--completion-ok-strong-color) 50%, transparent 100%);
 }
 @keyframes scanLine {
     0% { transform: translateY(-100%) scaleY(1); }
@@ -199,7 +200,7 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 }
 .item.scan-effect-warn::after {
     animation: scanLineWarn var(--completion-duration) forwards ease-out;
-    background: linear-gradient(to bottom, transparent 0%, var(--completion-danger-strong-color) 50%, transparent 100%);
+    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--completion-danger-strong-color) 50%, transparent 100%);
 }
 @keyframes scanLineWarn {
     0% { transform: translateY(-100%) scaleY(1.5); }
@@ -213,6 +214,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 .clear-btn{ background:#111827; color:#f3f4f6; box-shadow:var(--shadow); }
 .dark-toggle{ background:var(--card); color:var(--text); border:1px solid var(--border); box-shadow:var(--shadow); }
 .menu-btn{ background:var(--accent); color:#fff; box-shadow:var(--shadow); }
+
+/* New Control Button Styles */
+.clear-controls-container { display: flex; gap: 8px; }
+button.ctrl.clear-checks-btn { background: var(--accent); color: #fff; box-shadow:var(--shadow); }
+button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-shadow:var(--shadow); }
 
 /* Canvases */
 #bubblesCanvas, #ambianceCanvas{ position:fixed; inset:0; pointer-events:none; }
@@ -609,7 +615,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     <canvas id="bubblesCanvas"></canvas>
 
     <div class="controls glass" id="controlsBar">
-      <button id="clearBtn" class="ctrl clear-btn"><strong>Clear List</strong></button>
+      <div class="clear-controls-container" id="clearControlsContainer">
+        <!-- Buttons are now dynamically added here by JavaScript -->
+      </div>
       <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark Mode</button>
       <button id="menuBtn" class="ctrl menu-btn" aria-controls="menuPanel" aria-expanded="false">Menu</button>
     </div>
@@ -895,6 +903,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                     <div class="row">
                        <label class="helper"><input type="checkbox" id="enableScanLine"> Enable Scan Line Effect</label>
                     </div>
+                    <div class="slider-row" id="scanAngleControls" style="display:none;">
+                      <label for="scanAngle">Scan Angle</label>
+                      <input type="range" id="scanAngle" min="0" max="360" value="180" />
+                      <span class="pct" id="scanAnglePct">180°</span>
+                    </div>
                     <div class="row">
                       <button id="completionResetBtn" type="button">Reset to Default</button>
                     </div>
@@ -1133,7 +1146,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const appTitle = document.getElementById('appTitle');
   const titleWrap = document.getElementById('titleWrap');
 
-  const clearBtn = document.getElementById('clearBtn');
+  const clearControlsContainer = document.getElementById('clearControlsContainer');
   const darkToggle = document.getElementById('darkToggle');
   const menuBtn = document.getElementById('menuBtn');
   const menuPanel = document.getElementById('menuPanel');
@@ -1213,7 +1226,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     gradientSpread: document.getElementById('gradientSpreadPct'),
     gradientSpinSpeed: document.getElementById('gradientSpinSpeedPct'),
     completionGlow: document.getElementById('completionGlowPct'),
-    completionSpeed: document.getElementById('completionSpeedPct')
+    completionSpeed: document.getElementById('completionSpeedPct'),
+    scanAngle: document.getElementById('scanAnglePct')
   };
 
   // Color + shape controls
@@ -1245,14 +1259,16 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const glassSaturationSlider = document.getElementById('glassSaturationSlider');
   const glassBorderSlider = document.getElementById('glassBorderSlider');
   const uiStyleResetBtn = document.getElementById('uiStyleResetBtn');
-  const enableScanLine = document.getElementById('enableScanLine');
-
+  
   // Completion Effect Controls
   const completionCheckedColor = document.getElementById('completionCheckedColor');
   const completionUncheckedColor = document.getElementById('completionUncheckedColor');
   const completionGlow = document.getElementById('completionGlow');
   const completionSpeed = document.getElementById('completionSpeed');
   const completionResetBtn = document.getElementById('completionResetBtn');
+  const enableScanLine = document.getElementById('enableScanLine');
+  const scanAngle = document.getElementById('scanAngle');
+  const scanAngleControls = document.getElementById('scanAngleControls');
 
   // Wallpaper
   const enableCustomBackground = document.getElementById('enableCustomBackground');
@@ -1445,6 +1461,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('seconds',seconds);
     store('naturalSlide', enableNaturalSlide.checked);
     store('enableScanLine', enableScanLine.checked);
+    store('scanAngle', scanAngle.value);
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
     store('clockDetail', clockDetail.value);
     store('advancedMode', developerModeToggle.checked);
@@ -1527,6 +1544,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     gradientSpinSpeed.value = get('gradientSpinSpeed', '10');
     enableNaturalSlide.checked = (get('naturalSlide','true')==='true');
     enableScanLine.checked = (get('enableScanLine', 'false') === 'true');
+    scanAngle.value = get('scanAngle', '180');
     slideSpeed.value = get('slideSpeed','800');
     enableClock.checked = (get('clockEnabled', 'false')==='true'); clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
@@ -1559,6 +1577,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     applyGlassBorderOpacity();
     applyMaterialStyle();
     applyCompletionEffectSettings();
+    applyScanAngle();
+    syncScanAngleVisibility();
     updateWallpaper(); 
     applyClockSettings(); 
     updateCountersVisibility(); 
@@ -1709,8 +1729,23 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       completionUncheckedColor.value = isDark ? '#f87171' : '#ef4444';
       completionGlow.value = 6;
       completionSpeed.value = 900;
+      enableScanLine.checked = false;
+      scanAngle.value = 180;
       applyCompletionEffectSettings();
+      applyScanAngle();
+      syncScanAngleVisibility();
   }
+  
+  function applyScanAngle() {
+      const angle = scanAngle.value;
+      document.documentElement.style.setProperty('--scan-line-angle', `${angle}deg`);
+      if(pct.scanAngle) pct.scanAngle.textContent = `${angle}°`;
+  }
+
+  function syncScanAngleVisibility() {
+      scanAngleControls.style.display = enableScanLine.checked ? 'flex' : 'none';
+  }
+
 
   /* ---------- Wallpaper ---------- */
   function syncCustomBackgroundVisibility() {
@@ -1912,23 +1947,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       return (offset<0 && offset>closest.offset) ? {offset, element:child} : closest;
     }, {offset:-Infinity}).element;
   }
-
-  clearBtn.onclick = ()=>{
-    const currentListType = lists[activeListIndex]?.type;
-    
-    if (currentListType === 'Call Behaviors') {
-        lists[activeListIndex].items.forEach(item => item.done = false);
-    } else {
-        lists[activeListIndex].items = [];
-    }
-    renderList();
-    saveData();
-
-    if (currentListType === 'Call Behaviors') {
-        seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter();
-    }
-  };
-
+  
   function setMenu(open){
     menuPanel.style.display = open ? 'block' : 'none';
     menuPanel.setAttribute('aria-hidden', !open);
@@ -2015,7 +2034,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
-      completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, glow: completionGlow.value, speed: completionSpeed.value },
+      completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, glow: completionGlow.value, speed: completionSpeed.value, scanAngle: scanAngle.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
       slideSpeed: slideSpeed.value,
       clock: { position: clockPosition.value, detail: clockDetail.value },
@@ -2066,6 +2085,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           completionUncheckedColor.value = s.completion.uncheckedColor;
           completionGlow.value = s.completion.glow;
           completionSpeed.value = s.completion.speed;
+          scanAngle.value = s.completion.scanAngle || '180';
       }
       if (s.ambiance) {
           ambianceSelect.value = s.ambiance.effect;
@@ -2107,6 +2127,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     if(pct.gradientAngle) pct.gradientAngle.textContent=`${Math.round(gradientAngle.value)}°`;
     if(pct.gradientSpread) pct.gradientSpread.textContent=pctOf(gradientSpread)+'%';
     if(pct.gradientSpinSpeed) pct.gradientSpinSpeed.textContent=pctOf(gradientSpinSpeed)+'%';
+    if(pct.scanAngle) pct.scanAngle.textContent = `${scanAngle.value}°`;
   }
 
   /* ---------- Slide speed ---------- */
@@ -2708,10 +2729,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       if(el===glassBorderSlider) applyGlassBorderOpacity();
       if(el===slideSpeed) applySlideSpeed();
       if(el===completionGlow || el===completionSpeed) applyCompletionEffectSettings();
+      if(el===scanAngle) applyScanAngle();
       updatePercentages(); 
-      saveData();
   }));
   
+  // Add change event for saving data on sliders that don't save on input
+  scanAngle.addEventListener('change', saveData);
+
   animationStyleSelect.addEventListener('change', (e) => {
     populatePresetSelector(e.target.value);
     loadPreset(e.target.value, 0);
@@ -2755,6 +2779,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground, enableScanLine].forEach(el => el.addEventListener('change', ()=>{ 
       if (el === enableAmbiance) applyAmbianceSettings(); 
       if (el === enableCustomBackground) syncCustomBackgroundVisibility();
+      if (el === enableScanLine) syncScanAngleVisibility();
       saveData(); 
   }));
   developerModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(!developerModeToggle.checked); saveData(); });
@@ -2908,15 +2933,100 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 
         input.placeholder = placeholders[currentList.type] || "Add an item...";
 
-        if (currentList.type === 'Call Behaviors') {
-            clearBtn.innerHTML = '<strong>New Call</strong>';
+        clearControlsContainer.innerHTML = '';
+        const listType = currentList.type;
+        const isStandardList = ['General Tasks', 'Milestones', 'Educational'].includes(listType);
+
+        if (isStandardList) {
+            const clearChecksBtn = document.createElement('button');
+            clearChecksBtn.id = 'clearChecksBtn';
+            clearChecksBtn.className = 'ctrl clear-checks-btn';
+            clearChecksBtn.innerHTML = '<strong>Clear Checks</strong>';
+            clearChecksBtn.onclick = () => animateAndClearChecks();
+            clearControlsContainer.appendChild(clearChecksBtn);
+
+            const clearListBtn = document.createElement('button');
+            clearListBtn.id = 'clearBtn';
+            clearListBtn.className = 'ctrl clear-list-btn-red';
+            clearListBtn.innerHTML = '<strong>Clear List</strong>';
+            clearListBtn.onclick = () => animateAndClearList(true);
+            clearControlsContainer.appendChild(clearListBtn);
+
+        } else if (listType === 'Call Behaviors') {
+            const newCallBtn = document.createElement('button');
+            newCallBtn.id = 'clearBtn';
+            newCallBtn.className = 'ctrl clear-btn';
+            newCallBtn.innerHTML = '<strong>New Call</strong>';
+            newCallBtn.onclick = () => animateAndClearList(false);
+            clearControlsContainer.appendChild(newCallBtn);
         } else {
-            clearBtn.innerHTML = '<strong>Clear List</strong>';
+            const defaultClearBtn = document.createElement('button');
+            defaultClearBtn.id = 'clearBtn';
+            defaultClearBtn.className = 'ctrl clear-btn';
+            defaultClearBtn.innerHTML = '<strong>Clear List</strong>';
+            defaultClearBtn.onclick = () => animateAndClearList(true);
+            clearControlsContainer.appendChild(defaultClearBtn);
         }
 
         renderList();
         renderTabs();
     }
+
+    function animateAndClearChecks() {
+        const checkedItems = list.querySelectorAll('.item.done');
+        if (checkedItems.length === 0) return;
+
+        checkedItems.forEach(li => {
+            li.classList.remove('done', 'pulse', 'scan-effect-done');
+            li.classList.add('warn');
+            if (enableScanLine.checked) {
+                li.classList.add('scan-effect-warn');
+            }
+        });
+
+        setTimeout(() => {
+            lists[activeListIndex].items.forEach(item => {
+                if (item.done) {
+                    item.done = false;
+                }
+            });
+            renderList();
+            saveData();
+        }, parseInt(completionSpeed.value, 10) + 50);
+    }
+    
+    function animateAndClearList(isFullClear) {
+        const checkedItems = list.querySelectorAll('.item.done');
+        const animationDuration = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--completion-duration'), 10) || 900;
+        
+        if (checkedItems.length > 0) {
+            checkedItems.forEach(li => {
+                li.classList.remove('done', 'pulse', 'scan-effect-done');
+                li.classList.add('warn');
+                if (enableScanLine.checked) {
+                    li.classList.add('scan-effect-warn');
+                }
+            });
+        }
+
+        setTimeout(() => {
+            const currentListType = lists[activeListIndex]?.type;
+
+            if (isFullClear) {
+                 lists[activeListIndex].items = [];
+            } else { 
+                lists[activeListIndex].items.forEach(item => item.done = false);
+            }
+
+            renderList();
+            saveData();
+
+            if (currentListType === 'Call Behaviors') {
+                seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter();
+            }
+        }, checkedItems.length > 0 ? animationDuration : 0);
+    }
+
 
   function renderList() {
     list.innerHTML = '';
@@ -2950,7 +3060,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     deleteBtn.className = 'remove';
     deleteBtn.textContent = '✖';
     
-    // Prevent blur when clicking the delete button
     deleteBtn.addEventListener('mousedown', e => e.preventDefault());
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
