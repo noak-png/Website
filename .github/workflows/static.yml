@@ -3160,6 +3160,11 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     
     const listNameToDelete = lists[index].name;
     if (confirm(`Are you sure you want to permanently delete the list "${listNameToDelete}"?`)) {
+        
+        if (lists.length === 1) {
+            document.getElementById('app').style.display = 'none';
+        }
+        
         lists.splice(index, 1);
         
         if (activeListIndex >= index && activeListIndex > 0) {
