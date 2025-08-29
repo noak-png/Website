@@ -3,17 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v1.2 (with Scan Line Effect)</title>
-
-<!-- 
-  Call Checkpoints — v1.2 (with Scan Line Effect)
-  Changes:
-    • ADDED - Enhanced "Glass" material with sliders for Blur, Saturation, and Border Opacity.
-    • ADDED - "Scan Line" completion effect on top of the existing inner pulse.
-    • FIXED - Custom background now properly clears and resets settings when disabled.
-    • FIXED - Slider percentage values are no longer cut off on mobile devices.
-    • REMOVED - "Metal" material has been retired to simplify the UI.
- -->
+<title>Call Checkpoints v1.2 (with Effect Customizer)</title>
 
 <style>
 /* ========== Base Theme Variables ========== */
@@ -49,6 +39,14 @@
   /* Natural slide */
   --slide-duration: 800ms; /* default, adjustable */
   --slide-ease: cubic-bezier(.22,.61,.36,1); /* iOS-like */
+
+  /* Completion Effects (Customizable) */
+  --completion-duration: 900ms;
+  --completion-ok-color: #16a34a;
+  --completion-ok-strong-color: #22c55e;
+  --completion-danger-color: #ef4444;
+  --completion-danger-strong-color: #f87171;
+  --completion-glow-spread: 6px;
 }
 
 .dark{
@@ -73,6 +71,11 @@
 
   --header-backdrop: rgba(10,14,18,.55);
   --header-border: rgba(255,255,255,.08);
+
+  --completion-ok-color: #22c55e;
+  --completion-ok-strong-color: #4ade80;
+  --completion-danger-color: #f87171;
+  --completion-danger-strong-color: #fecaca;
 }
 
 /* ========== Global Layout ========== */
@@ -155,24 +158,26 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item[draggable="true"]{ cursor:grab; }
 .item.dragging{ opacity:.6; }
 .item input[type="checkbox"]{ 
-  width:20px; height:20px; accent-color:var(--ok); 
+  width:20px; height:20px; accent-color:var(--completion-ok-color); 
   touch-action:none; 
   -webkit-touch-callout: none; user-select: none;
 }
 .label{ display:flex; align-items:center; gap:10px; }
 .text{ transition:.2s; }
-.item.done .text{ color:var(--ok); text-decoration:line-through; }
+.item.done .text{ color:var(--completion-ok-color); text-decoration:line-through; }
 .badge{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
-.item.done .badge{ border-color:var(--ok); color:var(--ok); }
+.item.done .badge{ border-color:var(--completion-ok-color); color:var(--completion-ok-color); }
 .remove{ background:transparent; border:1px solid var(--border); color:var(--danger); padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .15s; }
 .remove:active{ transform:scale(0.95); background:var(--border); }
 
 /* Completion inset ring */
-.item.done{ box-shadow: inset 0 0 0 2px var(--ok), inset 0 0 0 6px color-mix(in srgb, var(--ok) 10%, transparent); }
-.item.done.pulse{ animation:innerRingPulse .9s ease-out; }
-@keyframes innerRingPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--ok-strong) 38%, transparent), inset 0 0 0 2px var(--ok);} 45%{box-shadow:inset 0 0 0 6px color-mix(in srgb, var(--ok-strong) 22%, transparent), inset 0 0 0 2px var(--ok);} 100%{box-shadow:inset 0 0 0 6px color-mix(in srgb, var(--ok) 10%, transparent), inset 0 0 0 2px var(--ok);} }
-.item.warn{ box-shadow: inset 0 0 0 2px var(--danger), inset 0 0 0 6px color-mix(in srgb, var(--danger) 10%, transparent); animation:innerWarnPulse .8s ease-out; }
-@keyframes innerWarnPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--danger-strong) 42%, transparent), inset 0 0 0 2px var(--danger);} 55%{box-shadow:inset 0 0 0 6px color-mix(in srgb, var(--danger-strong) 18%, transparent), inset 0 0 0 2px var(--danger);} 100%{box-shadow:inset 0 0 0 0 color-mix(in srgb, var(--danger) 0%, transparent);} }
+.item.done{ box-shadow: inset 0 0 0 2px var(--completion-ok-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-color) 10%, transparent); }
+.item.done.pulse{ animation:innerRingPulse var(--completion-duration) ease-out; }
+@keyframes innerRingPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-ok-strong-color) 38%, transparent), inset 0 0 0 2px var(--completion-ok-color);} 45%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-strong-color) 22%, transparent), inset 0 0 0 2px var(--completion-ok-color);} 100%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-color) 10%, transparent), inset 0 0 0 2px var(--completion-ok-color);} }
+
+.item.warn{ box-shadow: inset 0 0 0 2px var(--completion-danger-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-color) 10%, transparent); animation:innerWarnPulse var(--completion-duration) ease-out; }
+@keyframes innerWarnPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-danger-strong-color) 42%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 55%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-strong-color) 18%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 100%{box-shadow: none;} }
+
 
 /* Scan Line Effect Styles */
 .item::after {
@@ -185,16 +190,16 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
     background: transparent;
 }
 .item.scan-effect-done::after {
-    animation: scanLine 1s forwards cubic-bezier(.16,1,.3,1);
-    background: linear-gradient(to bottom, transparent 0%, var(--ok-strong) 50%, transparent 100%);
+    animation: scanLine var(--completion-duration) forwards cubic-bezier(.16,1,.3,1);
+    background: linear-gradient(to bottom, transparent 0%, var(--completion-ok-strong-color) 50%, transparent 100%);
 }
 @keyframes scanLine {
     0% { transform: translateY(-100%) scaleY(1); }
     100% { transform: translateY(100%) scaleY(2.5); opacity: 0; }
 }
 .item.scan-effect-warn::after {
-    animation: scanLineWarn .8s forwards ease-out;
-    background: linear-gradient(to bottom, transparent 0%, var(--danger-strong) 50%, transparent 100%);
+    animation: scanLineWarn var(--completion-duration) forwards ease-out;
+    background: linear-gradient(to bottom, transparent 0%, var(--completion-danger-strong-color) 50%, transparent 100%);
 }
 @keyframes scanLineWarn {
     0% { transform: translateY(-100%) scaleY(1.5); }
@@ -361,10 +366,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     </div>
   </div>
 
-  <!-- SETTINGS (glass, collapsible sections) -->
   <div class="menu-panel glass" id="menuPanel" aria-hidden="true">
 
-    <!-- Checkmark Animations -->
     <div class="section" id="secCheckmarkAnims">
         <details>
             <summary>
@@ -372,7 +375,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
             </summary>
             <div class="content">
                 <div class="sub-section-wrapper">
-                    <!-- Sub-Section: Animation Style -->
                     <div class="sub-section">
                         <details id="secAnimStyle" open>
                             <summary>
@@ -488,7 +490,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                         </details>
                     </div>
 
-                    <!-- Sub-Section: Wind -->
                     <div class="sub-section">
                         <details id="secWind">
                             <summary>
@@ -523,7 +524,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                         </details>
                     </div>
 
-                    <!-- Sub-Section: Saved Patterns -->
                     <div class="sub-section">
                         <details id="secPatterns">
                             <summary>
@@ -552,7 +552,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
         </details>
     </div>
 
-    <!-- Appearance -->
     <div class="section" id="secAppearance">
       <details>
         <summary>
@@ -560,7 +559,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
         </summary>
         <div class="content">
           
-          <!-- UI Customizations Sub-Section -->
           <div class="sub-section">
             <details id="secUICustomizations">
                 <summary>User Interface Customizations</summary>
@@ -608,7 +606,35 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
             </details>
           </div>
 
-          <!-- Background Sub-Section -->
+          <div class="sub-section">
+            <details id="secCompletionEffect">
+                <summary>Completion Effect</summary>
+                <div class="content">
+                    <div class="row">
+                        <label for="completionCheckedColor" style="flex: 1;">Checked Color</label>
+                        <input type="color" id="completionCheckedColor" value="#16a34a">
+                    </div>
+                    <div class="row">
+                        <label for="completionUncheckedColor" style="flex: 1;">Unchecked Color</label>
+                        <input type="color" id="completionUncheckedColor" value="#ef4444">
+                    </div>
+                    <div class="slider-row">
+                      <label for="completionGlow">Glow Intensity</label>
+                      <input type="range" id="completionGlow" min="4" max="12" value="6" />
+                      <span class="pct" id="completionGlowPct">6px</span>
+                    </div>
+                    <div class="slider-row">
+                      <label for="completionSpeed">Animation Speed</label>
+                      <input type="range" id="completionSpeed" min="300" max="1500" value="900" />
+                      <span class="pct" id="completionSpeedPct">900ms</span>
+                    </div>
+                    <div class="row">
+                      <button id="completionResetBtn" type="button">Reset to Default</button>
+                    </div>
+                </div>
+            </details>
+          </div>
+
           <div class="sub-section">
             <details id="secBackground">
                 <summary>Background</summary>
@@ -618,7 +644,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                     </div>
                     <div id="customBackgroundOptions" class="stack" style="display:none;">
                         <div class="hr"></div>
-                        <!-- Background Controls -->
                         <div class="stack">
                             <label for="backgroundType">Background Type</label>
                             <select id="backgroundType">
@@ -678,7 +703,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                     
                     <div class="hr"></div>
     
-                    <!-- Ambiance / Background Effects -->
                     <div class="stack">
                         <label><input type="checkbox" id="enableAmbiance"> Enable Background Live Effects</label>
                         <div id="ambianceSettings" class="stack" style="display:none; margin-top: 10px; gap: 10px;">
@@ -691,7 +715,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                                 <option value="matrix">Matrix Rain</option>
                             </select>
                             <div id="ambianceControls" class="stack" style="display:none; border:1px solid var(--border); border-radius:8px; padding:10px; gap: 10px;">
-                                <!-- Snow Controls -->
                                 <div id="snowControls" class="stack" style="display:none; gap: 10px;">
                                     <div class="slider-row">
                                         <label for="snowDensity">Density</label>
@@ -709,7 +732,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                                         <span class="pct" id="snowSpeedPct">0%</span>
                                     </div>
                                 </div>
-                                <!-- Orb Controls -->
                                 <div id="orbsControls" class="stack" style="display:none; gap: 10px;">
                                     <div class="slider-row">
                                         <label for="orbsDensity">Density</label>
@@ -728,7 +750,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                                     </div>
                                     <label>Orb Color: <input type="color" id="orbsColor" value="#9aa4b2"></label>
                                 </div>
-                                <!-- Starfield Controls -->
                                 <div id="starfieldControls" class="stack" style="display:none; gap: 10px;">
                                     <div class="slider-row">
                                         <label for="starfieldDensity">Density</label>
@@ -746,7 +767,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                                         <span class="pct" id="starfieldSpeedPct">0%</span>
                                     </div>
                                 </div>
-                                <!-- Matrix Controls -->
                                 <div id="matrixControls" class="stack" style="display:none; gap: 10px;">
                                     <div class="slider-row">
                                         <label for="matrixDensity">Density</label>
@@ -775,7 +795,6 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       </details>
     </div>
 
-    <!-- Utility Section -->
     <div class="section" id="secUtility">
         <details>
             <summary>
@@ -821,14 +840,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
         </details>
     </div>
 
-    <!-- Close menu button (no notch) + subtle footnote -->
     <div class="menu-notch">
       <button id="closeMenuNotch" aria-controls="menuPanel" aria-label="Close menu">Close menu</button>
       <div class="menu-footnote" id="menuFootnote" aria-hidden="true">Designed for productivity. Made by Noa.</div>
     </div>
   </div>
 
-  <!-- Overlays -->
   <div class="counter-display glass pos-top-right" id="secCounter" style="display:none">
     <span id="secCount">0 s</span>
     <button id="pauseCounter">Pause</button>
@@ -906,7 +923,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     matrixSpeed: document.getElementById('matrixSpeedPct'),
     gradientAngle: document.getElementById('gradientAnglePct'),
     gradientSpread: document.getElementById('gradientSpreadPct'),
-    gradientSpinSpeed: document.getElementById('gradientSpinSpeedPct')
+    gradientSpinSpeed: document.getElementById('gradientSpinSpeedPct'),
+    completionGlow: document.getElementById('completionGlowPct'),
+    completionSpeed: document.getElementById('completionSpeedPct')
   };
 
   // Color + shape controls
@@ -938,6 +957,13 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const glassSaturationSlider = document.getElementById('glassSaturationSlider');
   const glassBorderSlider = document.getElementById('glassBorderSlider');
   const uiStyleResetBtn = document.getElementById('uiStyleResetBtn');
+
+  // Completion Effect Controls
+  const completionCheckedColor = document.getElementById('completionCheckedColor');
+  const completionUncheckedColor = document.getElementById('completionUncheckedColor');
+  const completionGlow = document.getElementById('completionGlow');
+  const completionSpeed = document.getElementById('completionSpeed');
+  const completionResetBtn = document.getElementById('completionResetBtn');
 
   // Wallpaper
   const enableCustomBackground = document.getElementById('enableCustomBackground');
@@ -1103,6 +1129,10 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('glassSaturation', glassSaturationSlider.value);
     store('glassBorder', glassBorderSlider.value);
     store('uiStyle', uiStyleSelect.value);
+    store('completionCheckedColor', completionCheckedColor.value);
+    store('completionUncheckedColor', completionUncheckedColor.value);
+    store('completionGlow', completionGlow.value);
+    store('completionSpeed', completionSpeed.value);
     store('enableCustomBackground', enableCustomBackground.checked);
     store('ambianceEnabled', enableAmbiance.checked);
     store('ambianceEffect', ambianceSelect.value);
@@ -1156,6 +1186,10 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     glassBorderSlider.value = get('glassBorder', '8');
     populateStyleSelector('glass');
     uiStyleSelect.value = get('uiStyle', 'default');
+    completionCheckedColor.value = get('completionCheckedColor', document.documentElement.classList.contains('dark') ? '#22c55e' : '#16a34a');
+    completionUncheckedColor.value = get('completionUncheckedColor', document.documentElement.classList.contains('dark') ? '#f87171' : '#ef4444');
+    completionGlow.value = get('completionGlow', '6');
+    completionSpeed.value = get('completionSpeed', '900');
     enableCustomBackground.checked = (get('enableCustomBackground', 'false') === 'true');
     enableAmbiance.checked = (get('ambianceEnabled', 'false') === 'true');
     ambianceSelect.value = get('ambianceEffect', 'none');
@@ -1204,6 +1238,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     applyGlassSaturation();
     applyGlassBorderOpacity();
     applyMaterialStyle();
+    applyCompletionEffectSettings();
     updateWallpaper(); 
     applyClockSettings(); 
     updateCountersVisibility(); 
@@ -1320,6 +1355,41 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     applyGlassBlur();
     applyGlassSaturation();
     applyGlassBorderOpacity();
+  }
+
+  /* ---------- Completion Effects ---------- */
+  function applyCompletionEffectSettings() {
+      const root = document.documentElement;
+      const okColor = completionCheckedColor.value;
+      const dangerColor = completionUncheckedColor.value;
+      
+      root.style.setProperty('--completion-duration', `${completionSpeed.value}ms`);
+      root.style.setProperty('--completion-ok-color', okColor);
+      root.style.setProperty('--completion-danger-color', dangerColor);
+      root.style.setProperty('--completion-glow-spread', `${completionGlow.value}px`);
+
+      // Generate stronger/lighter versions for glows
+      const okRgb = hexToRgb(okColor);
+      const dangerRgb = hexToRgb(dangerColor);
+
+      if (okRgb) {
+          const okStrong = rgbToHex(okRgb.r * 1.2, okRgb.g * 1.2, okRgb.b * 1.2);
+          root.style.setProperty('--completion-ok-strong-color', okStrong);
+      }
+      if (dangerRgb) {
+          const dangerStrong = rgbToHex(dangerRgb.r * 1.2, dangerRgb.g * 1.2, dangerRgb.b * 1.2);
+          root.style.setProperty('--completion-danger-strong-color', dangerStrong);
+      }
+      updatePercentages();
+  }
+
+  function resetCompletionEffectSettings() {
+      const isDark = document.documentElement.classList.contains('dark');
+      completionCheckedColor.value = isDark ? '#22c55e' : '#16a34a';
+      completionUncheckedColor.value = isDark ? '#f87171' : '#ef4444';
+      completionGlow.value = 6;
+      completionSpeed.value = 900;
+      applyCompletionEffectSettings();
   }
 
   /* ---------- Wallpaper ---------- */
@@ -1448,8 +1518,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
         if(enableAnimations.checked){ spawnParticlesFromEl(cb); }
         
         // Remove temporary classes after animations finish
-        setTimeout(() => li.classList.remove('pulse'), 900);
-        setTimeout(() => li.classList.remove('scan-effect-done'), 1000);
+        setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+        setTimeout(() => li.classList.remove('scan-effect-done'), parseInt(completionSpeed.value, 10) + 50);
 
       } else {
         li.classList.remove('done');
@@ -1459,7 +1529,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
         // Remove temporary classes after animations finish
         setTimeout(() => {
             li.classList.remove('warn', 'scan-effect-warn');
-        }, 820);
+        }, parseInt(completionSpeed.value, 10) + 50);
       }
       saveData();
     };
@@ -1517,6 +1587,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     applyMaterialStyle();
     applyLogoTheme();
     applyGlassBorderOpacity(); // Re-apply border for theme change
+    resetCompletionEffectSettings(); // Reset colors to match theme
     saveData();
   };
 
@@ -1585,6 +1656,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
+      completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, glow: completionGlow.value, speed: completionSpeed.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
       slideSpeed: slideSpeed.value,
       clock: { position: clockPosition.value, detail: clockDetail.value },
@@ -1629,6 +1701,12 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           gradientSpinToggle.checked = s.appearance.gradientSpinEnabled || false;
           gradientSpinSpeed.value = s.appearance.gradientSpinSpeed || '10';
       }
+      if (s.completion) {
+          completionCheckedColor.value = s.completion.checkedColor;
+          completionUncheckedColor.value = s.completion.uncheckedColor;
+          completionGlow.value = s.completion.glow;
+          completionSpeed.value = s.completion.speed;
+      }
       if (s.ambiance) {
           ambianceSelect.value = s.ambiance.effect;
           snowDensity.value = s.ambiance.snowDensity; snowSize.value = s.ambiance.snowSize; snowSpeed.value = s.ambiance.snowSpeed;
@@ -1660,6 +1738,8 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     pct.windI.textContent=pctOf(windIntensity)+'%'; pct.windDir.textContent=pctOf(windDirection)+'%';
     pct.glass.textContent=Math.max(10, Math.min(100, parseInt(glassOpacity.value,10)||75)) + '%'; 
     pct.slide.textContent = slideSpeed.value + 'ms';
+    pct.completionGlow.textContent = completionGlow.value + 'px';
+    pct.completionSpeed.textContent = completionSpeed.value + 'ms';
     pct.snowDensity.textContent=pctOf(snowDensity)+'%'; pct.snowSize.textContent=pctOf(snowSize)+'%'; pct.snowSpeed.textContent=pctOf(snowSpeed)+'%';
     pct.orbsDensity.textContent=pctOf(orbsDensity)+'%'; pct.orbsSize.textContent=pctOf(orbsSize)+'%'; pct.orbsSpeed.textContent=pctOf(orbsSpeed)+'%';
     pct.starfieldDensity.textContent=pctOf(starfieldDensity)+'%'; pct.starfieldSize.textContent=pctOf(starfieldSize)+'%'; pct.starfieldSpeed.textContent=pctOf(starfieldSpeed)+'%';
@@ -2252,6 +2332,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       if(el===glassSaturationSlider) applyGlassSaturation();
       if(el===glassBorderSlider) applyGlassBorderOpacity();
       if(el===slideSpeed) applySlideSpeed();
+      if(el===completionGlow || el===completionSpeed) applyCompletionEffectSettings();
       updatePercentages(); 
       saveData();
   }));
@@ -2268,6 +2349,18 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
 
   uiStyleSelect.addEventListener('change', () => {
       applyMaterialStyle();
+      saveData();
+  });
+
+  [completionCheckedColor, completionUncheckedColor].forEach(el => {
+      const eventType = el.type === 'color' ? 'input' : 'change';
+      el.addEventListener(eventType, () => {
+          applyCompletionEffectSettings();
+          saveData();
+      });
+  });
+  completionResetBtn.addEventListener('click', () => {
+      resetCompletionEffectSettings();
       saveData();
   });
 
