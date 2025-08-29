@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Call Checkpoints v1.2 (with Effect Customizer)</title>
+<title>Call Checkpoints v1.3 (with Pattern Export)</title>
 
 <style>
 /* ========== Base Theme Variables ========== */
@@ -594,13 +594,14 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                     </div>
                     <div class="hr"></div>
                     <div class="stack">
-                        <label><input type="checkbox" id="enableNaturalSlide"> Natural Slide Gestures</label>
-                        <div class="helper">Enables smooth, fluid animations when adding or removing items.</div>
-                    </div>
-                    <div class="slider-row">
-                      <label for="slideSpeed">Slide Speed</label>
-                      <input type="range" id="slideSpeed" min="200" max="1400" value="800" />
-                      <span class="pct" id="slideSpeedPct">800ms</span>
+                        <div class="row">
+                           <label class="helper"><input type="checkbox" id="enableNaturalSlide"> Natural Slide Gestures</label>
+                        </div>
+                        <div class="slider-row">
+                          <label for="slideSpeed">Slide Speed</label>
+                          <input type="range" id="slideSpeed" min="200" max="1400" value="800" />
+                          <span class="pct" id="slideSpeedPct">800ms</span>
+                        </div>
                     </div>
                 </div>
             </details>
@@ -627,6 +628,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                       <label for="completionSpeed">Animation Speed</label>
                       <input type="range" id="completionSpeed" min="300" max="1500" value="900" />
                       <span class="pct" id="completionSpeedPct">900ms</span>
+                    </div>
+                    <div class="row">
+                       <label class="helper"><input type="checkbox" id="enableScanLine"> Enable Scan Line Effect</label>
                     </div>
                     <div class="row">
                       <button id="completionResetBtn" type="button">Reset to Default</button>
@@ -835,7 +839,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
                 </div>
                 <div class="hr"></div>
                 <button id="panicResetBtn" type="button" style="background:var(--danger);" title="Warning: This will clear all items and reset all settings to default.">Panic Reset to Factory Default</button>
-                <div class="helper">Panic Reset clears everything and reloads the page. This action cannot be undone.</div>
+                <div class="helper">Panic Reset clears everything (except saved patterns) and reloads the page. This action cannot be undone.</div>
             </div>
         </details>
     </div>
@@ -855,7 +859,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   </div>
   <div class="clock-display glass" id="clockDisplay" style="display:none;"></div>
 
-  <div class="version" id="versionTag">v1.2</div>
+  <div class="version" id="versionTag">v1.3</div>
 
 <script>
 (function(){
@@ -957,6 +961,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   const glassSaturationSlider = document.getElementById('glassSaturationSlider');
   const glassBorderSlider = document.getElementById('glassBorderSlider');
   const uiStyleResetBtn = document.getElementById('uiStyleResetBtn');
+  const enableScanLine = document.getElementById('enableScanLine');
 
   // Completion Effect Controls
   const completionCheckedColor = document.getElementById('completionCheckedColor');
@@ -1147,6 +1152,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     store('secCounter',enableSecCounter.checked); store('clickCounter',enableClickCounter.checked); store('clickCount',totalClicks);
     store('seconds',seconds);
     store('naturalSlide', enableNaturalSlide.checked);
+    store('enableScanLine', enableScanLine.checked);
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
     store('clockDetail', clockDetail.value);
     store('advancedMode', developerModeToggle.checked);
@@ -1203,7 +1209,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     gradientAngle.value = get('gradientAngle', 145); gradientSpread.value = get('gradientSpread', '0');
     gradientAnimationAngle = parseFloat(gradientAngle.value); gradientSpinToggle.checked = (get('gradientSpinEnabled', 'false') === 'true');
     gradientSpinSpeed.value = get('gradientSpinSpeed', '10');
-    enableNaturalSlide.checked = (get('naturalSlide','true')==='true'); slideSpeed.value = get('slideSpeed','800');
+    enableNaturalSlide.checked = (get('naturalSlide','true')==='true');
+    enableScanLine.checked = (get('enableScanLine', 'false') === 'true');
+    slideSpeed.value = get('slideSpeed','800');
     enableClock.checked = (get('clockEnabled', 'false')==='true'); clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
     developerModeToggle.checked = (get('advancedMode', get('developerMode', 'false')) === 'true'); // Support old key for migration
@@ -1462,7 +1470,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       const endPos = 100 + spreadValue;
       const angle = gradientSpinToggle.checked ? gradientAnimationAngle : gradientAngle.value;
       document.body.style.backgroundColor = '';
-      document.body.style.backgroundImage = `linear-gradient(${angle}deg, ${wallpaperColor2.value} ${startPos}%, ${wallpaperColor3.value} ${endPos}%)`;
+      document.body.style.backgroundImage = `linear-gradient(${angle}deg, ${wallpaperColor2.value} ${-spread}%, ${wallpaperColor3.value} ${endPos}%)`;
     }
   }
 
@@ -1513,22 +1521,30 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       li.classList.remove('scan-effect-done', 'scan-effect-warn', 'pulse', 'warn');
 
       if(cb.checked){
-        li.classList.add('done', 'pulse', 'scan-effect-done');
+        li.classList.add('done', 'pulse');
+        if (enableScanLine.checked) {
+          li.classList.add('scan-effect-done');
+        }
         badge.textContent='Done';
         if(enableAnimations.checked){ spawnParticlesFromEl(cb); }
         
-        // Remove temporary classes after animations finish
         setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
-        setTimeout(() => li.classList.remove('scan-effect-done'), parseInt(completionSpeed.value, 10) + 50);
-
+        if (enableScanLine.checked) {
+          setTimeout(() => li.classList.remove('scan-effect-done'), parseInt(completionSpeed.value, 10) + 50);
+        }
       } else {
         li.classList.remove('done');
         badge.textContent='Pending';
-        li.classList.add('warn', 'scan-effect-warn');
+        li.classList.add('warn');
+        if (enableScanLine.checked) {
+          li.classList.add('scan-effect-warn');
+        }
         
-        // Remove temporary classes after animations finish
         setTimeout(() => {
-            li.classList.remove('warn', 'scan-effect-warn');
+            li.classList.remove('warn');
+            if (enableScanLine.checked) {
+              li.classList.remove('scan-effect-warn');
+            }
         }, parseInt(completionSpeed.value, 10) + 50);
       }
       saveData();
@@ -1654,7 +1670,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
     return {
       animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
-      toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
+      toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
       completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, glow: completionGlow.value, speed: completionSpeed.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
@@ -1681,6 +1697,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           enableAnimations.checked = s.toggles.animations; enableEndless.checked = s.toggles.endless;
           enableSecCounter.checked = s.toggles.secCounter; enableClickCounter.checked = s.toggles.clickCounter;
           enableNaturalSlide.checked = s.toggles.naturalSlide;
+          enableScanLine.checked = s.toggles.enableScanLine;
           enableClock.checked = s.toggles.clock;
           enableAmbiance.checked = s.toggles.ambiance;
           enableCustomBackground.checked = s.toggles.customBackground;
@@ -1910,9 +1927,11 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   }
 
   function panicReset(){
-      if(confirm("WARNING: Are you sure you want to perform a Panic Reset?\n\nThis will permanently delete all checkpoints, remove your wallpaper, and reset every setting to its factory default. This action cannot be undone.")){
+      if(confirm("WARNING: Are you sure you want to perform a Panic Reset?\n\nThis will permanently delete all checkpoints, remove your wallpaper, and reset every setting to its factory default.\n\nYour saved animation patterns WILL NOT be deleted.")){
           list.innerHTML = '';
-          Object.keys(localStorage).filter(key => key.startsWith('callcheckpoints.')).forEach(key => localStorage.removeItem(key));
+          Object.keys(localStorage)
+            .filter(key => key.startsWith('callcheckpoints.') && key !== 'callcheckpoints.savedPatterns')
+            .forEach(key => localStorage.removeItem(key));
           location.reload();
       }
   }
@@ -2135,8 +2154,9 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
           const item = document.createElement('div'); item.className = 'pattern-item';
           item.innerHTML = `<span class="pattern-name">${pattern.name}</span>`;
           const loadBtn = document.createElement('button'); loadBtn.textContent = 'Load'; loadBtn.onclick = () => loadPattern(pattern.id);
+          const exportBtn = document.createElement('button'); exportBtn.textContent = 'Export'; exportBtn.onclick = () => exportSinglePattern(pattern.id);
           const deleteBtn = document.createElement('button'); deleteBtn.textContent = 'Delete'; deleteBtn.className = 'delete-btn'; deleteBtn.onclick = () => deletePattern(pattern.id);
-          const btnWrap = document.createElement('div'); btnWrap.className = 'row'; btnWrap.append(loadBtn, deleteBtn);
+          const btnWrap = document.createElement('div'); btnWrap.className = 'row'; btnWrap.append(loadBtn, exportBtn, deleteBtn);
           item.append(btnWrap); patternsList.appendChild(item);
       });
   }
@@ -2161,17 +2181,30 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
       containParticles.checked = s.containParticles;
       applyAllSettings();
       
-      // FIX: Display loaded pattern name in preset dropdown
       populatePresetSelector(s.animationStyle);
       const loadedPatternOption = document.createElement('option');
       loadedPatternOption.value = pattern.id;
       loadedPatternOption.textContent = pattern.name;
       loadedPatternOption.selected = true;
-      loadedPatternOption.id = 'loadedPatternOption'; // ID to find and remove it later
+      loadedPatternOption.id = 'loadedPatternOption';
       animationPresetSelect.insertBefore(loadedPatternOption, animationPresetSelect.firstChild);
   }
   function deletePattern(id) {
       if (confirm('Are you sure you want to delete this pattern?')) { savedPatterns = savedPatterns.filter(p => p.id !== id); renderPatternsList(); saveData(); }
+  }
+  function exportSinglePattern(id) {
+    const pattern = savedPatterns.find(p => p.id === id);
+    if (!pattern) { alert('Could not find the pattern to export.'); return; }
+    const exportData = [pattern];
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeName = pattern.name.replace(/[^a-z0-9]/gi, ' ').trim().replace(/\s+/g, '_').toLowerCase();
+    a.download = `cc-pattern-${safeName}.json`;
+    a.href = url;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   /* ---------- Ambiance Logic ---------- */
@@ -2377,7 +2410,7 @@ button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
   [gradientAngle, gradientSpread].forEach(el => el.addEventListener('input', () => { if (el === gradientAngle && !gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } applyColorWallpaper(); updatePercentages(); saveData(); }));
   gradientSpinToggle.addEventListener('change', ()=>{ if(gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } else { gradientAngle.value = Math.round(gradientAnimationAngle); updatePercentages(); } gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none'; saveData(); });
   enableClock.addEventListener('change', ()=>{ applyClockSettings(); saveData(); });
-  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground].forEach(el => el.addEventListener('change', ()=>{ 
+  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground, enableScanLine].forEach(el => el.addEventListener('change', ()=>{ 
       if (el === enableAmbiance) applyAmbianceSettings(); 
       if (el === enableCustomBackground) syncCustomBackgroundVisibility();
       saveData(); 
