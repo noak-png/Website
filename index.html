@@ -1114,6 +1114,22 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
                     <div class="helper">Enable to see all customization options. Disabling will simplify the UI and turn off visual effects.</div>
                 </div>
                 <div class="hr"></div>
+                <div class="sub-section">
+                    <details id="secDevToolbox">
+                        <summary>DevToolbox</summary>
+                        <div class="content">
+                            <div class="stack">
+                                <button id="exportStateBtn" type="button">State Export</button>
+                                <div class="helper">
+                                    If you're encountering a bug, click "State Export" to download your current settings. Please email this file to 
+                                    <a href="mailto:MySparkList.Contact@gmail.com">MySparkList.Contact@gmail.com</a>. 
+                                    Allow up to 72 hours for troubleshooting and a response. This export does not include your list content.
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+                <div class="hr"></div>
                 <button id="panicResetBtn" type="button" style="background:var(--danger);" title="Warning: This will clear all items and reset all settings to default.">Panic Reset to Factory Default</button>
                 <div class="helper">Panic Reset clears everything (except saved patterns) and reloads the page. This action cannot be undone.</div>
             </div>
@@ -1301,6 +1317,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   const clickCounter = document.getElementById('clickCounter');
   const clickCount = document.getElementById('clickCount');
   const developerModeToggle = document.getElementById('developerModeToggle');
+  const exportStateBtn = document.getElementById('exportStateBtn');
 
   // Natural Slide controls
   const enableNaturalSlide = document.getElementById('enableNaturalSlide');
@@ -1500,55 +1517,74 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     
     updateUIForActiveList();
 
-    animationStyleSelect.value = get('animationStyle', 'bubbles');
-    animIntensity.value = get('animIntensity', '6'); emissionScale.value = get('emissionScale', '70'); holdRate.value = get('holdRate', '35');
-    bubbleSize.value = get('bubbleSize', '6'); bubbleSpeed.value = get('bubbleSpeed', '6'); bubbleLifeSlider.value = get('bubbleLife', '90');
-    colorMode.value = get('colorMode', 'fade'); bubbleColor.value = get('bubbleColor', '#16a34a'); bubbleStartColor.value = get('bubbleStartColor', '#16a34a');
-    bubbleEndColor.value = get('bubbleEndColor', '#22c55e'); shapeSelect.value = get('shape','circle'); bubbleOutline.value = get('bubbleOutline', 'none');
+    // --- NEW DEFAULTS FROM JSON ---
+    animationStyleSelect.value = get('animationStyle', 'fireworks');
+    animIntensity.value = get('animIntensity', '15'); 
+    emissionScale.value = get('emissionScale', '80'); 
+    holdRate.value = get('holdRate', '35');
+    bubbleSize.value = get('bubbleSize', '7'); 
+    bubbleSpeed.value = get('bubbleSpeed', '4'); 
+    bubbleLifeSlider.value = get('bubbleLife', '250');
+    colorMode.value = get('colorMode', 'fade'); 
+    bubbleColor.value = get('bubbleColor', '#16a34a'); 
+    bubbleStartColor.value = get('bubbleStartColor', '#b1dffb');
+    bubbleEndColor.value = get('bubbleEndColor', '#ff0000'); 
+    shapeSelect.value = get('shape','circle'); 
+    bubbleOutline.value = get('bubbleOutline', 'none');
     containParticles.checked = (get('containParticles', 'false') === 'true');
     enableWind.checked = (get('enableWind','false')==='true');
     windPattern.value = get('windPattern','steady');
-    windIntensity.value = get('windIntensity','30'); windDirection.value = get('windDirection','0');
-    enableAnimations.checked = (get('animationsEnabled','true')==='true'); enableEndless.checked = (get('endlessEnabled','false')==='true');
-    enableSecCounter.checked = (get('secCounter','false')==='true'); enableClickCounter.checked = (get('clickCounter','false')==='true');
-    totalClicks = parseInt(get('clickCount','0'),10)||0; seconds = parseInt(get('seconds','0'),10)||0;
+    windIntensity.value = get('windIntensity','30'); 
+    windDirection.value = get('windDirection','0');
+    enableAnimations.checked = (get('animationsEnabled','true')==='true'); 
+    enableEndless.checked = (get('endlessEnabled','false')==='true');
+    enableSecCounter.checked = (get('secCounter','false')==='true'); 
+    enableClickCounter.checked = (get('clickCounter','false')==='true');
+    totalClicks = parseInt(get('clickCount','0'),10)||0; 
+    seconds = parseInt(get('seconds','0'),10)||0;
     
-    const darkModePreference = get('darkMode', hasLaunchedBefore ? 'false' : 'true');
+    const darkModePreference = get('darkMode', 'true');
     if(darkModePreference === 'true'){ 
         document.documentElement.classList.add('dark'); 
         darkToggle.textContent='☀️ Light Mode'; 
     }
 
-    glassOpacity.value = get('glassOpacity', '75');
+    glassOpacity.value = get('glassOpacity', '66');
     glassBlurSlider.value = get('glassBlur', '8');
     glassSaturationSlider.value = get('glassSaturation', '150');
-    glassBorderSlider.value = get('glassBorder', '8');
+    glassBorderSlider.value = get('glassBorder', '23');
     populateStyleSelector('glass');
-    uiStyleSelect.value = get('uiStyle', 'default');
-    completionCheckedColor.value = get('completionCheckedColor', document.documentElement.classList.contains('dark') ? '#22c55e' : '#16a34a');
-    completionUncheckedColor.value = get('completionUncheckedColor', document.documentElement.classList.contains('dark') ? '#f87171' : '#ef4444');
+    uiStyleSelect.value = get('uiStyle', 'graphite');
+    completionCheckedColor.value = get('completionCheckedColor', '#22c55e');
+    completionUncheckedColor.value = get('completionUncheckedColor', '#f87171');
     completionGlow.value = get('completionGlow', '6');
     completionSpeed.value = get('completionSpeed', '900');
-    enableCustomBackground.checked = (get('enableCustomBackground', 'false') === 'true');
+    enableCustomBackground.checked = (get('enableCustomBackground', 'true') === 'true');
     enableAmbiance.checked = (get('ambianceEnabled', 'false') === 'true');
     ambianceSelect.value = get('ambianceEffect', 'none');
     snowDensity.value = get('snowDensity', '100'); snowSize.value = get('snowSize', '20'); snowSpeed.value = get('snowSpeed', '30');
     orbsDensity.value = get('orbsDensity', '80'); orbsSize.value = get('orbsSize', '70'); orbsSpeed.value = get('orbsSpeed', '20'); orbsColor.value = get('orbsColor', '#9aa4b2');
     starfieldDensity.value = get('starfieldDensity', '500'); starfieldSize.value = get('starfieldSize', '3'); starfieldSpeed.value = get('starfieldSpeed', '25');
     matrixDensity.value = get('matrixDensity', '100'); matrixSize.value = get('matrixSize', '14'); matrixSpeed.value = get('matrixSpeed', '40'); matrixColor.value = get('matrixColor', '#00ff47');
-    backgroundType.value = get('backgroundType', 'theme'); wallpaperFit.value = get('wallpaperFit','cover');
-    colorWallpaperType.value = get('colorWallpaperType', 'solid'); wallpaperColor1.value = get('wallpaperColor1', '#2c3e50');
-    wallpaperColor2.value = get('wallpaperColor2', '#3498db'); wallpaperColor3.value = get('wallpaperColor3', '#13223a');
-    gradientAngle.value = get('gradientAngle', 145); gradientSpread.value = get('gradientSpread', '0');
-    gradientAnimationAngle = parseFloat(gradientAngle.value); gradientSpinToggle.checked = (get('gradientSpinEnabled', 'false') === 'true');
+    backgroundType.value = get('backgroundType', 'color'); 
+    wallpaperFit.value = get('wallpaperFit','cover');
+    colorWallpaperType.value = get('colorWallpaperType', 'gradient'); 
+    wallpaperColor1.value = get('wallpaperColor1', '#2c3e50');
+    wallpaperColor2.value = get('wallpaperColor2', '#006eff'); 
+    wallpaperColor3.value = get('wallpaperColor3', '#6d248f');
+    gradientAngle.value = get('gradientAngle', 145); 
+    gradientSpread.value = get('gradientSpread', '0');
+    gradientAnimationAngle = parseFloat(gradientAngle.value); 
+    gradientSpinToggle.checked = (get('gradientSpinEnabled', 'true') === 'true');
     gradientSpinSpeed.value = get('gradientSpinSpeed', '10');
     enableNaturalSlide.checked = (get('naturalSlide','true')==='true');
     enableScanLine.checked = (get('enableScanLine', 'false') === 'true');
     scanAngle.value = get('scanAngle', '180');
     slideSpeed.value = get('slideSpeed','800');
-    enableClock.checked = (get('clockEnabled', 'false')==='true'); clockPosition.value = get('clockPosition', 'pos-top-right');
+    enableClock.checked = (get('clockEnabled', 'false')==='true'); 
+    clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
-    developerModeToggle.checked = (get('advancedMode', get('developerMode', 'false')) === 'true'); // Support old key for migration
+    developerModeToggle.checked = (get('advancedMode', 'true') === 'true');
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
     const detailsElements = document.querySelectorAll('.menu-panel details');
@@ -2298,6 +2334,38 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
           location.reload();
       }
   }
+  
+  function exportState() {
+    const currentState = collectSettings();
+    const exportData = {
+        version: versionTag.textContent,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        settings: {
+            animations: currentState.animations,
+            wind: currentState.wind,
+            toggles: currentState.toggles,
+            appearance: currentState.appearance,
+            completion: currentState.completion,
+            ambiance: currentState.ambiance,
+            slideSpeed: currentState.slideSpeed,
+            clock: currentState.clock,
+            advancedMode: developerModeToggle.checked
+        }
+    };
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.download = `mysparklist-state-export-${date}.json`;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   /* ---------- Shapes & Drawing ---------- */
   function pickShape(){ const mode = shapeSelect.value; if(mode==='random'){ const all = ['circle','square','triangle','star','heart','hexagon','boomerang']; return all[Math.floor(Math.random()*all.length)]; } return mode; }
@@ -2786,6 +2854,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   uiStyleResetBtn.addEventListener('click', ()=>{ resetUiStyleToDefault(); saveData(); });
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
   panicResetBtn.addEventListener('click', panicReset);
+  exportStateBtn.addEventListener('click', exportState);
   savePatternBtn.addEventListener('click', saveCurrentPattern);
   exportPatternsBtn.addEventListener('click', () => {
     if (savedPatterns.length === 0) { alert('There are no saved patterns to export.'); return; }
@@ -3160,11 +3229,6 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     
     const listNameToDelete = lists[index].name;
     if (confirm(`Are you sure you want to permanently delete the list "${listNameToDelete}"?`)) {
-        
-        if (lists.length === 1) {
-            document.getElementById('app').style.display = 'none';
-        }
-        
         lists.splice(index, 1);
         
         if (activeListIndex >= index && activeListIndex > 0) {
