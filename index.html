@@ -1110,8 +1110,8 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
                 </div>
                 <div class="hr"></div>
                 <div class="stack">
-                    <label><input type="checkbox" id="developerModeToggle"> Advanced Mode</label>
-                    <div class="helper">Enable to see all customization options. Disabling will simplify the UI and turn off visual effects.</div>
+                    <label><input type="checkbox" id="simpleModeToggle"> Simple Mode</label>
+                    <div class="helper">Enable to simplify the UI and hide advanced customization options.</div>
                 </div>
                 <div class="hr"></div>
                 <div class="sub-section">
@@ -1316,7 +1316,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   const pauseCounter = document.getElementById('pauseCounter');
   const clickCounter = document.getElementById('clickCounter');
   const clickCount = document.getElementById('clickCount');
-  const developerModeToggle = document.getElementById('developerModeToggle');
+  const simpleModeToggle = document.getElementById('simpleModeToggle');
   const exportStateBtn = document.getElementById('exportStateBtn');
 
   // Natural Slide controls
@@ -1481,7 +1481,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     store('scanAngle', scanAngle.value);
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
     store('clockDetail', clockDetail.value);
-    store('advancedMode', developerModeToggle.checked);
+    store('simpleMode', simpleModeToggle.checked);
     store('hasLaunchedBefore', 'true');
     localStorage.setItem('mysparklist.savedPatterns', JSON.stringify(savedPatterns));
 
@@ -1517,40 +1517,40 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     
     updateUIForActiveList();
 
-    // --- NEW DEFAULTS FROM JSON ---
+    // --- NEW DEFAULTS FROM JSON (1) ---
     animationStyleSelect.value = get('animationStyle', 'fireworks');
-    animIntensity.value = get('animIntensity', '15'); 
-    emissionScale.value = get('emissionScale', '80'); 
+    animIntensity.value = get('animIntensity', '15');
+    emissionScale.value = get('emissionScale', '80');
     holdRate.value = get('holdRate', '35');
-    bubbleSize.value = get('bubbleSize', '7'); 
-    bubbleSpeed.value = get('bubbleSpeed', '4'); 
+    bubbleSize.value = get('bubbleSize', '7');
+    bubbleSpeed.value = get('bubbleSpeed', '4');
     bubbleLifeSlider.value = get('bubbleLife', '250');
-    colorMode.value = get('colorMode', 'fade'); 
-    bubbleColor.value = get('bubbleColor', '#16a34a'); 
+    colorMode.value = get('colorMode', 'fade');
+    bubbleColor.value = get('bubbleColor', '#16a34a');
     bubbleStartColor.value = get('bubbleStartColor', '#b1dffb');
-    bubbleEndColor.value = get('bubbleEndColor', '#ff0000'); 
-    shapeSelect.value = get('shape','circle'); 
+    bubbleEndColor.value = get('bubbleEndColor', '#ff0000');
+    shapeSelect.value = get('shape', 'circle');
     bubbleOutline.value = get('bubbleOutline', 'none');
     containParticles.checked = (get('containParticles', 'false') === 'true');
-    enableWind.checked = (get('enableWind','false')==='true');
-    windPattern.value = get('windPattern','steady');
-    windIntensity.value = get('windIntensity','30'); 
-    windDirection.value = get('windDirection','0');
-    enableAnimations.checked = (get('animationsEnabled','true')==='true'); 
-    enableEndless.checked = (get('endlessEnabled','false')==='true');
-    enableSecCounter.checked = (get('secCounter','false')==='true'); 
-    enableClickCounter.checked = (get('clickCounter','false')==='true');
-    totalClicks = parseInt(get('clickCount','0'),10)||0; 
-    seconds = parseInt(get('seconds','0'),10)||0;
-    
+    enableWind.checked = (get('enableWind', 'false') === 'true');
+    windPattern.value = get('windPattern', 'steady');
+    windIntensity.value = get('windIntensity', '30');
+    windDirection.value = get('windDirection', '0');
+    enableAnimations.checked = (get('animationsEnabled', 'true') === 'true');
+    enableEndless.checked = (get('endlessEnabled', 'false') === 'true');
+    enableSecCounter.checked = (get('secCounter', 'false') === 'true');
+    enableClickCounter.checked = (get('clickCounter', 'false') === 'true');
+    totalClicks = parseInt(get('clickCount', '0'), 10) || 0;
+    seconds = parseInt(get('seconds', '0'), 10) || 0;
+
     const darkModePreference = get('darkMode', 'true');
-    if(darkModePreference === 'true'){ 
-        document.documentElement.classList.add('dark'); 
-        darkToggle.textContent='☀️ Light Mode'; 
+    if (darkModePreference === 'true') {
+        document.documentElement.classList.add('dark');
+        darkToggle.textContent = '☀️ Light Mode';
     }
 
-    glassOpacity.value = get('glassOpacity', '66');
-    glassBlurSlider.value = get('glassBlur', '8');
+    glassOpacity.value = get('glassOpacity', '62');
+    glassBlurSlider.value = get('glassBlur', '0');
     glassSaturationSlider.value = get('glassSaturation', '150');
     glassBorderSlider.value = get('glassBorder', '23');
     populateStyleSelector('glass');
@@ -1560,31 +1560,41 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     completionGlow.value = get('completionGlow', '6');
     completionSpeed.value = get('completionSpeed', '900');
     enableCustomBackground.checked = (get('enableCustomBackground', 'true') === 'true');
-    enableAmbiance.checked = (get('ambianceEnabled', 'false') === 'true');
-    ambianceSelect.value = get('ambianceEffect', 'none');
-    snowDensity.value = get('snowDensity', '100'); snowSize.value = get('snowSize', '20'); snowSpeed.value = get('snowSpeed', '30');
-    orbsDensity.value = get('orbsDensity', '80'); orbsSize.value = get('orbsSize', '70'); orbsSpeed.value = get('orbsSpeed', '20'); orbsColor.value = get('orbsColor', '#9aa4b2');
-    starfieldDensity.value = get('starfieldDensity', '500'); starfieldSize.value = get('starfieldSize', '3'); starfieldSpeed.value = get('starfieldSpeed', '25');
-    matrixDensity.value = get('matrixDensity', '100'); matrixSize.value = get('matrixSize', '14'); matrixSpeed.value = get('matrixSpeed', '40'); matrixColor.value = get('matrixColor', '#00ff47');
-    backgroundType.value = get('backgroundType', 'color'); 
-    wallpaperFit.value = get('wallpaperFit','cover');
-    colorWallpaperType.value = get('colorWallpaperType', 'gradient'); 
+    enableAmbiance.checked = (get('ambianceEnabled', 'true') === 'true');
+    ambianceSelect.value = get('ambianceEffect', 'orbs');
+    snowDensity.value = get('snowDensity', '100');
+    snowSize.value = get('snowSize', '20');
+    snowSpeed.value = get('snowSpeed', '30');
+    orbsDensity.value = get('orbsDensity', '26');
+    orbsSize.value = get('orbsSize', '68');
+    orbsSpeed.value = get('orbsSpeed', '8');
+    orbsColor.value = get('orbsColor', '#9aa4b2');
+    starfieldDensity.value = get('starfieldDensity', '500');
+    starfieldSize.value = get('starfieldSize', '3');
+    starfieldSpeed.value = get('starfieldSpeed', '25');
+    matrixDensity.value = get('matrixDensity', '100');
+    matrixSize.value = get('matrixSize', '14');
+    matrixSpeed.value = get('matrixSpeed', '40');
+    matrixColor.value = get('matrixColor', '#00ff47');
+    backgroundType.value = get('backgroundType', 'color');
+    wallpaperFit.value = get('wallpaperFit', 'cover');
+    colorWallpaperType.value = get('colorWallpaperType', 'gradient');
     wallpaperColor1.value = get('wallpaperColor1', '#2c3e50');
-    wallpaperColor2.value = get('wallpaperColor2', '#006eff'); 
+    wallpaperColor2.value = get('wallpaperColor2', '#006eff');
     wallpaperColor3.value = get('wallpaperColor3', '#6d248f');
-    gradientAngle.value = get('gradientAngle', 145); 
+    gradientAngle.value = get('gradientAngle', '145');
     gradientSpread.value = get('gradientSpread', '0');
-    gradientAnimationAngle = parseFloat(gradientAngle.value); 
+    gradientAnimationAngle = parseFloat(gradientAngle.value);
     gradientSpinToggle.checked = (get('gradientSpinEnabled', 'true') === 'true');
     gradientSpinSpeed.value = get('gradientSpinSpeed', '10');
-    enableNaturalSlide.checked = (get('naturalSlide','true')==='true');
-    enableScanLine.checked = (get('enableScanLine', 'false') === 'true');
+    enableNaturalSlide.checked = (get('naturalSlide', 'true') === 'true');
+    enableScanLine.checked = (get('enableScanLine', 'true') === 'true');
     scanAngle.value = get('scanAngle', '180');
-    slideSpeed.value = get('slideSpeed','800');
-    enableClock.checked = (get('clockEnabled', 'false')==='true'); 
+    slideSpeed.value = get('slideSpeed', '800');
+    enableClock.checked = (get('clockEnabled', 'false') === 'true');
     clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
-    developerModeToggle.checked = (get('advancedMode', 'true') === 'true');
+    simpleModeToggle.checked = (get('simpleMode', 'false') === 'true');
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
     const detailsElements = document.querySelectorAll('.menu-panel details');
@@ -1598,7 +1608,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     
     updateSectionVisibility(hasLaunchedBefore);
 
-    if (!developerModeToggle.checked) {
+    if (simpleModeToggle.checked) {
       applySimplifiedMode(true, true);
     }
   }
@@ -1632,7 +1642,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
 
   /* ---------- Section Visibility ---------- */
   function updateSectionVisibility(hasLaunched) {
-      const devMode = developerModeToggle.checked;
+      const devMode = !simpleModeToggle.checked;
       if (!hasLaunched && !devMode) {
           secCheckmarkAnims.style.display = 'none';
           secAppearance.style.display = 'none';
@@ -2350,7 +2360,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
             ambiance: currentState.ambiance,
             slideSpeed: currentState.slideSpeed,
             clock: currentState.clock,
-            advancedMode: developerModeToggle.checked
+            simpleMode: simpleModeToggle.checked
         }
     };
 
@@ -2850,7 +2860,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
       if (el === enableScanLine) syncScanAngleVisibility();
       saveData(); 
   }));
-  developerModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(!developerModeToggle.checked); saveData(); });
+  simpleModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(simpleModeToggle.checked); saveData(); });
   uiStyleResetBtn.addEventListener('click', ()=>{ resetUiStyleToDefault(); saveData(); });
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
   panicResetBtn.addEventListener('click', panicReset);
