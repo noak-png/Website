@@ -713,9 +713,14 @@ button.ctrl.clear-list-btn-red {
         <!-- Buttons are now dynamically added here by JavaScript -->
       </div>
       <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark</button>
-      <button id="menuBtn" class="ctrl menu-btn" aria-label="Open menu" aria-controls="menuPanel" aria-expanded="false">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
-      </button>
+      <div style="justify-self: end; display: flex; gap: 8px;">
+        <button id="shareBtn" class="ctrl menu-btn" aria-label="Share List">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L16.04,7.15C16.56,7.62 17.24,7.92 18,7.92C19.66,7.92 21,6.58 21,5C21,3.42 19.66,2 18,2C16.34,2 15,3.42 15,5C15,5.24 15.04,5.47 15.09,5.7L7.96,9.85C7.44,9.38 6.76,9.08 6,9.08C4.34,9.08 3,10.42 3,12C3,13.58 4.34,15 6,15C6.76,15 7.44,14.62 7.96,14.15L15.09,18.3C15.04,18.53 15,18.76 15,19C15,20.58 16.34,22 18,22C19.66,22 21,20.58 21,19C21,17.42 19.66,16.08 18,16.08Z" /></svg>
+        </button>
+        <button id="menuBtn" class="ctrl menu-btn" aria-label="Open menu" aria-controls="menuPanel" aria-expanded="false">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -732,6 +737,7 @@ button.ctrl.clear-list-btn-red {
         Set Color
         <input type="color" id="ctxColorInput" class="context-color-input">
     </div>
+    <div class="context-menu-item" id="ctxShare">Share List</div>
     <div class="context-menu-item danger" id="ctxDelete">Delete List</div>
   </div>
 
@@ -1263,6 +1269,7 @@ button.ctrl.clear-list-btn-red {
   const clearControlsContainer = document.getElementById('clearControlsContainer');
   const darkToggle = document.getElementById('darkToggle');
   const menuBtn = document.getElementById('menuBtn');
+  const shareBtn = document.getElementById('shareBtn');
   const menuPanel = document.getElementById('menuPanel');
   const closeMenuNotch = document.getElementById('closeMenuNotch');
   
@@ -1296,6 +1303,7 @@ button.ctrl.clear-list-btn-red {
   const ctxRename = document.getElementById('ctxRename');
   const ctxSetColor = document.getElementById('ctxSetColor');
   const ctxColorInput = document.getElementById('ctxColorInput');
+  const ctxShare = document.getElementById('ctxShare');
   const ctxDelete = document.getElementById('ctxDelete');
 
   // Animation Style
@@ -1551,6 +1559,44 @@ button.ctrl.clear-list-btn-red {
     return luminance < 0.5;
   }
 
+  function generateShareLink(listIndex) {
+    if (listIndex < 0 || listIndex >= lists.length) {
+        alert("Cannot share. No valid list selected.");
+        return;
+    }
+    const listToShare = lists[listIndex];
+
+    // Share name, type, and items for a better user experience
+    const dataToShare = {
+        name: listToShare.name,
+        type: listToShare.type,
+        items: listToShare.items
+    };
+    const jsonString = JSON.stringify(dataToShare);
+
+    try {
+        const encodedString = btoa(unescape(encodeURIComponent(jsonString)));
+
+        const baseUrl = `${location.origin}${location.pathname}`;
+        const shareableLink = `${baseUrl}?list=${encodedString}`;
+
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareableLink).then(() => {
+                alert("Share link copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy share link: ', err);
+                prompt("Could not copy to clipboard automatically. Here is the link:", shareableLink);
+            });
+        } else {
+            // Fallback for older browsers
+            prompt("Clipboard access is not available. Here is the link:", shareableLink);
+        }
+    } catch (e) {
+        console.error("Error generating share link:", e);
+        alert("Could not generate share link. The list might be too large.");
+    }
+  }
+
   function saveData(){
     localStorage.setItem('mysparklist.lists', JSON.stringify(lists));
     localStorage.setItem('mysparklist.activeListIndex', activeListIndex);
@@ -1610,8 +1656,47 @@ button.ctrl.clear-list-btn-red {
     const hasLaunchedBefore = (get('hasLaunchedBefore', 'false') === 'true');
     const shouldHideWelcomeBack = (get('hideWelcomeBack', 'false') === 'true');
     
+    // Default loading from localStorage
     lists = JSON.parse(get('lists', '[]'));
     activeListIndex = parseInt(get('activeListIndex', '0'), 10);
+
+    // Check for shared list and OVERRIDE if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedListData = urlParams.get('list');
+
+    if (sharedListData) {
+        try {
+            const decodedString = decodeURIComponent(escape(window.atob(sharedListData)));
+            const parsedData = JSON.parse(decodedString);
+
+            if (parsedData && Array.isArray(parsedData.items)) {
+                const newList = {
+                    name: (parsedData.name || "Shared List") + " 🔗",
+                    type: parsedData.type || "General Tasks",
+                    items: parsedData.items,
+                    color: null
+                };
+
+                // Replace all existing lists with the new shared one.
+                lists = [newList];
+                activeListIndex = 0;
+
+                // Clean the URL
+                const newUrl = window.location.pathname;
+                history.replaceState({}, document.title, newUrl);
+
+                // Do not show welcome back prompt when loading a shared list
+                welcomeBackOverlay.classList.remove('visible');
+            } else {
+                throw new Error("Invalid shared list data format.");
+            }
+        } catch (e) {
+            console.error("Failed to load shared list:", e);
+            alert("Could not load the shared list. The link may be invalid or corrupted.");
+            const newUrl = window.location.pathname;
+            history.replaceState({}, document.title, newUrl);
+        }
+    }
     
     if (lists.length === 0) {
       if (!hasLaunchedBefore) {
@@ -3478,6 +3563,14 @@ button.ctrl.clear-list-btn-red {
   ctxDelete.addEventListener('click', () => {
     if (contextListIndex !== -1) {
         deleteList(contextListIndex);
+    }
+    hideContextMenu();
+  });
+
+  shareBtn.addEventListener('click', () => generateShareLink(activeListIndex));
+  ctxShare.addEventListener('click', () => {
+    if (contextListIndex !== -1) {
+        generateShareLink(contextListIndex);
     }
     hideContextMenu();
   });
