@@ -210,16 +210,25 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 
 
 /* Control bar */
-.controls{ width:100%; display:flex; flex-wrap:wrap; justify-content:space-between; margin-top:8px; gap:10px; padding:8px 10px; border-radius:14px; }
+.controls {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-top: 8px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+}
 button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer; transition:all .15s; display: flex; align-items: center; justify-content: center; }
 .clear-btn{ background:#111827; color:#f3f4f6; box-shadow:var(--shadow); }
-.dark-toggle{ background:var(--card); color:var(--text); border:1px solid var(--border); box-shadow:var(--shadow); }
-.menu-btn{ background:var(--accent); color:#fff; box-shadow:var(--shadow); }
+.dark-toggle{ background:var(--card); color:var(--text); border:1px solid var(--border); box-shadow:var(--shadow); justify-self: center; }
+.menu-btn{ background:var(--accent); color:#fff; box-shadow:var(--shadow); justify-self: end; }
 .menu-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
 
 /* New Control Button Styles */
-.clear-controls-container { display: flex; gap: 8px; }
+.clear-controls-container { display: flex; gap: 8px; justify-self: start; }
 button.ctrl.clear-checks-btn { background: var(--accent); color: #fff; box-shadow:var(--shadow); }
 button.ctrl.clear-list-btn-red { 
   background: var(--danger); color: #fff; box-shadow:var(--shadow); 
@@ -461,6 +470,43 @@ button.ctrl.clear-list-btn-red {
     transition: all .15s;
     font-size: 16px;
 }
+.welcome-back-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+.welcome-back-options button {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 16px;
+    font-weight: 600;
+}
+.welcome-back-options .resume-btn {
+    background: var(--accent);
+    color: white;
+}
+.welcome-back-options .create-new-btn {
+    background: var(--bg);
+    color: var(--text);
+}
+.welcome-back-options .start-fresh-btn {
+    background: transparent;
+    color: var(--danger);
+    border-color: var(--danger);
+}
+.dismiss-prompt-row {
+    margin-top: 24px;
+    text-align: center;
+}
+.dismiss-prompt-row label {
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+}
 
 /* ========== Multi-list Tabs ========== */
 .tab-bar {
@@ -505,6 +551,8 @@ button.ctrl.clear-list-btn-red {
   scrollbar-width: none;
   padding-bottom: 15px;
   margin-bottom: -15px;
+  padding-left: 4px; /* Fix for outline cutoff */
+  padding-right: 4px; /* Fix for outline cutoff */
 }
 .tabs-container::-webkit-scrollbar { display: none; }
 
@@ -627,6 +675,21 @@ button.ctrl.clear-list-btn-red {
               <button id="createListBtn">Create List</button>
           </div>
       </div>
+    </div>
+  </div>
+
+  <div class="welcome-overlay" id="welcomeBackOverlay">
+    <div class="welcome-prompt glass">
+        <h2>Welcome Back to MySparkList!</h2>
+        <p>What would you like to do?</p>
+        <div class="welcome-back-options">
+            <button id="resumeBtn" class="resume-btn">Resume Current Lists</button>
+            <button id="createNewBtn" class="create-new-btn">Create a New List</button>
+            <button id="startFreshBtn" class="start-fresh-btn">Start Fresh (Delete All)</button>
+        </div>
+        <div class="dismiss-prompt-row">
+            <label><input type="checkbox" id="hideWelcomeBack"> Don't show this again</label>
+        </div>
     </div>
   </div>
 
@@ -1216,6 +1279,13 @@ button.ctrl.clear-list-btn-red {
   const createListBtn = document.getElementById('createListBtn');
   const backToListTypeBtn = document.getElementById('backToListTypeBtn');
 
+  // Welcome Back Prompt
+  const welcomeBackOverlay = document.getElementById('welcomeBackOverlay');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const createNewBtn = document.getElementById('createNewBtn');
+  const startFreshBtn = document.getElementById('startFreshBtn');
+  const hideWelcomeBack = document.getElementById('hideWelcomeBack');
+
   // Tabs
   const tabBar = document.getElementById('tabBar');
   const tabsContainer = document.getElementById('tabsContainer');
@@ -1524,6 +1594,7 @@ button.ctrl.clear-list-btn-red {
     store('clockDetail', clockDetail.value);
     store('simpleMode', simpleModeToggle.checked);
     store('hasLaunchedBefore', 'true');
+    store('hideWelcomeBack', hideWelcomeBack.checked);
     localStorage.setItem('mysparklist.savedPatterns', JSON.stringify(savedPatterns));
 
     const detailsElements = document.querySelectorAll('.menu-panel details');
@@ -1537,6 +1608,7 @@ button.ctrl.clear-list-btn-red {
   function loadData(){
     const get = (k, fallback) => localStorage.getItem('mysparklist.'+k) ?? fallback;
     const hasLaunchedBefore = (get('hasLaunchedBefore', 'false') === 'true');
+    const shouldHideWelcomeBack = (get('hideWelcomeBack', 'false') === 'true');
     
     lists = JSON.parse(get('lists', '[]'));
     activeListIndex = parseInt(get('activeListIndex', '0'), 10);
@@ -1554,11 +1626,13 @@ button.ctrl.clear-list-btn-red {
         lists = [{ name: 'My First List', type: 'General Tasks', items: [] }];
         activeListIndex = 0;
       }
+    } else if (hasLaunchedBefore && !shouldHideWelcomeBack) {
+        welcomeBackOverlay.classList.add('visible');
     }
     
     updateUIForActiveList();
 
-    // --- NEW DEFAULTS FROM JSON (1) ---
+    // --- NEW DEFAULTS FROM JSON (2) ---
     animationStyleSelect.value = get('animationStyle', 'fireworks');
     animIntensity.value = get('animIntensity', '15');
     emissionScale.value = get('emissionScale', '80');
@@ -1590,9 +1664,9 @@ button.ctrl.clear-list-btn-red {
         darkToggle.innerHTML = '☀️ Light';
     }
 
-    glassOpacity.value = get('glassOpacity', '62');
-    glassBlurSlider.value = get('glassBlur', '0');
-    glassSaturationSlider.value = get('glassSaturation', '150');
+    glassOpacity.value = get('glassOpacity', '25');
+    glassBlurSlider.value = get('glassBlur', '9');
+    glassSaturationSlider.value = get('glassSaturation', '93');
     glassBorderSlider.value = get('glassBorder', '23');
     populateStyleSelector('glass');
     uiStyleSelect.value = get('uiStyle', 'graphite');
@@ -1622,7 +1696,7 @@ button.ctrl.clear-list-btn-red {
     colorWallpaperType.value = get('colorWallpaperType', 'gradient');
     wallpaperColor1.value = get('wallpaperColor1', '#2c3e50');
     wallpaperColor2.value = get('wallpaperColor2', '#006eff');
-    wallpaperColor3.value = get('wallpaperColor3', '#6d248f');
+    wallpaperColor3.value = get('wallpaperColor3', '#020019');
     gradientAngle.value = get('gradientAngle', '145');
     gradientSpread.value = get('gradientSpread', '0');
     gradientAnimationAngle = parseFloat(gradientAngle.value);
@@ -1636,6 +1710,7 @@ button.ctrl.clear-list-btn-red {
     clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
     simpleModeToggle.checked = (get('simpleMode', 'false') === 'true');
+    hideWelcomeBack.checked = shouldHideWelcomeBack;
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
     const detailsElements = document.querySelectorAll('.menu-panel details');
@@ -2342,7 +2417,7 @@ button.ctrl.clear-list-btn-red {
         let el;
         if (key === 'bubbleLife') {
             el = document.getElementById('bubbleLifeSlider');
-        } else if (key === 'shape') { // FIX: Correctly target shape select
+        } else if (key === 'shape') {
             el = document.getElementById('shapeSelect');
         } else {
             el = document.getElementById(key) || document.getElementById(`bubble${key.charAt(0).toUpperCase() + key.slice(1)}`);
@@ -2362,7 +2437,6 @@ button.ctrl.clear-list-btn-red {
   }
 
   function switchToCustomPreset() {
-    // FIX: Remove the temporary 'loaded pattern' option if it exists
     const loadedOption = document.getElementById('loadedPatternOption');
     if (loadedOption) {
         loadedOption.remove();
@@ -2382,6 +2456,7 @@ button.ctrl.clear-list-btn-red {
           Object.keys(localStorage)
             .filter(key => key.startsWith('mysparklist.') && key !== 'mysparklist.savedPatterns')
             .forEach(key => localStorage.removeItem(key));
+          localStorage.removeItem('mysparklist.hideWelcomeBack'); // Also clear the hide welcome back preference
           location.reload();
       }
   }
@@ -2852,7 +2927,6 @@ button.ctrl.clear-list-btn-red {
       updatePercentages(); 
   }));
   
-  // Add change event for saving data on sliders that don't save on input
   scanAngle.addEventListener('change', saveData);
 
   animationStyleSelect.addEventListener('change', (e) => {
@@ -3037,6 +3111,24 @@ button.ctrl.clear-list-btn-red {
     }
   });
 
+  /* ---------- Welcome Back Logic ---------- */
+  resumeBtn.addEventListener('click', () => {
+      welcomeBackOverlay.classList.remove('visible');
+      saveData();
+  });
+
+  createNewBtn.addEventListener('click', () => {
+      welcomeBackOverlay.classList.remove('visible');
+      addTabBtn.click();
+      saveData();
+  });
+
+  startFreshBtn.addEventListener('click', () => {
+      panicReset(); // The confirmation is inside panicReset
+  });
+
+  hideWelcomeBack.addEventListener('change', saveData);
+
   /* ---------- Multi-list & UI Logic ---------- */
     const placeholders = {
         "General Tasks": "Add a task...",
@@ -3079,7 +3171,7 @@ button.ctrl.clear-list-btn-red {
             const clearChecksBtn = document.createElement('button');
             clearChecksBtn.id = 'clearChecksBtn';
             clearChecksBtn.className = 'ctrl clear-checks-btn';
-            clearChecksBtn.innerHTML = '<strong>Clear Checks</strong>';
+            clearChecksBtn.innerHTML = '<strong>Clear</strong>';
             clearChecksBtn.onclick = () => animateAndClearChecks();
             clearControlsContainer.appendChild(clearChecksBtn);
 
@@ -3319,7 +3411,6 @@ button.ctrl.clear-list-btn-red {
     const menu = tabContextMenu;
     const tabRect = targetElement.getBoundingClientRect();
     
-    // Set initial style to calculate dimensions
     menu.style.visibility = 'hidden';
     menu.style.display = 'flex';
     
@@ -3328,11 +3419,9 @@ button.ctrl.clear-list-btn-red {
         const menuWidth = menu.offsetWidth;
         const screenWidth = window.innerWidth;
 
-        // Position menu above the tab, left-aligned
-        let top = tabRect.top - menuHeight - 8; // 8px gap
+        let top = tabRect.top - menuHeight - 8;
         let left = tabRect.left;
 
-        // Boundary checks
         if (top < 10) {
             top = tabRect.bottom + 8;
         }
