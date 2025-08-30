@@ -114,7 +114,7 @@ body{
 .glass, .glass *{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 /* ========== App Regions ========== */
-.app{ width:100%; max-width:980px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; padding:20px; position:relative; z-index: 10; }
+.app{ width:100%; max-width:980px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:20px; padding:20px; position:relative; z-index: 10; }
 
 /* Sticky heading chip — behind bubbles & menu */
 .title-wrap{ 
@@ -332,14 +332,14 @@ button.ctrl.clear-list-btn-red {
 /* Responsiveness */
 @media (max-width:600px){
   .menu-panel{ right:8px; left:8px; width:auto; top:70px; bottom:8px; max-height:none; }
-  .app{ padding:12px; }
+  .app{ padding:12px; gap: 16px; }
   .title-wrap.custom-logo h1 { font-size: 56px; }
   body { padding: 10px; padding-bottom: 70px; }
   .addbar { padding: 12px; gap: 8px; }
   .addbar input[type="text"] { padding: 10px 12px; }
   .addbar button { padding: 10px 14px; }
   .item { padding: 12px 14px; gap: 10px; }
-  .controls { padding: 6px 8px; gap: 8px; }
+  .controls { padding: 6px 8px; gap: 8px; margin-top: 0; }
   button.ctrl { padding: 8px 12px; }
   .menu-panel { padding: 12px; }
   .menu-panel summary { padding: 10px 12px; }
@@ -366,9 +366,9 @@ button.ctrl.clear-list-btn-red {
 .item.collapsing{ overflow:hidden; height:0 !important; padding-top:0 !important; padding-bottom:0 !important; margin:0 !important; border:0 !important; }
 
 /* Card scroll on mobile/long lists */
-.card { max-height: calc(100vh - 200px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.card { max-height: calc(100vh - 220px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 @media (max-width:600px){
-  .card { max-height: calc(100vh - 160px); }
+  .card { max-height: calc(100vh - 235px); }
 }
 
 /* ========== Welcome Prompt ========== */
