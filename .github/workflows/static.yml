@@ -211,15 +211,20 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 
 /* Control bar */
 .controls{ width:100%; display:flex; flex-wrap:wrap; justify-content:space-between; margin-top:8px; gap:10px; padding:8px 10px; border-radius:14px; }
-button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer; transition:all .15s; }
+button.ctrl{ border:none; border-radius:12px; padding:10px 14px; cursor:pointer; transition:all .15s; display: flex; align-items: center; justify-content: center; }
 .clear-btn{ background:#111827; color:#f3f4f6; box-shadow:var(--shadow); }
 .dark-toggle{ background:var(--card); color:var(--text); border:1px solid var(--border); box-shadow:var(--shadow); }
 .menu-btn{ background:var(--accent); color:#fff; box-shadow:var(--shadow); }
+.menu-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
 
 /* New Control Button Styles */
 .clear-controls-container { display: flex; gap: 8px; }
 button.ctrl.clear-checks-btn { background: var(--accent); color: #fff; box-shadow:var(--shadow); }
-button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-shadow:var(--shadow); }
+button.ctrl.clear-list-btn-red { 
+  background: var(--danger); color: #fff; box-shadow:var(--shadow); 
+  font-size: 20px; line-height: 1; padding: 10px 12px;
+}
 
 /* Canvases */
 #bubblesCanvas, #ambianceCanvas{ position:fixed; inset:0; pointer-events:none; }
@@ -304,8 +309,16 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
 .counter-display{ display:flex; align-items:center; gap:8px; }
 
 /* Version tag */
-.version{ position:fixed; bottom:10px; right:10px; font-size:12px; color:var(--muted); z-index: 1000; }
-.version.pos-bottom-right { right: auto; left: 10px; }
+.version {
+    position: fixed;
+    bottom: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    opacity: 0.7;
+    z-index: 1000;
+    pointer-events: none;
+}
 
 /* Responsiveness */
 @media (max-width:600px){
@@ -328,7 +341,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   .menu-footnote { font-size: 11px; margin-bottom: 0; }
   .counter-display, .click-counter, .clock-display { padding: 6px 10px; border-radius: 10px; }
   .counter-display button { padding: 4px 6px; font-size: 11px; }
-  .version { font-size: 11px; bottom: 8px; right: 8px; }
+  .version { font-size: 9px; bottom: 3px; right: 5px; }
   :root { --font-size: 15px; --glass-backdrop-blur: 6px; }
 }
 
@@ -460,43 +473,37 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   gap: 12px;
   z-index: 1050;
   padding: 12px;
-  max-width: 100%;
+  max-width: 1020px;
   margin: 0 auto;
-  pointer-events: none; /* Let clicks pass through the bar itself */
 }
-.tab-bar::before, .tab-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 30px;
-    z-index: 2;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    opacity: 0;
+.tabs-wrapper {
+    flex: 1; /* take up all available space */
+    min-width: 0; /* crucial for flex shrinking */
+    mask-image: linear-gradient(to right, black, black);
+    -webkit-mask-image: linear-gradient(to right, black, black);
+    transition: mask-image 0.2s ease, -webkit-mask-image 0.2s ease;
 }
-.tab-bar::before {
-    left: 0;
-    background: linear-gradient(to right, var(--bg), transparent);
+.tabs-wrapper.fade-right {
+    mask-image: linear-gradient(to right, black calc(100% - 40px), transparent);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 40px), transparent);
 }
-.tab-bar::after {
-    right: 0;
-    background: linear-gradient(to left, var(--bg), transparent);
+.tabs-wrapper.fade-left {
+    mask-image: linear-gradient(to right, transparent, black 40px);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40px);
 }
-.tab-bar.is-scrolling-left::before { opacity: 1; }
-.tab-bar.is-scrolling-right::after { opacity: 1; }
+.tabs-wrapper.fade-both {
+    mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+}
 
 .tabs-container {
   display: flex;
   gap: 8px;
-  flex: 1; /* Take up available space */
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  min-width: 0; /* Important for flexbox to allow shrinking */
-  pointer-events: auto; /* Re-enable pointer events on the container */
-  padding-bottom: 15px; /* Space for scrollbar without visual overlap */
+  padding-bottom: 15px;
   margin-bottom: -15px;
 }
 .tabs-container::-webkit-scrollbar { display: none; }
@@ -511,13 +518,17 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   font-weight: 600;
   display: flex;
   align-items: center;
-  flex-shrink: 0; /* Prevent tabs from shrinking */
+  flex-shrink: 0;
   white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tab.active {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline-offset: 2px;
 }
 .add-tab-btn {
   background: var(--accent);
@@ -531,7 +542,6 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   cursor: pointer;
   box-shadow: var(--shadow);
   flex-shrink: 0;
-  pointer-events: auto; /* Ensure button is clickable */
 }
 
 
@@ -544,10 +554,20 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     box-shadow: var(--shadow);
     z-index: 3000;
     padding: 6px;
-    display: flex;
+    display: none; /* Initially hidden */
     flex-direction: column;
     gap: 4px;
     min-width: 160px;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s;
+}
+#tabContextMenu.visible {
+    display: flex;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
 }
 .context-menu-item {
     padding: 8px 12px;
@@ -575,9 +595,10 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
 <body>
   <div class="welcome-overlay" id="welcomeOverlay">
     <div class="welcome-prompt glass" id="welcomePrompt">
+      <button class="remove" id="closePromptBtn" style="display: none;">✖</button>
       <div id="listTypeStep">
-          <h2>Welcome to MySparkList!</h2>
-          <p>What kind of list are you creating today?</p>
+          <h2 id="welcomeTitle">Welcome to MySparkList!</h2>
+          <p id="welcomeSubText">What kind of list are you creating today?</p>
           <div class="list-type-options">
             <div class="list-type-option" data-type="General Tasks">
               <h3>General Tasks</h3>
@@ -628,17 +649,21 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
       <div class="clear-controls-container" id="clearControlsContainer">
         <!-- Buttons are now dynamically added here by JavaScript -->
       </div>
-      <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark Mode</button>
-      <button id="menuBtn" class="ctrl menu-btn" aria-controls="menuPanel" aria-expanded="false">Menu</button>
+      <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark</button>
+      <button id="menuBtn" class="ctrl menu-btn" aria-label="Open menu" aria-controls="menuPanel" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
+      </button>
     </div>
   </div>
 
   <div class="tab-bar" id="tabBar">
-    <div class="tabs-container" id="tabsContainer"></div>
+    <div class="tabs-wrapper">
+      <div class="tabs-container" id="tabsContainer"></div>
+    </div>
     <button class="add-tab-btn" id="addTabBtn">+</button>
   </div>
 
-  <div id="tabContextMenu" style="display: none;">
+  <div id="tabContextMenu">
     <div class="context-menu-item" id="ctxRename">Rename</div>
     <div class="context-menu-item" id="ctxSetColor">
         Set Color
@@ -1181,6 +1206,9 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   // Welcome Prompt
   const welcomeOverlay = document.getElementById('welcomeOverlay');
   const welcomePrompt = document.getElementById('welcomePrompt');
+  const welcomeTitle = document.getElementById('welcomeTitle');
+  const welcomeSubText = document.getElementById('welcomeSubText');
+  const closePromptBtn = document.getElementById('closePromptBtn');
   const listTypeStep = document.getElementById('listTypeStep');
   const listNameStep = document.getElementById('listNameStep');
   const listTypeOptions = document.querySelectorAll('.list-type-option');
@@ -1557,7 +1585,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     const darkModePreference = get('darkMode', 'true');
     if (darkModePreference === 'true') {
         document.documentElement.classList.add('dark');
-        darkToggle.textContent = '☀️ Light Mode';
+        darkToggle.innerHTML = '☀️ Light';
     }
 
     glassOpacity.value = get('glassOpacity', '62');
@@ -2018,7 +2046,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   darkToggle.onclick = ()=>{
     document.documentElement.classList.toggle('dark');
     const isDark = document.documentElement.classList.contains('dark');
-    darkToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+    darkToggle.innerHTML = isDark ? '☀️ Light' : '🌙 Dark';
     applyMaterialStyle();
     applyLogoTheme();
     applyGlassBorderOpacity(); // Re-apply border for theme change
@@ -2066,7 +2094,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     if (enableClock.checked) startClock(); else stopClock();
     const positionClass = clockPosition.value || 'pos-top-right';
     clockDisplay.className = `clock-display glass ${positionClass}`;
-    versionTag.classList.toggle('pos-bottom-right', positionClass === 'pos-bottom-right');
+    // Version tag position is now static, no longer tied to clock
   }
 
   /* ---------- Simplified (Non-Advanced) Mode ---------- */
@@ -2129,7 +2157,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
           populateStyleSelector();
           uiStyleSelect.value = s.appearance.uiStyle;
           document.documentElement.classList.toggle('dark', s.appearance.dark);
-          darkToggle.textContent = s.appearance.dark ? '☀️ Light Mode' : '🌙 Dark Mode';
+          darkToggle.innerHTML = s.appearance.dark ? '☀️ Light' : '🌙 Dark';
           backgroundType.value = s.appearance.backgroundType; wallpaperFit.value = s.appearance.wallpaperFit;
           colorWallpaperType.value = s.appearance.colorWallpaperType; wallpaperColor1.value = s.appearance.wallpaperColor1;
           wallpaperColor2.value = s.appearance.wallpaperColor2; wallpaperColor3.value = s.appearance.wallpaperColor3;
@@ -2941,18 +2969,36 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
 
   /* ---------- List Creation Prompt Logic ---------- */
   function showListCreationPrompt(isFirstLaunch, callback) {
-      listCreationCallback = callback;
-      document.getElementById('listNamePromptText').textContent = isFirstLaunch 
-          ? "First, let's give your new list a name."
-          : "Give your new list a name.";
-      listTypeStep.style.display = 'block';
-      listNameStep.style.display = 'none';
-      welcomeOverlay.classList.add('visible');
+    listCreationCallback = callback;
+
+    if (isFirstLaunch) {
+        welcomeTitle.textContent = "Welcome to MySparkList!";
+        welcomeSubText.textContent = "What kind of list are you creating today?";
+        closePromptBtn.style.display = 'none';
+    } else {
+        welcomeTitle.textContent = "Create a New List";
+        welcomeSubText.textContent = "Select a type for your new list.";
+        closePromptBtn.style.display = 'block';
+    }
+    
+    listTypeStep.style.display = 'block';
+    listNameStep.style.display = 'none';
+    welcomeOverlay.classList.add('visible');
+    document.addEventListener('keydown', handlePromptEscape);
   }
 
   function hideListCreationPrompt() {
       welcomeOverlay.classList.remove('visible');
+      document.removeEventListener('keydown', handlePromptEscape);
   }
+
+  function handlePromptEscape(e) {
+    if (e.key === 'Escape') {
+      hideListCreationPrompt();
+    }
+  }
+
+  closePromptBtn.onclick = hideListCreationPrompt;
 
   listTypeOptions.forEach(option => {
     option.addEventListener('click', () => {
@@ -2999,7 +3045,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
 
     function updateUIForActiveList() {
         if (lists.length === 0) {
-            showListCreationPrompt(false, (newListData) => {
+            showListCreationPrompt(true, (newListData) => {
                 lists.push(newListData);
                 activeListIndex = 0;
                 updateUIForActiveList();
@@ -3038,7 +3084,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
             const clearListBtn = document.createElement('button');
             clearListBtn.id = 'clearBtn';
             clearListBtn.className = 'ctrl clear-list-btn-red';
-            clearListBtn.innerHTML = '<strong>Clear List</strong>';
+            clearListBtn.innerHTML = '✖';
             clearListBtn.onclick = () => animateAndClearList(true);
             clearControlsContainer.appendChild(clearListBtn);
 
@@ -3053,7 +3099,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
             const defaultClearBtn = document.createElement('button');
             defaultClearBtn.id = 'clearBtn';
             defaultClearBtn.className = 'ctrl clear-btn';
-            defaultClearBtn.innerHTML = '<strong>Clear List</strong>';
+            defaultClearBtn.innerHTML = '✖';
             defaultClearBtn.onclick = () => animateAndClearList(true);
             clearControlsContainer.appendChild(defaultClearBtn);
         }
@@ -3086,6 +3132,9 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     }
     
     function animateAndClearList(isFullClear) {
+      if(isFullClear && !confirm("Are you sure you want to clear all items from this list?")) {
+        return;
+      }
         const checkedItems = list.querySelectorAll('.item.done');
         const animationDuration = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--completion-duration'), 10) || 900;
         
@@ -3133,7 +3182,7 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     const originalName = lists[index].name;
     const newName = prompt(`Rename the list "${originalName}":`, originalName);
     
-    if (newName && newName.trim() !== originalName) {
+    if (newName && newName.trim() && newName.trim() !== originalName) {
         lists[index].name = newName.trim();
         renderTabs();
         saveData();
@@ -3171,17 +3220,21 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
           saveData();
       });
 
+      tab.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        contextListIndex = index;
+        showContextMenu(e.target);
+      });
+
       tab.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         contextListIndex = index;
-        const rect = e.target.getBoundingClientRect();
-        showContextMenu(rect.left, rect.top - tabContextMenu.offsetHeight - 8);
+        showContextMenu(e.target);
       });
 
       tabsContainer.appendChild(tab);
     });
     
-    // After rendering, check if scroll indicators are needed
     updateTabScrollIndicators();
   }
 
@@ -3191,7 +3244,6 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
         activeListIndex = lists.length - 1;
         updateUIForActiveList();
         saveData();
-        // Scroll to the new tab
         setTimeout(() => {
             const newTabEl = tabsContainer.querySelector(`.tab:last-child`);
             if (newTabEl) {
@@ -3204,23 +3256,28 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
   /* ---------- Tab Management & Scrolling Logic ---------- */
   function updateTabScrollIndicators() {
     const el = tabsContainer;
-    const hasOverflow = el.scrollWidth > el.clientWidth;
-    
-    if (!hasOverflow) {
-        tabBar.classList.remove('is-scrolling-left', 'is-scrolling-right');
-        return;
-    }
-    
-    // Check left scroll
-    const isScrolledLeft = el.scrollLeft > 5;
-    tabBar.classList.toggle('is-scrolling-left', isScrolledLeft);
+    const wrapper = el.parentElement;
+    wrapper.classList.remove('fade-left', 'fade-right', 'fade-both');
 
-    // Check right scroll
-    const isScrolledRight = el.scrollLeft < (el.scrollWidth - el.clientWidth - 5);
-    tabBar.classList.toggle('is-scrolling-right', isScrolledRight);
+    const hasOverflow = el.scrollWidth > el.clientWidth;
+    if (!hasOverflow) return;
+
+    const isAtStart = el.scrollLeft < 5;
+    const isAtEnd = el.scrollLeft >= (el.scrollWidth - el.clientWidth - 5);
+
+    if (!isAtStart && !isAtEnd) {
+        wrapper.classList.add('fade-both');
+    } else if (!isAtStart) {
+        wrapper.classList.add('fade-left');
+    } else if (!isAtEnd) {
+        wrapper.classList.add('fade-right');
+    }
   }
 
-  tabsContainer.addEventListener('scroll', updateTabScrollIndicators);
+  tabsContainer.addEventListener('scroll', () => {
+    hideContextMenu();
+    updateTabScrollIndicators();
+  });
   
   tabsContainer.addEventListener('wheel', (e) => {
       if (e.deltaY === 0) return;
@@ -3244,45 +3301,58 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
     }
   }
 
-  function showContextMenu(x, y) {
-      const menu = tabContextMenu;
-      menu.style.display = 'flex';
-      
-      // Position menu so it doesn't go off-screen
-      const menuWidth = menu.offsetWidth;
-      const menuHeight = menu.offsetHeight;
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+  function handleContextMenuEscape(e) {
+    if (e.key === 'Escape') {
+      hideContextMenu();
+    }
+  }
 
-      let left = x;
-      if (left + menuWidth > screenWidth - 10) {
-          left = screenWidth - menuWidth - 10;
-      }
-      let top = y;
-      if (top + menuHeight > screenHeight - 10) {
-          top = y - menuHeight;
-      }
-      if (top < 10) {
-          top = 10;
-      }
-      
-      menu.style.left = `${left}px`;
-      menu.style.top = `${top}px`;
+  function showContextMenu(targetElement) {
+    const menu = tabContextMenu;
+    const tabRect = targetElement.getBoundingClientRect();
+    
+    // Set initial style to calculate dimensions
+    menu.style.visibility = 'hidden';
+    menu.style.display = 'flex';
+    
+    setTimeout(() => {
+        const menuHeight = menu.offsetHeight;
+        const menuWidth = menu.offsetWidth;
+        const screenWidth = window.innerWidth;
+
+        // Position menu above the tab, left-aligned
+        let top = tabRect.top - menuHeight - 8; // 8px gap
+        let left = tabRect.left;
+
+        // Boundary checks
+        if (top < 10) {
+            top = tabRect.bottom + 8;
+        }
+        if (left < 10) {
+            left = 10;
+        }
+        if (left + menuWidth > screenWidth - 10) {
+            left = screenWidth - menuWidth - 10;
+        }
+        
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
+        menu.style.visibility = 'visible';
+        menu.classList.add('visible');
+        
+        document.addEventListener('keydown', handleContextMenuEscape, { once: true });
+    }, 0);
   }
 
 
   function hideContextMenu() {
-    tabContextMenu.style.display = 'none';
+    tabContextMenu.classList.remove('visible');
     contextListIndex = -1;
+    document.removeEventListener('keydown', handleContextMenuEscape);
   }
 
   document.addEventListener('click', (e) => {
-      if (!tabContextMenu.contains(e.target)) {
-          hideContextMenu();
-      }
-  });
-  document.addEventListener('contextmenu', (e) => {
-      if (!e.target.closest('.tab')) {
+      if (!tabContextMenu.contains(e.target) && !e.target.closest('.tab')) {
           hideContextMenu();
       }
   });
@@ -3296,7 +3366,6 @@ button.ctrl.clear-list-btn-red { background: var(--danger); color: #fff; box-sha
 
   ctxSetColor.addEventListener('click', () => {
     ctxColorInput.click();
-    // No hideContextMenu() here, as the color picker closing will trigger the main document click
   });
 
   ctxColorInput.addEventListener('input', (e) => {
