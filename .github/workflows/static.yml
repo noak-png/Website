@@ -1436,6 +1436,8 @@ button.ctrl.clear-list-btn-red {
   let listCreationCallback = null;
   let temp_listType = '';
   let contextListIndex = -1;
+  let tabClickTimer = null;
+  const DBL_CLICK_DELAY = 250; 
 
   const materialPresets = {
       glass: {
@@ -3215,12 +3217,18 @@ button.ctrl.clear-list-btn-red {
       }
       
       tab.addEventListener('click', () => {
-          activeListIndex = index;
-          updateUIForActiveList();
-          saveData();
+          clearTimeout(tabClickTimer);
+          tabClickTimer = setTimeout(() => {
+            if (activeListIndex !== index) {
+              activeListIndex = index;
+              updateUIForActiveList();
+              saveData();
+            }
+          }, DBL_CLICK_DELAY);
       });
 
       tab.addEventListener('dblclick', (e) => {
+        clearTimeout(tabClickTimer);
         e.preventDefault();
         contextListIndex = index;
         showContextMenu(e.target);
