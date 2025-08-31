@@ -169,6 +169,18 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item.done .text{ color:var(--completion-ok-color); text-decoration:line-through; }
 .badge{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
 .item.done .badge{ border-color:var(--completion-ok-color); color:var(--completion-ok-color); }
+
+.item.in-progress {
+    box-shadow: inset 0 0 0 2px var(--accent);
+}
+.item.in-progress .badge {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.item.in-progress input[type="checkbox"] {
+    accent-color: var(--accent);
+}
+
 .remove{ background:transparent; border:1px solid var(--border); color:var(--danger); padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .15s; }
 .remove:active{ transform:scale(0.95); background:var(--border); }
 
@@ -638,21 +650,6 @@ button.ctrl.clear-list-btn-red {
     opacity: 0; width: 0; height: 0; padding: 0; border: none;
     position: absolute; right: 12px;
 }
-
-#secPdfExport input[type="text"] {
-    width: 100%;
-}
-
-#secPdfExport .stack {
-    gap: 12px;
-}
-
-#exportPdfBtn {
-    background: var(--accent);
-    color: white;
-    font-weight: 600;
-    padding: 10px 14px;
-}
 </style>
 </head>
 <body>
@@ -678,6 +675,10 @@ button.ctrl.clear-list-btn-red {
             <div class="list-type-option" data-type="Call Behaviors">
               <h3>Call Behaviors</h3>
               <p>For call center agents and support.</p>
+            </div>
+            <div class="list-type-option" data-type="Workflow">
+              <h3>Workflow / Staged Tasks</h3>
+              <p>For projects, multi-step tasks, or any process you want to track with more detail.</p>
             </div>
           </div>
       </div>
@@ -1249,27 +1250,6 @@ button.ctrl.clear-list-btn-red {
                     </details>
                 </div>
                 <div class="hr"></div>
-                <div class="sub-section">
-                    <details id="secPdfExport" open>
-                        <summary>PDF Export</summary>
-                        <div class="content stack">
-                            <div class="row">
-                                <input type="text" id="pdfHeader" placeholder="Company / Header Text" style="flex-grow:1;">
-                            </div>
-                            <div class="row">
-                                <input type="text" id="pdfAuthor" placeholder="Author Name" style="flex-grow:1;">
-                            </div>
-                            <div class="stack">
-                                <label class="helper"><input type="checkbox" id="pdfIncludeDate" checked> Include Date</label>
-                                <label class="helper"><input type="checkbox" id="pdfIncludeTime" checked> Include Time</label>
-                                <label class="helper"><input type="checkbox" id="pdfIncludeAuthor" checked> Include Author</label>
-                                <label class="helper"><input type="checkbox" id="pdfIncludeCheckboxes"> Include Checkboxes</label>
-                            </div>
-                            <button id="exportPdfBtn" type="button">Export to PDF</button>
-                        </div>
-                    </details>
-                </div>
-                <div class="hr"></div>
                 <button id="panicResetBtn" type="button" style="background:var(--danger);" title="Warning: This will clear all items and reset all settings to default.">Panic Reset to Factory Default</button>
                 <div class="helper">Panic Reset clears everything (except saved patterns) and reloads the page. This action cannot be undone.</div>
             </div>
@@ -1292,9 +1272,6 @@ button.ctrl.clear-list-btn-red {
   <div class="clock-display glass" id="clockDisplay" style="display:none;"></div>
 
   <div class="version" id="versionTag">v1.3.1</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
 <script>
 (function(){
@@ -1474,13 +1451,6 @@ button.ctrl.clear-list-btn-red {
   const clickCount = document.getElementById('clickCount');
   const simpleModeToggle = document.getElementById('simpleModeToggle');
   const exportStateBtn = document.getElementById('exportStateBtn');
-  const exportPdfBtn = document.getElementById('exportPdfBtn');
-  const pdfHeader = document.getElementById('pdfHeader');
-  const pdfAuthor = document.getElementById('pdfAuthor');
-  const pdfIncludeDate = document.getElementById('pdfIncludeDate');
-  const pdfIncludeTime = document.getElementById('pdfIncludeTime');
-  const pdfIncludeAuthor = document.getElementById('pdfIncludeAuthor');
-  const pdfIncludeCheckboxes = document.getElementById('pdfIncludeCheckboxes');
 
   // Natural Slide controls
   const enableNaturalSlide = document.getElementById('enableNaturalSlide');
@@ -1708,6 +1678,22 @@ button.ctrl.clear-list-btn-red {
     // Default loading from localStorage
     lists = JSON.parse(get('lists', '[]'));
     activeListIndex = parseInt(get('activeListIndex', '0'), 10);
+
+    // Data migration from 'done' to 'status'
+    lists.forEach(list => {
+        if (list.items) {
+            list.items.forEach(item => {
+                if (typeof item.done !== 'undefined') {
+                    item.status = item.done ? 'complete' : 'pending';
+                    delete item.done;
+                }
+                // Ensure all items have a status
+                if (!item.status) {
+                    item.status = 'pending';
+                }
+            });
+        }
+    });
 
     // Check for shared list and OVERRIDE if present
     const urlParams = new URLSearchParams(window.location.search);
@@ -2151,57 +2137,95 @@ button.ctrl.clear-list-btn-red {
     });
   }
 
-  function addItem(text, done=false, silentAnim=false){
-    const li = document.createElement('li'); li.className='item'; li.draggable=true;
-    const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = done;
-    const lbl = document.createElement('label'); lbl.className='label';
-    const txt = document.createElement('span'); txt.className='text'; txt.textContent = text || 'Untitled';
-    const badge = document.createElement('span'); badge.className='badge'; badge.textContent = done?'Done':'Pending';
+  function addItem(text, status = 'pending', silentAnim = false) {
+    const li = document.createElement('li');
+    li.className = 'item';
+    li.draggable = true;
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = (status === 'complete');
+    const lbl = document.createElement('label');
+    lbl.className = 'label';
+    const txt = document.createElement('span');
+    txt.className = 'text';
+    txt.textContent = text || 'Untitled';
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = 'Pending'; // Default, will be updated
     lbl.append(txt, badge);
-    const rm = document.createElement('button'); rm.className='remove'; rm.textContent='✖';
-    li.append(cb,lbl,rm); list.appendChild(li);
+    const rm = document.createElement('button');
+    rm.className = 'remove';
+    rm.textContent = '✖';
+    li.append(cb, lbl, rm);
+    list.appendChild(li);
 
-    if(!silentAnim) animateEnter(li);
-    if(done) li.classList.add('done');
+    if (!silentAnim) animateEnter(li);
 
-    cb.onchange = function(){
-      // Clean up animation classes to allow re-triggering
-      li.classList.remove('scan-effect-done', 'scan-effect-warn', 'pulse', 'warn');
+    // Set initial state
+    if (status === 'complete') {
+        li.classList.add('done');
+        badge.textContent = 'Complete';
+    } else if (status === 'in-progress') {
+        li.classList.add('in-progress');
+        badge.textContent = 'In Progress';
+    } else {
+        badge.textContent = 'Pending';
+    }
 
-      if(cb.checked){
-        li.classList.add('done', 'pulse');
-        if (enableScanLine.checked) {
-          li.classList.add('scan-effect-done');
-        }
-        badge.textContent='Done';
-        if(enableAnimations.checked){ spawnParticlesFromEl(cb); }
-        
-        setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
-        if (enableScanLine.checked) {
-          setTimeout(() => li.classList.remove('scan-effect-done'), parseInt(completionSpeed.value, 10) + 50);
-        }
-      } else {
-        li.classList.remove('done');
-        badge.textContent='Pending';
-        li.classList.add('warn');
-        if (enableScanLine.checked) {
-          li.classList.add('scan-effect-warn');
-        }
-        
-        setTimeout(() => {
-            li.classList.remove('warn');
-            if (enableScanLine.checked) {
-              li.classList.remove('scan-effect-warn');
+    cb.onchange = function() {
+        const currentList = lists[activeListIndex];
+        const itemIndex = Array.from(list.children).indexOf(li);
+        const currentItem = currentList.items[itemIndex];
+
+        if (currentList.type === 'Workflow') {
+            if (currentItem.status === 'pending') {
+                currentItem.status = 'in-progress';
+            } else if (currentItem.status === 'in-progress') {
+                currentItem.status = 'complete';
+            } else { // 'complete'
+                currentItem.status = 'pending';
             }
-        }, parseInt(completionSpeed.value, 10) + 50);
-      }
-      
-      const itemText = li.querySelector('.text').textContent;
-      const currentList = lists[activeListIndex];
-      const itemIndex = Array.from(list.children).indexOf(li);
-      currentList.items[itemIndex].done = cb.checked;
-      
-      saveData();
+        } else {
+            currentItem.status = (currentItem.status === 'pending') ? 'complete' : 'pending';
+        }
+        
+        // Update UI based on new status
+        li.classList.remove('done', 'in-progress', 'pulse', 'warn', 'scan-effect-done', 'scan-effect-warn');
+        txt.style.textDecoration = 'none';
+        
+        if (currentItem.status === 'in-progress') {
+            li.classList.add('in-progress');
+            badge.textContent = 'In Progress';
+            cb.checked = false; // Keep it visually unchecked but in-progress
+        } else if (currentItem.status === 'complete') {
+            li.classList.add('done', 'pulse');
+            if (enableScanLine.checked) {
+              li.classList.add('scan-effect-done');
+            }
+            badge.textContent = 'Complete';
+            cb.checked = true;
+            txt.style.textDecoration = 'line-through';
+            if(enableAnimations.checked){ spawnParticlesFromEl(cb); }
+            setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+            if (enableScanLine.checked) {
+              setTimeout(() => li.classList.remove('scan-effect-done'), parseInt(completionSpeed.value, 10) + 50);
+            }
+        } else { // pending
+            badge.textContent = 'Pending';
+            cb.checked = false;
+            li.classList.add('warn');
+            if (enableScanLine.checked) {
+              li.classList.add('scan-effect-warn');
+            }
+            setTimeout(() => {
+                li.classList.remove('warn');
+                if (enableScanLine.checked) {
+                  li.classList.remove('scan-effect-warn');
+                }
+            }, parseInt(completionSpeed.value, 10) + 50);
+        }
+
+        saveData();
     };
 
     cb.addEventListener('pointerdown', (e)=>{ 
@@ -2224,9 +2248,9 @@ button.ctrl.clear-list-btn-red {
 
   addBtn.onclick = ()=>{ 
     if(input.value.trim()){ 
-      const newItem = { text: input.value.trim(), done: false };
+      const newItem = { text: input.value.trim(), status: 'pending' };
       lists[activeListIndex].items.push(newItem);
-      addItem(newItem.text, newItem.done); 
+      addItem(newItem.text, newItem.status);
       input.value=''; 
       saveData(); 
     } 
@@ -3119,96 +3143,6 @@ button.ctrl.clear-list-btn-red {
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
   panicResetBtn.addEventListener('click', panicReset);
   exportStateBtn.addEventListener('click', exportState);
-  exportPdfBtn.addEventListener('click', exportListToPDF);
-
-  function exportListToPDF() {
-    const { jsPDF } = window.jspdf;
-    if (!jsPDF) {
-        alert("PDF library is not loaded. Please try again in a moment.");
-        return;
-    }
-
-    const doc = new jsPDF();
-    const currentList = lists[activeListIndex];
-    if (!currentList) {
-        alert("No active list to export.");
-        return;
-    }
-
-    const headerText = document.getElementById('pdfHeader').value.trim();
-    const authorText = document.getElementById('pdfAuthor').value.trim();
-    const includeDate = document.getElementById('pdfIncludeDate').checked;
-    const includeTime = document.getElementById('pdfIncludeTime').checked;
-    const includeAuthor = document.getElementById('pdfIncludeAuthor').checked;
-    const includeCheckboxes = document.getElementById('pdfIncludeCheckboxes').checked;
-
-    let yPos = 15;
-
-    // Title
-    doc.setFontSize(18);
-    doc.text(currentList.name, 14, yPos);
-    yPos += 8;
-
-    // Sub-header
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-
-    if (headerText) {
-        doc.text(headerText, 14, yPos);
-        yPos += 5;
-    }
-
-    const now = new Date();
-    let meta_info = [];
-    if(includeDate) meta_info.push(now.toLocaleDateString());
-    if(includeTime) meta_info.push(now.toLocaleTimeString());
-    if(includeAuthor && authorText) meta_info.push(`By: ${authorText}`);
-
-    if(meta_info.length > 0){
-        doc.text(meta_info.join(' | '), 14, yPos);
-        yPos += 5;
-    }
-
-    yPos += 5;
-
-    const columns = [];
-    if(includeCheckboxes){
-        columns.push({ header: 'Done', dataKey: 'done' });
-    }
-    columns.push({ header: 'Task', dataKey: 'task' });
-    columns.push({ header: 'Status', dataKey: 'status' });
-
-    const body = currentList.items.map(item => {
-        const row = {};
-        if(includeCheckboxes){
-            row.done = item.done ? '[x]' : '[ ]';
-        }
-        row.task = item.text;
-        row.status = item.done ? 'Completed' : 'Pending';
-        return row;
-    });
-
-    doc.autoTable({
-        startY: yPos,
-        columns: columns,
-        body: body,
-        theme: 'striped',
-        headStyles: { fillColor: [22, 160, 133] },
-        styles: { font: 'helvetica', fontSize: 10 },
-    });
-
-    // Watermark
-    const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text('Made with https://www.mysparklist.com/', 14, doc.internal.pageSize.height - 10);
-    }
-
-    doc.save(`${currentList.name.replace(/\s/g, '_')}_export.pdf`);
-  }
-
   savePatternBtn.addEventListener('click', saveCurrentPattern);
   exportPatternsBtn.addEventListener('click', () => {
     if (savedPatterns.length === 0) { alert('There are no saved patterns to export.'); return; }
@@ -3363,7 +3297,8 @@ button.ctrl.clear-list-btn-red {
         "General Tasks": "Add a task...",
         "Milestones": "Add a milestone...",
         "Educational": "Add a learning goal...",
-        "Call Behaviors": "Add a checkpoint..."
+        "Call Behaviors": "Add a checkpoint...",
+        "Workflow": "Add a workflow step..."
     };
 
     function updateUIForActiveList() {
@@ -3445,8 +3380,8 @@ button.ctrl.clear-list-btn-red {
 
         setTimeout(() => {
             lists[activeListIndex].items.forEach(item => {
-                if (item.done) {
-                    item.done = false;
+                if (item.status === 'complete') {
+                    item.status = 'pending';
                 }
             });
             renderList();
@@ -3477,7 +3412,7 @@ button.ctrl.clear-list-btn-red {
             if (isFullClear) {
                  lists[activeListIndex].items = [];
             } else { 
-                lists[activeListIndex].items.forEach(item => item.done = false);
+                lists[activeListIndex].items.forEach(item => item.status = 'pending');
             }
 
             renderList();
