@@ -1578,7 +1578,7 @@ button.ctrl.clear-list-btn-red {
         const encodedString = btoa(unescape(encodeURIComponent(jsonString)));
 
         const baseUrl = `${location.origin}${location.pathname}`;
-        const shareableLink = `${baseUrl}?list=${encodedString}`;
+        const shareableLink = `${baseUrl}?list=${encodeURIComponent(encodedString)}`;
 
         if (navigator.clipboard) {
             navigator.clipboard.writeText(shareableLink).then(() => {
