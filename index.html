@@ -189,6 +189,9 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item.done.pulse{ animation:innerRingPulse var(--completion-duration) ease-out; }
 @keyframes innerRingPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-ok-strong-color) 38%, transparent), inset 0 0 0 2px var(--completion-ok-color);} 45%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-strong-color) 22%, transparent), inset 0 0 0 2px var(--completion-ok-color);} 100%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-color) 10%, transparent), inset 0 0 0 2px var(--completion-ok-color);} }
 
+.item.in-progress.pulse-in-progress { animation:innerRingPulseAccent var(--completion-duration) ease-out; }
+@keyframes innerRingPulseAccent{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--accent) 38%, transparent), inset 0 0 0 2px var(--accent);} 45%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--accent) 22%, transparent), inset 0 0 0 2px var(--accent);} 100%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--accent) 10%, transparent), inset 0 0 0 2px var(--accent);} }
+
 .item.warn{ box-shadow: inset 0 0 0 2px var(--completion-danger-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-color) 10%, transparent); animation:innerWarnPulse var(--completion-duration) ease-out; }
 @keyframes innerWarnPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-danger-strong-color) 42%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 55%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-strong-color) 18%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 100%{box-shadow: none;} }
 
@@ -1641,6 +1644,9 @@ button.ctrl.clear-list-btn-red {
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    doc.setProperties({
+        title: `${currentList.name} - MySparkList Export`
+    });
     const headerText = pdfHeader.value || currentList.name;
     const authorText = pdfAuthor.value;
     const theme = pdfTheme.value;
@@ -1740,6 +1746,11 @@ button.ctrl.clear-list-btn-red {
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
 
+            // Page border
+            doc.setDrawColor(200);
+            doc.setLineWidth(0.3);
+            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
+
             // Watermark
             doc.setFontSize(8);
             doc.setTextColor('#cccccc'); // An off-grey color
@@ -1786,6 +1797,9 @@ button.ctrl.clear-list-btn-red {
 
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      doc.setProperties({
+          title: `${currentList.name} - MySparkList Export`
+      });
       const headerText = pdfHeader.value || currentList.name;
       const authorText = pdfAuthor.value;
       const theme = pdfTheme.value;
@@ -1884,6 +1898,11 @@ button.ctrl.clear-list-btn-red {
             const pageCount = doc.internal.getNumberOfPages();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
+
+            // Page border
+            doc.setDrawColor(200);
+            doc.setLineWidth(0.3);
+            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
 
             // Watermark
             doc.setFontSize(8);
@@ -2717,6 +2736,9 @@ button.ctrl.clear-list-btn-red {
                 }
                 li.classList.add('pulse');
                 setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+            } else if (stageChange.isWorkflow) {
+                li.classList.add('pulse-in-progress');
+                setTimeout(() => li.classList.remove('pulse-in-progress'), parseInt(completionSpeed.value, 10) + 50);
             }
         } 
         // Handle "un-checking" from a completed state
@@ -2729,6 +2751,7 @@ button.ctrl.clear-list-btn-red {
         }
         
         saveData();
+        generatePdfPreview();
     };
 
     cb.addEventListener('pointerdown', (e)=>{ 
@@ -2743,7 +2766,10 @@ button.ctrl.clear-list-btn-red {
       lists[activeListIndex].items.splice(itemIndex, 1);
       
       streams = streams.filter(s=>!(s.el===cb)); 
-      animateRemove(li, saveData); 
+      animateRemove(li, () => {
+        saveData();
+        generatePdfPreview();
+      });
     };
     li.ondragstart = e=>{ li.classList.add('dragging'); e.dataTransfer.setData('text/plain',''); };
     li.ondragend = ()=> li.classList.remove('dragging');
@@ -2761,6 +2787,7 @@ button.ctrl.clear-list-btn-red {
       addItem(newItem.text, newItem.status); 
       input.value=''; 
       saveData(); 
+      generatePdfPreview();
     } 
   };
   input.onkeydown = e=>{ if(e.key==='Enter') addBtn.click(); };
@@ -3990,6 +4017,7 @@ button.ctrl.clear-list-btn-red {
             });
             renderList();
             saveData();
+            generatePdfPreview();
         }, parseInt(completionSpeed.value, 10) + 50);
     }
     
@@ -4021,6 +4049,7 @@ button.ctrl.clear-list-btn-red {
 
             renderList();
             saveData();
+            generatePdfPreview();
 
             if (currentListType === 'Call Behaviors') {
                 seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter();
