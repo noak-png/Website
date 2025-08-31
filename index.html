@@ -205,7 +205,7 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 }
 .item.scan-effect-done::after {
     animation: scanLine var(--completion-duration) forwards cubic-bezier(.16,1,.3,1);
-    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--completion-ok-strong-color) 50%, transparent 100%);
+    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--scan-line-color, var(--completion-ok-strong-color)) 50%, transparent 100%);
 }
 @keyframes scanLine {
     0% { transform: translateY(-100%) scaleY(1); }
@@ -798,7 +798,7 @@ button.ctrl.clear-list-btn-red {
             <div class="content">
                 <div class="sub-section-wrapper">
                     <div class="sub-section">
-                        <details id="secAnimStyle" open>
+                        <details id="secAnimStyle">
                             <summary>
                                 Animation Style <span class="hint">bubbles, splash, fireworks & more</span>
                             </summary>
@@ -1025,6 +1025,10 @@ button.ctrl.clear-list-btn-red {
                           <span class="pct" id="slideSpeedPct">800ms</span>
                         </div>
                     </div>
+                    <div class="hr"></div>
+                     <div class="row">
+                       <label class="helper"><input type="checkbox" id="keepMenusOpen"> Keep dropdowns open by default (menu)</label>
+                    </div>
                 </div>
             </details>
           </div>
@@ -1033,14 +1037,31 @@ button.ctrl.clear-list-btn-red {
             <details id="secCompletionEffect">
                 <summary>Completion Effect</summary>
                 <div class="content">
-                    <div class="row">
-                        <label for="completionCheckedColor" style="flex: 1;">Checked Color</label>
-                        <input type="color" id="completionCheckedColor" value="#16a34a">
+                    <div id="completionStandardControls">
+                        <div class="row">
+                            <label for="completionCheckedColor" style="flex: 1;">Checked Color</label>
+                            <input type="color" id="completionCheckedColor" value="#16a34a">
+                        </div>
+                        <div class="row">
+                            <label for="completionUncheckedColor" style="flex: 1;">Unchecked Color</label>
+                            <input type="color" id="completionUncheckedColor" value="#ef4444">
+                        </div>
                     </div>
-                    <div class="row">
-                        <label for="completionUncheckedColor" style="flex: 1;">Unchecked Color</label>
-                        <input type="color" id="completionUncheckedColor" value="#ef4444">
+                    <div id="completionWorkflowControls" class="stack" style="display: none;">
+                        <div class="row">
+                            <label for="completionWorkflowStartColor" style="flex: 1;">Start Stage Color</label>
+                            <input type="color" id="completionWorkflowStartColor" value="#6b7280">
+                        </div>
+                        <div class="row">
+                            <label for="completionWorkflowMiddleColor" style="flex: 1;">Middle Stage(s) Color</label>
+                            <input type="color" id="completionWorkflowMiddleColor" value="#2563eb">
+                        </div>
+                        <div class="row">
+                            <label for="completionWorkflowEndColor" style="flex: 1;">End Stage Color</label>
+                            <input type="color" id="completionWorkflowEndColor" value="#16a34a">
+                        </div>
                     </div>
+                    <div class="hr"></div>
                     <div class="slider-row">
                       <label for="completionGlow">Glow Intensity</label>
                       <input type="range" id="completionGlow" min="4" max="12" value="6" />
@@ -1282,7 +1303,7 @@ button.ctrl.clear-list-btn-red {
                 </div>
                 <div class="hr"></div>
                 <div class="sub-section" id="secWorkflowStages" style="display: none;">
-                    <details open>
+                    <details>
                         <summary>Customize Workflow Stages</summary>
                         <div class="content stack">
                             <div id="workflowStagesList" class="stack"></div>
@@ -1298,7 +1319,7 @@ button.ctrl.clear-list-btn-red {
                 </div>
                 <div class="hr"></div>
                 <div class="sub-section">
-                    <details id="secPdfExport" open>
+                    <details id="secPdfExport">
                         <summary>PDF Export</summary>
                         <div class="content stack">
                             <div class="row">
@@ -1514,6 +1535,11 @@ button.ctrl.clear-list-btn-red {
   // Completion Effect Controls
   const completionCheckedColor = document.getElementById('completionCheckedColor');
   const completionUncheckedColor = document.getElementById('completionUncheckedColor');
+  const completionStandardControls = document.getElementById('completionStandardControls');
+  const completionWorkflowControls = document.getElementById('completionWorkflowControls');
+  const completionWorkflowStartColor = document.getElementById('completionWorkflowStartColor');
+  const completionWorkflowMiddleColor = document.getElementById('completionWorkflowMiddleColor');
+  const completionWorkflowEndColor = document.getElementById('completionWorkflowEndColor');
   const completionGlow = document.getElementById('completionGlow');
   const completionSpeed = document.getElementById('completionSpeed');
   const completionResetBtn = document.getElementById('completionResetBtn');
@@ -1552,6 +1578,7 @@ button.ctrl.clear-list-btn-red {
   const clickCounter = document.getElementById('clickCounter');
   const clickCount = document.getElementById('clickCount');
   const simpleModeToggle = document.getElementById('simpleModeToggle');
+  const keepMenusOpen = document.getElementById('keepMenusOpen');
   const exportStateBtn = document.getElementById('exportStateBtn');
   const secWorkflowStages = document.getElementById('secWorkflowStages');
   const workflowStagesList = document.getElementById('workflowStagesList');
@@ -2092,16 +2119,19 @@ button.ctrl.clear-list-btn-red {
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
     store('clockDetail', clockDetail.value);
     store('simpleMode', simpleModeToggle.checked);
+    store('keepMenusOpen', keepMenusOpen.checked);
     store('hasLaunchedBefore', 'true');
     store('hideWelcomeBack', hideWelcomeBack.checked);
     localStorage.setItem('mysparklist.savedPatterns', JSON.stringify(savedPatterns));
 
-    const detailsElements = document.querySelectorAll('.menu-panel details');
-    detailsElements.forEach(el => {
-        if (el.id) {
-            store(`secOpen.${el.id}`, el.open);
-        }
-    });
+    if (keepMenusOpen.checked) {
+        const detailsElements = document.querySelectorAll('.menu-panel details');
+        detailsElements.forEach(el => {
+            if (el.id) {
+                store(`secOpen.${el.id}`, el.open);
+            }
+        });
+    }
   }
 
   function loadData(){
@@ -2270,15 +2300,18 @@ button.ctrl.clear-list-btn-red {
     clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
     simpleModeToggle.checked = (get('simpleMode', 'false') === 'true');
+    keepMenusOpen.checked = (get('keepMenusOpen', 'false') === 'true');
     hideWelcomeBack.checked = shouldHideWelcomeBack;
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
-    const detailsElements = document.querySelectorAll('.menu-panel details');
-    detailsElements.forEach(el => {
-        if (el.id) {
-            el.open = (get(`secOpen.${el.id}`, el.hasAttribute('open') ? 'true' : 'false') === 'true');
-        }
-    });
+    if (keepMenusOpen.checked) {
+        const detailsElements = document.querySelectorAll('.menu-panel details');
+        detailsElements.forEach(el => {
+            if (el.id) {
+                el.open = (get(`secOpen.${el.id}`, el.hasAttribute('open') ? 'true' : 'false') === 'true');
+            }
+        });
+    }
 
     applyAllSettings();
     
@@ -2664,6 +2697,17 @@ button.ctrl.clear-list-btn-red {
         if (isProgressing && !wasComplete) {
             // Scan line on any forward step (including the last one)
             if (enableScanLine.checked) {
+                if (stageChange.isWorkflow) {
+                    const colors = currentList.colors || { middle: '#2563eb', end: '#16a34a' };
+                    const scanColor = isNowComplete ? colors.end : colors.middle;
+                    const rgb = hexToRgb(scanColor);
+                    if (rgb) {
+                        const strongColor = rgbToHex(rgb.r * 1.2, rgb.g * 1.2, rgb.b * 1.2);
+                        li.style.setProperty('--scan-line-color', strongColor);
+                    }
+                } else {
+                    li.style.removeProperty('--scan-line-color');
+                }
                 li.classList.add('scan-effect-done');
             }
             // Big animation only on the final step
@@ -2741,6 +2785,9 @@ button.ctrl.clear-list-btn-red {
     menuPanel.style.display = open ? 'block' : 'none';
     menuPanel.setAttribute('aria-hidden', !open);
     menuBtn.setAttribute('aria-expanded', open);
+    if (open && !keepMenusOpen.checked) {
+        menuPanel.querySelectorAll('details').forEach(d => d.open = false);
+    }
   }
 
   menuBtn.onclick = ()=>{ const isOpen = menuPanel.style.display==='block'; setMenu(!isOpen); };
@@ -3583,6 +3630,19 @@ button.ctrl.clear-list-btn-red {
       saveData();
   });
 
+  [completionWorkflowStartColor, completionWorkflowMiddleColor, completionWorkflowEndColor].forEach(el => {
+    el.addEventListener('input', () => {
+        const currentList = lists[activeListIndex];
+        if (currentList && currentList.type === 'Workflow') {
+            if (!currentList.colors) currentList.colors = {};
+            if (el.id === 'completionWorkflowStartColor') currentList.colors.start = el.value;
+            else if (el.id === 'completionWorkflowMiddleColor') currentList.colors.middle = el.value;
+            else if (el.id === 'completionWorkflowEndColor') currentList.colors.end = el.value;
+            saveData();
+        }
+    });
+  });
+
 
   document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiStyleSelect)').forEach(el=> el.addEventListener('change', ()=>{ 
       if(el===ambianceSelect) applyAmbianceSettings();
@@ -3779,6 +3839,7 @@ button.ctrl.clear-list-btn-red {
           const newListData = { name, type: temp_listType, items: [] };
           if (temp_listType === 'Workflow') {
               newListData.stages = ['Pending', 'In Progress', 'Complete'];
+              newListData.colors = { start: '#6b7280', middle: '#2563eb', end: '#16a34a' };
           }
           if (listCreationCallback) {
               listCreationCallback(newListData);
@@ -3815,6 +3876,25 @@ button.ctrl.clear-list-btn-red {
   hideWelcomeBack.addEventListener('change', saveData);
 
   /* ---------- Multi-list & UI Logic ---------- */
+    function syncCompletionEffectUI() {
+        const currentList = lists[activeListIndex];
+        if (!currentList) return;
+
+        const isWorkflow = currentList.type === 'Workflow';
+
+        completionStandardControls.style.display = isWorkflow ? 'none' : 'block';
+        completionWorkflowControls.style.display = isWorkflow ? 'flex' : 'none';
+
+        if (isWorkflow) {
+            if (!currentList.colors) {
+                currentList.colors = { start: '#6b7280', middle: '#2563eb', end: '#16a34a' };
+            }
+            completionWorkflowStartColor.value = currentList.colors.start || '#6b7280';
+            completionWorkflowMiddleColor.value = currentList.colors.middle || '#2563eb';
+            completionWorkflowEndColor.value = currentList.colors.end || '#16a34a';
+        }
+    }
+
     const placeholders = {
         "General Tasks": "Add a task...",
         "Milestones": "Add a milestone...",
@@ -3887,6 +3967,7 @@ button.ctrl.clear-list-btn-red {
         renderList();
         renderTabs();
         renderWorkflowStages();
+        syncCompletionEffectUI();
     }
 
     function animateAndClearChecks() {
