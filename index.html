@@ -1290,6 +1290,9 @@ button.ctrl.clear-list-btn-red {
                                 <input type="text" id="newStageName" placeholder="New stage name..." style="flex-grow:1;">
                                 <button id="addStageBtn">Add Stage</button>
                             </div>
+                            <div class="row" style="margin-top: 8px;">
+                                <button id="resetStagesBtn" type="button" style="flex-grow: 1;">Reset to Default</button>
+                            </div>
                         </div>
                     </details>
                 </div>
@@ -1304,12 +1307,29 @@ button.ctrl.clear-list-btn-red {
                             <div class="row">
                                 <input type="text" id="pdfAuthor" placeholder="Author Name" style="flex-grow:1;">
                             </div>
+                            <div class="stack" style="margin-top: 8px; gap: 4px;">
+                                <label for="pdfLogoUpload" class="helper" style="text-align: left; font-size: 13px;">Company Logo (Optional)</label>
+                                <div class="row">
+                                    <input type="file" id="pdfLogoUpload" accept="image/png, image/jpeg" style="flex-grow: 1;">
+                                    <button id="pdfClearLogoBtn" type="button" style="display: none;">Clear</button>
+                                </div>
+                            </div>
                             <div class="row">
                                 <label for="pdfTheme" style="min-width: 80px;">Theme</label>
                                 <select id="pdfTheme" style="flex-grow:1;">
                                     <option value="striped">Striped</option>
                                     <option value="grid">Grid</option>
                                     <option value="plain">Plain</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <label for="pdfAccentColor" style="min-width: 80px;">Accent</label>
+                                <select id="pdfAccentColor" style="flex-grow:1;">
+                                    <option value="#2563eb">Default Blue</option>
+                                    <option value="#16a34a">Green</option>
+                                    <option value="#ef4444">Red</option>
+                                    <option value="#6b7280">Grey</option>
+                                    <option value="#000000">Black</option>
                                 </select>
                             </div>
                             <div class="stack">
@@ -1537,22 +1557,47 @@ button.ctrl.clear-list-btn-red {
   const workflowStagesList = document.getElementById('workflowStagesList');
   const newStageName = document.getElementById('newStageName');
   const addStageBtn = document.getElementById('addStageBtn');
+  const resetStagesBtn = document.getElementById('resetStagesBtn');
   const secPdfExport = document.getElementById('secPdfExport');
   const pdfHeader = document.getElementById('pdfHeader');
   const pdfAuthor = document.getElementById('pdfAuthor');
   const pdfTheme = document.getElementById('pdfTheme');
+  const pdfAccentColor = document.getElementById('pdfAccentColor');
   const pdfIncludeDate = document.getElementById('pdfIncludeDate');
   const pdfIncludeTime = document.getElementById('pdfIncludeTime');
   const pdfIncludeAuthor = document.getElementById('pdfIncludeAuthor');
   const pdfIncludeCheckboxes = document.getElementById('pdfIncludeCheckboxes');
+  const pdfLogoUpload = document.getElementById('pdfLogoUpload');
+  const pdfClearLogoBtn = document.getElementById('pdfClearLogoBtn');
   const pdfPreview = document.getElementById('pdfPreview');
   const enlargePreviewBtn = document.getElementById('enlargePreviewBtn');
   const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 
   // PDF Export Listeners
+  pdfLogoUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            pdfLogoData = event.target.result;
+            pdfClearLogoBtn.style.display = 'block';
+            generatePdfPreview();
+        };
+        reader.readAsDataURL(file);
+    }
+  });
+
+  pdfClearLogoBtn.addEventListener('click', () => {
+    pdfLogoData = null;
+    pdfLogoUpload.value = ''; // Clear the file input
+    pdfClearLogoBtn.style.display = 'none';
+    generatePdfPreview();
+  });
+
   pdfHeader.addEventListener('input', generatePdfPreview);
   pdfAuthor.addEventListener('input', generatePdfPreview);
   pdfTheme.addEventListener('change', generatePdfPreview);
+  pdfAccentColor.addEventListener('change', generatePdfPreview);
   pdfIncludeDate.addEventListener('change', generatePdfPreview);
   pdfIncludeTime.addEventListener('change', generatePdfPreview);
   pdfIncludeAuthor.addEventListener('change', generatePdfPreview);
@@ -1572,15 +1617,49 @@ button.ctrl.clear-list-btn-red {
     const headerText = pdfHeader.value || currentList.name;
     const authorText = pdfAuthor.value;
     const theme = pdfTheme.value;
+    const accentColor = pdfAccentColor.value;
     const includeDate = pdfIncludeDate.checked;
     const includeTime = pdfIncludeTime.checked;
     const includeAuthor = pdfIncludeAuthor.checked;
     const includeCheckboxes = pdfIncludeCheckboxes.checked;
 
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 14;
     let finalY = 20;
+    let logoRightEdge = pageWidth - margin;
+
+    if (pdfLogoData) {
+        try {
+            const imgProps = doc.getImageProperties(pdfLogoData);
+            const maxLogoW = 40;
+            const maxLogoH = 20;
+            let logoW = imgProps.width;
+            let logoH = imgProps.height;
+            const ratio = logoW / logoH;
+
+            if (logoW > maxLogoW || logoH > maxLogoH) {
+                if (logoW / maxLogoW > logoH / maxLogoH) {
+                    logoW = maxLogoW;
+                    logoH = maxLogoW / ratio;
+                } else {
+                    logoH = maxLogoH;
+                    logoW = maxLogoH * ratio;
+                }
+            }
+
+            const logoX = pageWidth - margin - logoW;
+            const logoY = margin;
+            doc.addImage(pdfLogoData, logoX, logoY, logoW, logoH);
+            logoRightEdge = logoX - 5;
+            finalY = Math.max(finalY, logoY + logoH + 10);
+        } catch(e) {
+            console.error("Could not add logo to PDF for preview", e);
+        }
+    }
+
     doc.setFontSize(18);
-    doc.text(headerText, 14, finalY);
-    finalY += 10;
+    doc.text(headerText, margin, 22, { maxWidth: logoRightEdge - margin });
+    finalY = Math.max(finalY, 35);
 
     let metaInfo = [];
     if (includeDate) metaInfo.push(new Date().toLocaleDateString());
@@ -1593,27 +1672,60 @@ button.ctrl.clear-list-btn-red {
         finalY += 10;
     }
 
-    const tableData = getTasksForPdf(includeCheckboxes);
-    const tableHeaders = currentList.type === 'Workflow' ? [['Task', 'Status']] : [['Task', 'Status']];
+    const tableData = getTasksForPdf();
+    const tableHeaders = [
+        { header: 'Task', dataKey: 'text' },
+        { header: 'Status', dataKey: 'status' }
+    ];
 
-
-    let headStyles = { fillColor: [22, 160, 133] }; // Default theme
-    if (theme === 'striped') headStyles = { fillColor: [44, 62, 80] };
-    if (theme === 'grid') headStyles = { fillColor: [39, 174, 96] };
-
+    let headStyles = { fillColor: accentColor };
 
     doc.autoTable({
         startY: finalY,
-        head: tableHeaders,
+        columns: tableHeaders,
         body: tableData,
         theme: theme,
         headStyles: headStyles,
+        columnStyles: {
+            text: { cellPadding: { left: 8 } }
+        },
+        didDrawCell: function(data) {
+            if (data.section === 'body' && data.column.dataKey === 'text' && pdfIncludeCheckboxes.checked) {
+                const isComplete = data.row.raw.isComplete;
+                const checkboxSize = 3.5;
+                const checkboxX = data.cell.x + 2;
+                const checkboxY = data.cell.y + data.cell.height / 2 - checkboxSize / 2;
+
+                doc.setDrawColor(100);
+                doc.setFillColor(255, 255, 255);
+                doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize, 'FD');
+
+                if (isComplete) {
+                    doc.setLineWidth(0.6);
+                    doc.setDrawColor(0);
+                    doc.line(checkboxX + 0.7, checkboxY + 1.75, checkboxX + 1.5, checkboxY + 2.75);
+                    doc.line(checkboxX + 1.5, checkboxY + 2.75, checkboxX + 2.8, checkboxY + 0.8);
+                }
+            }
+        },
         didDrawPage: function(data) {
-            // Footer
-            let str = "Page " + doc.internal.getNumberOfPages();
-            doc.setFontSize(10);
-            doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
-            doc.text("Made with mysparklist.com", doc.internal.pageSize.width - data.settings.margin.right, doc.internal.pageSize.height - 10, { align: 'right' });
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+
+            // Watermark
+            doc.setFontSize(8);
+            doc.setTextColor('#cccccc'); // An off-grey color
+            const watermarkText = "Made at https://www.mysparklist.com/";
+            const textWidth = doc.getStringUnitWidth(watermarkText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (pageWidth - textWidth) / 2;
+            doc.text(watermarkText, textX, pageHeight - 10);
+
+            // Page number
+            doc.setFontSize(8);
+            doc.setTextColor('#888888'); // A light grey for the page number
+            const pageNumText = "Page " + pageCount;
+            doc.text(pageNumText, pageWidth - data.settings.margin.right, pageHeight - 10, { align: 'right' });
         }
     });
 
@@ -1621,19 +1733,21 @@ button.ctrl.clear-list-btn-red {
   }
 
 
-  function getTasksForPdf(includeCheckboxes) {
+  function getTasksForPdf() {
       const currentList = lists[activeListIndex];
+      if (!currentList) return [];
       const tasks = currentList.items;
+
       if (currentList.type === 'Workflow') {
           return tasks.map(task => {
-              const checkbox = includeCheckboxes ? (task.status === 'complete' ? '[x] ' : '[ ] ') : '';
               const stageName = currentList.stages.find(stage => stage === task.status) || task.status;
-              return [checkbox + task.text, stageName];
+              const isComplete = currentList.stages.length > 0 && task.status === currentList.stages[currentList.stages.length - 1];
+              return { text: task.text, status: stageName, isComplete: isComplete };
           });
       } else { // default list
           return tasks.map(task => {
-              const checkbox = includeCheckboxes ? (task.status === 'complete' ? '[x] ' : '[ ] ') : '';
-              return [checkbox + task.text, task.status === 'complete' ? 'Completed' : 'Pending'];
+              const isComplete = task.status === 'complete';
+              return { text: task.text, status: isComplete ? 'Completed' : 'Pending', isComplete: isComplete };
           });
       }
   }
@@ -1648,15 +1762,49 @@ button.ctrl.clear-list-btn-red {
       const headerText = pdfHeader.value || currentList.name;
       const authorText = pdfAuthor.value;
       const theme = pdfTheme.value;
+      const accentColor = pdfAccentColor.value;
       const includeDate = pdfIncludeDate.checked;
       const includeTime = pdfIncludeTime.checked;
       const includeAuthor = pdfIncludeAuthor.checked;
       const includeCheckboxes = pdfIncludeCheckboxes.checked;
 
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 14;
       let finalY = 20;
+      let logoRightEdge = pageWidth - margin;
+
+      if (pdfLogoData) {
+          try {
+              const imgProps = doc.getImageProperties(pdfLogoData);
+              const maxLogoW = 40;
+              const maxLogoH = 20;
+              let logoW = imgProps.width;
+              let logoH = imgProps.height;
+              const ratio = logoW / logoH;
+
+              if (logoW > maxLogoW || logoH > maxLogoH) {
+                  if (logoW / maxLogoW > logoH / maxLogoH) {
+                      logoW = maxLogoW;
+                      logoH = maxLogoW / ratio;
+                  } else {
+                      logoH = maxLogoH;
+                      logoW = maxLogoH * ratio;
+                  }
+              }
+
+              const logoX = pageWidth - margin - logoW;
+              const logoY = margin;
+              doc.addImage(pdfLogoData, logoX, logoY, logoW, logoH);
+              logoRightEdge = logoX - 5;
+              finalY = Math.max(finalY, logoY + logoH + 10);
+          } catch(e) {
+              console.error("Could not add logo to PDF for download", e);
+          }
+      }
+
       doc.setFontSize(18);
-      doc.text(headerText, 14, finalY);
-      finalY += 10;
+      doc.text(headerText, margin, 22, { maxWidth: logoRightEdge - margin });
+      finalY = Math.max(finalY, 35);
 
       let metaInfo = [];
       if (includeDate) metaInfo.push(new Date().toLocaleDateString());
@@ -1669,26 +1817,60 @@ button.ctrl.clear-list-btn-red {
           finalY += 10;
       }
 
-      const tableData = getTasksForPdf(includeCheckboxes);
-      const tableHeaders = currentList.type === 'Workflow' ? [['Task', 'Status']] : [['Task', 'Status']];
+      const tableData = getTasksForPdf();
+      const tableHeaders = [
+          { header: 'Task', dataKey: 'text' },
+          { header: 'Status', dataKey: 'status' }
+      ];
 
-
-      let headStyles = { fillColor: [22, 160, 133] }; // Default theme
-      if (theme === 'striped') headStyles = { fillColor: [44, 62, 80] };
-      if (theme === 'grid') headStyles = { fillColor: [39, 174, 96] };
+      let headStyles = { fillColor: accentColor };
 
       doc.autoTable({
           startY: finalY,
-          head: tableHeaders,
+          columns: tableHeaders,
           body: tableData,
           theme: theme,
           headStyles: headStyles,
+          columnStyles: {
+              text: { cellPadding: { left: 8 } }
+          },
+          didDrawCell: function(data) {
+              if (data.section === 'body' && data.column.dataKey === 'text' && pdfIncludeCheckboxes.checked) {
+                  const isComplete = data.row.raw.isComplete;
+                  const checkboxSize = 3.5;
+                  const checkboxX = data.cell.x + 2;
+                  const checkboxY = data.cell.y + data.cell.height / 2 - checkboxSize / 2;
+
+                  doc.setDrawColor(100);
+                  doc.setFillColor(255, 255, 255);
+                  doc.rect(checkboxX, checkboxY, checkboxSize, checkboxSize, 'FD');
+
+                  if (isComplete) {
+                      doc.setLineWidth(0.6);
+                      doc.setDrawColor(0);
+                      doc.line(checkboxX + 0.7, checkboxY + 1.75, checkboxX + 1.5, checkboxY + 2.75);
+                      doc.line(checkboxX + 1.5, checkboxY + 2.75, checkboxX + 2.8, checkboxY + 0.8);
+                  }
+              }
+          },
           didDrawPage: function(data) {
-              // Footer
-              let str = "Page " + doc.internal.getNumberOfPages();
-              doc.setFontSize(10);
-              doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
-              doc.text("Made with mysparklist.com", doc.internal.pageSize.width - data.settings.margin.right, doc.internal.pageSize.height - 10, { align: 'right' });
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+
+            // Watermark
+            doc.setFontSize(8);
+            doc.setTextColor('#cccccc'); // An off-grey color
+            const watermarkText = "Made at https://www.mysparklist.com/";
+            const textWidth = doc.getStringUnitWidth(watermarkText) * doc.getFontSize() / doc.internal.scaleFactor;
+            const textX = (pageWidth - textWidth) / 2;
+            doc.text(watermarkText, textX, pageHeight - 10);
+
+            // Page number
+            doc.setFontSize(8);
+            doc.setTextColor('#888888'); // A light grey for the page number
+            const pageNumText = "Page " + pageCount;
+            doc.text(pageNumText, pageWidth - data.settings.margin.right, pageHeight - 10, { align: 'right' });
           }
       });
 
@@ -1776,6 +1958,7 @@ button.ctrl.clear-list-btn-red {
   let gradientAnimationAngle = 0;
   let screenFlash = 0;
   let lightningBolts = [];
+  let pdfLogoData = null;
   
   let lists = [];
   let activeListIndex = 0;
@@ -2455,14 +2638,17 @@ button.ctrl.clear-list-btn-red {
     cb.onchange = function() {
         const currentList = lists[activeListIndex];
         const itemIndex = Array.from(list.children).indexOf(li);
+        if (itemIndex === -1) return;
         const currentItem = currentList.items[itemIndex];
         const oldStatus = currentItem.status;
 
         let newStatus;
-        if (currentList.type === 'Workflow') {
-            const currentStageIndex = currentList.stages.indexOf(oldStatus);
-            const nextStageIndex = (currentStageIndex + 1) % currentList.stages.length;
-            newStatus = currentList.stages[nextStageIndex];
+        let stageChange = { oldIndex: -1, newIndex: -1, isWorkflow: currentList.type === 'Workflow' };
+
+        if (stageChange.isWorkflow) {
+            stageChange.oldIndex = currentList.stages.indexOf(oldStatus);
+            stageChange.newIndex = (stageChange.oldIndex + 1) % currentList.stages.length;
+            newStatus = currentList.stages[stageChange.newIndex];
         } else {
             newStatus = (oldStatus === 'pending') ? 'complete' : 'pending';
         }
@@ -2470,17 +2656,31 @@ button.ctrl.clear-list-btn-red {
 
         updateItemUI(li, newStatus);
         
-        const wasComplete = (currentList.type === 'Workflow') ? (currentList.stages.indexOf(oldStatus) === currentList.stages.length - 1) : (oldStatus === 'complete');
-        const isNowComplete = (currentList.type === 'Workflow') ? (currentList.stages.indexOf(newStatus) === currentList.stages.length - 1) : (newStatus === 'complete');
+        const wasComplete = stageChange.isWorkflow ? (stageChange.oldIndex === currentList.stages.length - 1) : (oldStatus === 'complete');
+        const isNowComplete = stageChange.isWorkflow ? (stageChange.newIndex === currentList.stages.length - 1) : (newStatus === 'complete');
+        const isProgressing = stageChange.isWorkflow ? (stageChange.newIndex > stageChange.oldIndex) : (newStatus === 'complete');
 
-        if (isNowComplete && !wasComplete) {
-            if(enableAnimations.checked){ spawnParticlesFromEl(cb); }
-            li.classList.add('pulse');
-            if(enableScanLine.checked) li.classList.add('scan-effect-done');
-            setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
-        } else if (!isNowComplete && wasComplete) {
+        // Handle forward progress
+        if (isProgressing && !wasComplete) {
+            // Scan line on any forward step (including the last one)
+            if (enableScanLine.checked) {
+                li.classList.add('scan-effect-done');
+            }
+            // Big animation only on the final step
+            if (isNowComplete) {
+                if (enableAnimations.checked) {
+                    spawnParticlesFromEl(cb);
+                }
+                li.classList.add('pulse');
+                setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+            }
+        }
+        // Handle "un-checking" from a completed state
+        else if (wasComplete && !isNowComplete) {
             li.classList.add('warn');
-            if(enableScanLine.checked) li.classList.add('scan-effect-warn');
+            if (enableScanLine.checked) {
+                li.classList.add('scan-effect-warn');
+            }
             setTimeout(() => li.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
         }
         
@@ -3947,6 +4147,26 @@ button.ctrl.clear-list-btn-red {
     }
     hideContextMenu();
   });
+
+  function resetWorkflowStagesToDefault() {
+    const currentList = lists[activeListIndex];
+    if (currentList && currentList.type === 'Workflow') {
+        if (confirm('Are you sure you want to reset the stages for this list to the default? This will reset tasks in custom stages to the first stage.')) {
+            currentList.stages = ['Pending', 'In Progress', 'Complete'];
+
+            currentList.items.forEach(item => {
+                if (!currentList.stages.includes(item.status)) {
+                    item.status = currentList.stages[0]; // Reset to first stage
+                }
+            });
+
+            renderWorkflowStages();
+            renderList(); // Re-render the main list to show status changes
+            saveData();
+        }
+    }
+  }
+  resetStagesBtn.addEventListener('click', resetWorkflowStagesToDefault);
 
   ctxSetColor.addEventListener('click', () => {
     ctxColorInput.click();
