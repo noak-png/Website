@@ -1255,7 +1255,7 @@ button.ctrl.clear-list-btn-red {
   </div>
   <div class="clock-display glass" id="clockDisplay" style="display:none;"></div>
 
-  <div class="version" id="versionTag">v1.3</div>
+  <div class="version" id="versionTag">v1.3.1</div>
 
 <script>
 (function(){
@@ -1575,7 +1575,9 @@ button.ctrl.clear-list-btn-red {
     const jsonString = JSON.stringify(dataToShare);
 
     try {
-        const encodedString = btoa(unescape(encodeURIComponent(jsonString)));
+        // Modern, robust way to encode string to Base64, handling Unicode
+        const uint8Array = new TextEncoder().encode(jsonString);
+        const encodedString = btoa(String.fromCharCode.apply(null, uint8Array));
 
         const baseUrl = `${location.origin}${location.pathname}`;
         const shareableLink = `${baseUrl}?list=${encodeURIComponent(encodedString)}`;
@@ -1666,7 +1668,13 @@ button.ctrl.clear-list-btn-red {
 
     if (sharedListData) {
         try {
-            const decodedString = decodeURIComponent(escape(window.atob(sharedListData)));
+            // Modern, robust way to decode Base64 to string, handling Unicode
+            const binaryString = atob(sharedListData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const decodedString = new TextDecoder().decode(bytes);
             const parsedData = JSON.parse(decodedString);
 
             if (parsedData && Array.isArray(parsedData.items)) {
