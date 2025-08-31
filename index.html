@@ -171,14 +171,14 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item.done .badge{ border-color:var(--completion-ok-color); color:var(--completion-ok-color); }
 
 .item.in-progress {
-    box-shadow: inset 0 0 0 2px var(--in-progress-color, var(--accent));
+    box-shadow: inset 0 0 0 2px var(--accent);
 }
 .item.in-progress .badge {
-    border-color: var(--in-progress-color, var(--accent));
-    color: var(--in-progress-color, var(--accent));
+    border-color: var(--accent);
+    color: var(--accent);
 }
 .item.in-progress input[type="checkbox"] {
-    accent-color: var(--in-progress-color, var(--accent));
+    accent-color: var(--accent);
 }
 
 .remove{ background:transparent; border:1px solid var(--border); color:var(--danger); padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .15s; }
@@ -188,9 +188,6 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item.done{ box-shadow: inset 0 0 0 2px var(--completion-ok-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-color) 10%, transparent); }
 .item.done.pulse{ animation:innerRingPulse var(--completion-duration) ease-out; }
 @keyframes innerRingPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-ok-strong-color) 38%, transparent), inset 0 0 0 2px var(--completion-ok-color);} 45%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-strong-color) 22%, transparent), inset 0 0 0 2px var(--completion-ok-color);} 100%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-color) 10%, transparent), inset 0 0 0 2px var(--completion-ok-color);} }
-
-.item.in-progress.pulse-in-progress { animation:innerRingPulseAccent var(--completion-duration) ease-out; }
-@keyframes innerRingPulseAccent{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--in-progress-color, var(--accent)) 38%, transparent), inset 0 0 0 2px var(--in-progress-color, var(--accent));} 45%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--in-progress-color, var(--accent)) 22%, transparent), inset 0 0 0 2px var(--in-progress-color, var(--accent));} 100%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--in-progress-color, var(--accent)) 10%, transparent), inset 0 0 0 2px var(--in-progress-color, var(--accent));} }
 
 .item.warn{ box-shadow: inset 0 0 0 2px var(--completion-danger-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-color) 10%, transparent); animation:innerWarnPulse var(--completion-duration) ease-out; }
 @keyframes innerWarnPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-danger-strong-color) 42%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 55%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-strong-color) 18%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 100%{box-shadow: none;} }
@@ -208,7 +205,7 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 }
 .item.scan-effect-done::after {
     animation: scanLine var(--completion-duration) forwards cubic-bezier(.16,1,.3,1);
-    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--scan-line-color, var(--completion-ok-strong-color)) 50%, transparent 100%);
+    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--completion-ok-strong-color) 50%, transparent 100%);
 }
 @keyframes scanLine {
     0% { transform: translateY(-100%) scaleY(1); }
@@ -216,7 +213,7 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 }
 .item.scan-effect-warn::after {
     animation: scanLineWarn var(--completion-duration) forwards ease-out;
-    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--scan-line-warn-color, var(--completion-danger-strong-color)) 50%, transparent 100%);
+    background: linear-gradient(var(--scan-line-angle), transparent 0%, var(--completion-danger-strong-color) 50%, transparent 100%);
 }
 @keyframes scanLineWarn {
     0% { transform: translateY(-100%) scaleY(1.5); }
@@ -796,14 +793,14 @@ button.ctrl.clear-list-btn-red {
     <div class="section" id="secCheckmarkAnims">
         <details>
             <summary>
-                Checkmark Animations <span class="hint">Bubbles, Wind & Presets</span>
+                Checkmark Animations <span class="hint">bubbles, wind & presets</span>
             </summary>
             <div class="content">
                 <div class="sub-section-wrapper">
                     <div class="sub-section">
-                        <details id="secAnimStyle">
+                        <details id="secAnimStyle" open>
                             <summary>
-                                Animation Style <span class="hint">Bubbles, Splash, Fireworks & More</span>
+                                Animation Style <span class="hint">bubbles, splash, fireworks & more</span>
                             </summary>
                             <div class="content">
                                 <div class="row">
@@ -918,7 +915,7 @@ button.ctrl.clear-list-btn-red {
                     <div class="sub-section">
                         <details id="secWind">
                             <summary>
-                                Wind <span class="hint">Directional Flow, Push-Back & More</span>
+                                Wind <span class="hint">directional flow, push-back & more</span>
                             </summary>
                             <div class="content">
                                 <div class="row"><label class="helper"><input type="checkbox" id="enableWind"> Enable Wind</label></div>
@@ -952,7 +949,7 @@ button.ctrl.clear-list-btn-red {
                     <div class="sub-section">
                         <details id="secPatterns">
                             <summary>
-                                Saved Patterns <span class="hint">Save, Load, Import & Export</span>
+                                Saved Patterns <span class="hint">save, load, import & export</span>
                             </summary>
                             <div class="content">
                                 <div class="row">
@@ -980,7 +977,7 @@ button.ctrl.clear-list-btn-red {
     <div class="section" id="secAppearance">
       <details>
         <summary>
-          Appearance <span class="hint">UI, Background & Animations</span>
+          Appearance <span class="hint">UI, background & animations</span>
         </summary>
         <div class="content">
           
@@ -1028,10 +1025,6 @@ button.ctrl.clear-list-btn-red {
                           <span class="pct" id="slideSpeedPct">800ms</span>
                         </div>
                     </div>
-                    <div class="hr"></div>
-                     <div class="row">
-                       <label class="helper"><input type="checkbox" id="keepMenusOpen"> Keep dropdowns open by default (menu)</label>
-                    </div>
                 </div>
             </details>
           </div>
@@ -1040,31 +1033,14 @@ button.ctrl.clear-list-btn-red {
             <details id="secCompletionEffect">
                 <summary>Completion Effect</summary>
                 <div class="content">
-                    <div id="completionStandardControls">
-                        <div class="row">
-                            <label for="completionCheckedColor" style="flex: 1;">Checked Color</label>
-                            <input type="color" id="completionCheckedColor" value="#16a34a">
-                        </div>
-                        <div class="row">
-                            <label for="completionUncheckedColor" style="flex: 1;">Unchecked Color</label>
-                            <input type="color" id="completionUncheckedColor" value="#ef4444">
-                        </div>
+                    <div class="row">
+                        <label for="completionCheckedColor" style="flex: 1;">Checked Color</label>
+                        <input type="color" id="completionCheckedColor" value="#16a34a">
                     </div>
-                    <div id="completionWorkflowControls" class="stack" style="display: none;">
-                        <div class="row">
-                            <label for="completionWorkflowInProgressColor" style="flex: 1;">In Progress Stage Color</label>
-                            <input type="color" id="completionWorkflowInProgressColor" value="#2563eb">
-                        </div>
-                        <div class="row">
-                            <label for="completionWorkflowCheckColor" style="flex: 1;">Completion Stage Color</label>
-                            <input type="color" id="completionWorkflowCheckColor" value="#16a34a">
-                        </div>
-                        <div class="row">
-                            <label for="completionWorkflowUncheckColor" style="flex: 1;">Uncheck Stage Color</label>
-                            <input type="color" id="completionWorkflowUncheckColor" value="#ef4444">
-                        </div>
+                    <div class="row">
+                        <label for="completionUncheckedColor" style="flex: 1;">Unchecked Color</label>
+                        <input type="color" id="completionUncheckedColor" value="#ef4444">
                     </div>
-                    <div class="hr"></div>
                     <div class="slider-row">
                       <label for="completionGlow">Glow Intensity</label>
                       <input type="range" id="completionGlow" min="4" max="12" value="6" />
@@ -1075,14 +1051,8 @@ button.ctrl.clear-list-btn-red {
                       <input type="range" id="completionSpeed" min="300" max="1500" value="900" />
                       <span class="pct" id="completionSpeedPct">900ms</span>
                     </div>
-                    <div class="stack">
-                        <label for="completionAnimationType">Animation Type</label>
-                        <select id="completionAnimationType">
-                            <option value="none">None</option>
-                            <option value="pulse" selected>Inner Ring Pulse</option>
-                            <option value="scan">Scan Line</option>
-                            <option value="pulseAndScan">Pulse & Scan</option>
-                        </select>
+                    <div class="row">
+                       <label class="helper"><input type="checkbox" id="enableScanLine"> Enable Scan Line Effect</label>
                     </div>
                     <div class="slider-row" id="scanAngleControls" style="display:none;">
                       <label for="scanAngle">Scan Angle</label>
@@ -1256,26 +1226,10 @@ button.ctrl.clear-list-btn-red {
       </details>
     </div>
 
-    <div class="section" id="secShare">
-        <details>
-            <summary>
-                Share <span class="hint">Links, Content & More</span>
-            </summary>
-            <div class="content">
-                <div class="row">
-                    <label class="helper"><input type="checkbox" id="shareIncludeItems" checked> Include task items in link</label>
-                </div>
-                <div class="helper">
-                    Uncheck the box above to share a "template" of your list, including its name, type, and any workflow settings, without sharing the actual tasks.
-                </div>
-            </div>
-        </details>
-    </div>
-
     <div class="section" id="secUtility">
         <details>
             <summary>
-                Utility <span class="hint">Counters, Clock & Factory Reset</span>
+                Utility <span class="hint">counters, clock & factory reset</span>
             </summary>
             <div class="content">
                 <div class="stack">
@@ -1328,7 +1282,7 @@ button.ctrl.clear-list-btn-red {
                 </div>
                 <div class="hr"></div>
                 <div class="sub-section" id="secWorkflowStages" style="display: none;">
-                    <details>
+                    <details open>
                         <summary>Customize Workflow Stages</summary>
                         <div class="content stack">
                             <div id="workflowStagesList" class="stack"></div>
@@ -1344,7 +1298,7 @@ button.ctrl.clear-list-btn-red {
                 </div>
                 <div class="hr"></div>
                 <div class="sub-section">
-                    <details id="secPdfExport">
+                    <details id="secPdfExport" open>
                         <summary>PDF Export</summary>
                         <div class="content stack">
                             <div class="row">
@@ -1523,8 +1477,7 @@ button.ctrl.clear-list-btn-red {
     gradientSpread: document.getElementById('gradientSpreadPct'),
     gradientSpinSpeed: document.getElementById('gradientSpinSpeedPct'),
     completionGlow: document.getElementById('completionGlowPct'),
-    completionSpeed: document.getElementById('completionSpeedPct'),
-    scanAngle: document.getElementById('scanAnglePct')
+    completionSpeed: document.getElementById('completionSpeedPct')
   };
 
   // Color + shape controls
@@ -1560,15 +1513,10 @@ button.ctrl.clear-list-btn-red {
   // Completion Effect Controls
   const completionCheckedColor = document.getElementById('completionCheckedColor');
   const completionUncheckedColor = document.getElementById('completionUncheckedColor');
-  const completionStandardControls = document.getElementById('completionStandardControls');
-  const completionWorkflowControls = document.getElementById('completionWorkflowControls');
-  const completionWorkflowInProgressColor = document.getElementById('completionWorkflowInProgressColor');
-  const completionWorkflowCheckColor = document.getElementById('completionWorkflowCheckColor');
-  const completionWorkflowUncheckColor = document.getElementById('completionWorkflowUncheckColor');
   const completionGlow = document.getElementById('completionGlow');
   const completionSpeed = document.getElementById('completionSpeed');
   const completionResetBtn = document.getElementById('completionResetBtn');
-  const completionAnimationType = document.getElementById('completionAnimationType');
+  const enableScanLine = document.getElementById('enableScanLine');
   const scanAngle = document.getElementById('scanAngle');
   const scanAngleControls = document.getElementById('scanAngleControls');
 
@@ -1603,7 +1551,6 @@ button.ctrl.clear-list-btn-red {
   const clickCounter = document.getElementById('clickCounter');
   const clickCount = document.getElementById('clickCount');
   const simpleModeToggle = document.getElementById('simpleModeToggle');
-  const keepMenusOpen = document.getElementById('keepMenusOpen');
   const exportStateBtn = document.getElementById('exportStateBtn');
   const secWorkflowStages = document.getElementById('secWorkflowStages');
   const workflowStagesList = document.getElementById('workflowStagesList');
@@ -1658,11 +1605,6 @@ button.ctrl.clear-list-btn-red {
 
 
   function generatePdfPreview() {
-    const secPdfExportDetails = document.getElementById('secPdfExport');
-    if (!secPdfExportDetails.open) {
-        return; // Don't regenerate the preview if the section isn't open
-    }
-
     const currentList = lists[activeListIndex];
     if (!currentList) {
         pdfPreview.src = "";
@@ -1671,9 +1613,6 @@ button.ctrl.clear-list-btn-red {
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setProperties({
-        title: `${currentList.name} - MySparkList Export`
-    });
     const headerText = pdfHeader.value || currentList.name;
     const authorText = pdfAuthor.value;
     const theme = pdfTheme.value;
@@ -1726,21 +1665,11 @@ button.ctrl.clear-list-btn-red {
     if (includeTime) metaInfo.push(new Date().toLocaleTimeString());
     if (includeAuthor && authorText) metaInfo.push(`By: ${authorText}`);
 
-    let metaY = finalY;
-    doc.setFontSize(10);
-    if (includeDate || includeTime) {
-        const dateTimeParts = [];
-        if (includeDate) dateTimeParts.push(new Date().toLocaleDateString());
-        if (includeTime) dateTimeParts.push(new Date().toLocaleTimeString());
-        doc.text(dateTimeParts.join(' '), 14, metaY);
-        metaY += 5;
+    if (metaInfo.length > 0) {
+        doc.setFontSize(10);
+        doc.text(metaInfo.join(' | '), 14, finalY);
+        finalY += 10;
     }
-    if (includeAuthor && authorText) {
-        doc.text(`By: ${authorText}`, 14, metaY);
-        metaY += 5;
-    }
-    finalY = metaY + 2;
-
 
     const tableData = getTasksForPdf();
     const tableHeaders = [
@@ -1756,11 +1685,8 @@ button.ctrl.clear-list-btn-red {
         body: tableData,
         theme: theme,
         headStyles: headStyles,
-        didParseCell: function(data) {
-            data.cell.styles.valign = 'middle';
-        },
         columnStyles: {
-            text: { cellPadding: { left: 8 } },
+            text: { cellPadding: { left: 8 } }
         },
         didDrawCell: function(data) {
             if (data.section === 'body' && data.column.dataKey === 'text' && pdfIncludeCheckboxes.checked) {
@@ -1785,11 +1711,6 @@ button.ctrl.clear-list-btn-red {
             const pageCount = doc.internal.getNumberOfPages();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
-
-            // Page border
-            doc.setDrawColor(200);
-            doc.setLineWidth(0.3);
-            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
 
             // Watermark
             doc.setFontSize(8);
@@ -1824,7 +1745,7 @@ button.ctrl.clear-list-btn-red {
           });
       } else { // default list
           return tasks.map(task => {
-              const isComplete = task.status === 'Complete';
+              const isComplete = task.status === 'complete';
               return { text: task.text, status: isComplete ? 'Completed' : 'Pending', isComplete: isComplete };
           });
       }
@@ -1837,9 +1758,6 @@ button.ctrl.clear-list-btn-red {
 
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.setProperties({
-          title: `${currentList.name} - MySparkList Export`
-      });
       const headerText = pdfHeader.value || currentList.name;
       const authorText = pdfAuthor.value;
       const theme = pdfTheme.value;
@@ -1892,20 +1810,11 @@ button.ctrl.clear-list-btn-red {
       if (includeTime) metaInfo.push(new Date().toLocaleTimeString());
       if (includeAuthor && authorText) metaInfo.push(`By: ${authorText}`);
 
-      let metaY = finalY;
-      doc.setFontSize(10);
-      if (includeDate || includeTime) {
-          const dateTimeParts = [];
-          if (includeDate) dateTimeParts.push(new Date().toLocaleDateString());
-          if (includeTime) dateTimeParts.push(new Date().toLocaleTimeString());
-          doc.text(dateTimeParts.join(' '), 14, metaY);
-          metaY += 5;
+      if (metaInfo.length > 0) {
+          doc.setFontSize(10);
+          doc.text(metaInfo.join(' | '), 14, finalY);
+          finalY += 10;
       }
-      if (includeAuthor && authorText) {
-          doc.text(`By: ${authorText}`, 14, metaY);
-          metaY += 5;
-      }
-      finalY = metaY + 2;
 
       const tableData = getTasksForPdf();
       const tableHeaders = [
@@ -1921,11 +1830,8 @@ button.ctrl.clear-list-btn-red {
           body: tableData,
           theme: theme,
           headStyles: headStyles,
-          didParseCell: function(data) {
-            data.cell.styles.valign = 'middle';
-          },
           columnStyles: {
-              text: { cellPadding: { left: 8 } },
+              text: { cellPadding: { left: 8 } }
           },
           didDrawCell: function(data) {
               if (data.section === 'body' && data.column.dataKey === 'text' && pdfIncludeCheckboxes.checked) {
@@ -1950,11 +1856,6 @@ button.ctrl.clear-list-btn-red {
             const pageCount = doc.internal.getNumberOfPages();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
-
-            // Page border
-            doc.setDrawColor(200);
-            doc.setLineWidth(0.3);
-            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
 
             // Watermark
             doc.setFontSize(8);
@@ -2114,23 +2015,13 @@ button.ctrl.clear-list-btn-red {
         return;
     }
     const listToShare = lists[listIndex];
-    const shareIncludeItems = document.getElementById('shareIncludeItems');
-    const includeItems = shareIncludeItems ? shareIncludeItems.checked : true;
 
+    // Share name, type, and items for a better user experience
     const dataToShare = {
         name: listToShare.name,
-        type: listToShare.type
+        type: listToShare.type,
+        items: listToShare.items
     };
-
-    if (includeItems) {
-        dataToShare.items = listToShare.items;
-    }
-
-    if (listToShare.type === 'Workflow') {
-        dataToShare.stages = listToShare.stages;
-        dataToShare.colors = listToShare.colors;
-    }
-
     const jsonString = JSON.stringify(dataToShare);
 
     try {
@@ -2195,24 +2086,21 @@ button.ctrl.clear-list-btn-red {
     store('secCounter',enableSecCounter.checked); store('clickCounter',enableClickCounter.checked); store('clickCount',totalClicks);
     store('seconds',seconds);
     store('naturalSlide', enableNaturalSlide.checked);
-    store('completionAnimationType', completionAnimationType.value);
+    store('enableScanLine', enableScanLine.checked);
     store('scanAngle', scanAngle.value);
     store('slideSpeed', slideSpeed.value); store('clockEnabled', enableClock.checked); store('clockPosition', clockPosition.value);
     store('clockDetail', clockDetail.value);
     store('simpleMode', simpleModeToggle.checked);
-    store('keepMenusOpen', keepMenusOpen.checked);
     store('hasLaunchedBefore', 'true');
     store('hideWelcomeBack', hideWelcomeBack.checked);
     localStorage.setItem('mysparklist.savedPatterns', JSON.stringify(savedPatterns));
 
-    if (keepMenusOpen.checked) {
-        const detailsElements = document.querySelectorAll('.menu-panel details');
-        detailsElements.forEach(el => {
-            if (el.id) {
-                store(`secOpen.${el.id}`, el.open);
-            }
-        });
-    }
+    const detailsElements = document.querySelectorAll('.menu-panel details');
+    detailsElements.forEach(el => {
+        if (el.id) {
+            store(`secOpen.${el.id}`, el.open);
+        }
+    });
   }
 
   function loadData(){
@@ -2230,12 +2118,12 @@ button.ctrl.clear-list-btn-red {
         if (list.items) {
             list.items.forEach(item => {
                 if (typeof item.done !== 'undefined') {
-                    item.status = item.done ? 'Complete' : 'Pending';
+                    item.status = item.done ? 'complete' : 'pending';
                     delete item.done;
                 }
                 // Ensure all items have a status
                 if (!item.status) {
-                    item.status = 'Pending';
+                    item.status = 'pending';
                 }
             });
         }
@@ -2256,18 +2144,13 @@ button.ctrl.clear-list-btn-red {
             const decodedString = new TextDecoder().decode(bytes);
             const parsedData = JSON.parse(decodedString);
 
-            if (parsedData && parsedData.name && parsedData.type) {
+            if (parsedData && Array.isArray(parsedData.items)) {
                 const newList = {
                     name: (parsedData.name || "Shared List") + " 🔗",
-                    type: parsedData.type,
-                    items: parsedData.items || [], // Default to empty array if not included
+                    type: parsedData.type || "General Tasks",
+                    items: parsedData.items,
                     color: null
                 };
-
-                if (parsedData.type === 'Workflow') {
-                    newList.stages = parsedData.stages || ['Pending', 'In Progress', 'Completion'];
-                    newList.colors = parsedData.colors || { inProgress: '#2563eb', check: '#16a34a', uncheck: '#ef4444' };
-                }
                 
                 // Replace all existing lists with the new shared one.
                 lists = [newList];
@@ -2379,25 +2262,22 @@ button.ctrl.clear-list-btn-red {
     gradientSpinToggle.checked = (get('gradientSpinEnabled', 'true') === 'true');
     gradientSpinSpeed.value = get('gradientSpinSpeed', '10');
     enableNaturalSlide.checked = (get('naturalSlide', 'true') === 'true');
-    completionAnimationType.value = get('completionAnimationType', 'pulse');
+    enableScanLine.checked = (get('enableScanLine', 'true') === 'true');
     scanAngle.value = get('scanAngle', '180');
     slideSpeed.value = get('slideSpeed', '800');
     enableClock.checked = (get('clockEnabled', 'false') === 'true');
     clockPosition.value = get('clockPosition', 'pos-top-right');
     clockDetail.value = get('clockDetail', 'dateTime');
     simpleModeToggle.checked = (get('simpleMode', 'false') === 'true');
-    keepMenusOpen.checked = (get('keepMenusOpen', 'false') === 'true');
     hideWelcomeBack.checked = shouldHideWelcomeBack;
     savedPatterns = JSON.parse(get('savedPatterns', '[]'));
     
-    if (keepMenusOpen.checked) {
-        const detailsElements = document.querySelectorAll('.menu-panel details');
-        detailsElements.forEach(el => {
-            if (el.id) {
-                el.open = (get(`secOpen.${el.id}`, el.hasAttribute('open') ? 'true' : 'false') === 'true');
-            }
-        });
-    }
+    const detailsElements = document.querySelectorAll('.menu-panel details');
+    detailsElements.forEach(el => {
+        if (el.id) {
+            el.open = (get(`secOpen.${el.id}`, el.hasAttribute('open') ? 'true' : 'false') === 'true');
+        }
+    });
 
     applyAllSettings();
     
@@ -2566,29 +2446,12 @@ button.ctrl.clear-list-btn-red {
 
   function resetCompletionEffectSettings() {
       const isDark = document.documentElement.classList.contains('dark');
-      const currentList = lists[activeListIndex];
-
-      if (currentList && currentList.type === 'Workflow') {
-          completionWorkflowInProgressColor.value = '#2563eb'; // blue
-          completionWorkflowCheckColor.value = '#16a34a'; // green
-          completionWorkflowUncheckColor.value = '#ef4444'; // red
-
-          // Also apply these changes to the current list's data
-          currentList.colors.inProgress = '#2563eb';
-          currentList.colors.check = '#16a34a';
-          currentList.colors.uncheck = '#ef4444';
-          saveData();
-
-      } else {
-        completionCheckedColor.value = isDark ? '#22c55e' : '#16a34a';
-        completionUncheckedColor.value = isDark ? '#f87171' : '#ef4444';
-      }
-
+      completionCheckedColor.value = isDark ? '#22c55e' : '#16a34a';
+      completionUncheckedColor.value = isDark ? '#f87171' : '#ef4444';
       completionGlow.value = 6;
       completionSpeed.value = 900;
-      completionAnimationType.value = 'pulse';
+      enableScanLine.checked = false;
       scanAngle.value = 180;
-
       applyCompletionEffectSettings();
       applyScanAngle();
       syncScanAngleVisibility();
@@ -2601,8 +2464,7 @@ button.ctrl.clear-list-btn-red {
   }
 
   function syncScanAngleVisibility() {
-      const animType = completionAnimationType.value;
-      scanAngleControls.style.display = (animType === 'scan' || animType === 'pulseAndScan') ? 'flex' : 'none';
+      scanAngleControls.style.display = enableScanLine.checked ? 'flex' : 'none';
   }
 
 
@@ -2731,8 +2593,8 @@ button.ctrl.clear-list-btn-red {
         isPending = (stageIndex === 0);
         isIntermediate = !isComplete && !isPending;
     } else { // Standard list
-        isComplete = (status === 'Complete');
-        isPending = (status === 'Pending');
+        isComplete = (status === 'complete');
+        isPending = (status === 'pending');
     }
 
     badge.textContent = status;
@@ -2780,94 +2642,48 @@ button.ctrl.clear-list-btn-red {
         const oldStatus = currentItem.status;
 
         let newStatus;
-        const isWorkflow = currentList.type === 'Workflow';
-        let stageChange = { oldIndex: -1, newIndex: -1 };
+        let stageChange = { oldIndex: -1, newIndex: -1, isWorkflow: currentList.type === 'Workflow' };
 
-        if (isWorkflow) {
+        if (stageChange.isWorkflow) {
             stageChange.oldIndex = currentList.stages.indexOf(oldStatus);
             stageChange.newIndex = (stageChange.oldIndex + 1) % currentList.stages.length;
             newStatus = currentList.stages[stageChange.newIndex];
         } else {
-            newStatus = (oldStatus === 'Pending') ? 'Complete' : 'Pending';
+            newStatus = (oldStatus === 'pending') ? 'complete' : 'pending';
         }
         currentItem.status = newStatus;
 
-        if (isWorkflow) {
-            const colors = currentList.colors;
-            li.style.setProperty('--completion-ok-color', colors.check);
-            li.style.setProperty('--in-progress-color', colors.inProgress);
-            li.style.setProperty('--completion-danger-color', colors.uncheck);
-            const uncheckRgb = hexToRgb(colors.uncheck);
-            if (uncheckRgb) {
-                const uncheckStrong = rgbToHex(uncheckRgb.r * 1.2, uncheckRgb.g * 1.2, uncheckRgb.b * 1.2);
-                li.style.setProperty('--completion-danger-strong-color', uncheckStrong);
-            }
-        }
-
         updateItemUI(li, newStatus);
         
-        const wasComplete = isWorkflow ? (stageChange.oldIndex === currentList.stages.length - 1) : (oldStatus === 'complete');
-        const isNowComplete = isWorkflow ? (stageChange.newIndex === currentList.stages.length - 1) : (newStatus === 'complete');
-        const isProgressing = isWorkflow ? (stageChange.newIndex > stageChange.oldIndex) : (newStatus === 'complete');
+        const wasComplete = stageChange.isWorkflow ? (stageChange.oldIndex === currentList.stages.length - 1) : (oldStatus === 'complete');
+        const isNowComplete = stageChange.isWorkflow ? (stageChange.newIndex === currentList.stages.length - 1) : (newStatus === 'complete');
+        const isProgressing = stageChange.isWorkflow ? (stageChange.newIndex > stageChange.oldIndex) : (newStatus === 'complete');
 
-        li.classList.remove('pulse', 'pulse-in-progress', 'warn', 'scan-effect-done', 'scan-effect-warn');
-
-        const animType = completionAnimationType.value;
-        const doPulse = animType === 'pulse' || animType === 'pulseAndScan';
-        const doScan = animType === 'scan' || animType === 'pulseAndScan';
-
+        // Handle forward progress
         if (isProgressing && !wasComplete) {
-            if (doScan) {
-                let scanColor = '';
-                if (isWorkflow) {
-                    scanColor = isNowComplete ? currentList.colors.check : currentList.colors.inProgress;
-                } else {
-                    scanColor = getComputedStyle(document.documentElement).getPropertyValue('--completion-ok-strong-color');
-                }
-                const rgb = hexToRgb(scanColor);
-                if (rgb) {
-                    const strongColor = rgbToHex(rgb.r * 1.2, rgb.g * 1.2, rgb.b * 1.2);
-                    li.style.setProperty('--scan-line-color', strongColor);
-                } else {
-                     li.style.removeProperty('--scan-line-color');
-                }
+            // Scan line on any forward step (including the last one)
+            if (enableScanLine.checked) {
                 li.classList.add('scan-effect-done');
             }
-
-            if (doPulse) {
-                if (isNowComplete) {
-                    if (enableAnimations.checked) spawnParticlesFromEl(cb);
-                    li.classList.add('pulse');
-                } else if (isWorkflow) {
-                    li.classList.add('pulse-in-progress');
+            // Big animation only on the final step
+            if (isNowComplete) {
+                if (enableAnimations.checked) {
+                    spawnParticlesFromEl(cb);
                 }
-            }
-        } else if (wasComplete && !isNowComplete) {
-            li.classList.add('warn'); // This is the un-checking pulse animation
-            if (doScan) {
-                let warnScanColor = '';
-                if (isWorkflow) {
-                    warnScanColor = currentList.colors.uncheck;
-                } else {
-                    warnScanColor = getComputedStyle(document.documentElement).getPropertyValue('--completion-danger-strong-color');
-                }
-                const rgb = hexToRgb(warnScanColor);
-                if(rgb){
-                    const strongColor = rgbToHex(rgb.r * 1.2, rgb.g * 1.2, rgb.b * 1.2);
-                    li.style.setProperty('--scan-line-warn-color', strongColor);
-                } else {
-                    li.style.removeProperty('--scan-line-warn-color');
-                }
-                li.classList.add('scan-effect-warn');
+                li.classList.add('pulse');
+                setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
             }
         }
+        // Handle "un-checking" from a completed state
+        else if (wasComplete && !isNowComplete) {
+            li.classList.add('warn');
+            if (enableScanLine.checked) {
+                li.classList.add('scan-effect-warn');
+            }
+            setTimeout(() => li.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+        }
         
-        setTimeout(() => {
-            li.classList.remove('pulse', 'pulse-in-progress', 'warn', 'scan-effect-done', 'scan-effect-warn');
-        }, parseInt(completionSpeed.value, 10) + 100);
-
         saveData();
-        generatePdfPreview();
     };
 
     cb.addEventListener('pointerdown', (e)=>{ 
@@ -2882,10 +2698,7 @@ button.ctrl.clear-list-btn-red {
       lists[activeListIndex].items.splice(itemIndex, 1);
       
       streams = streams.filter(s=>!(s.el===cb)); 
-      animateRemove(li, () => {
-        saveData();
-        generatePdfPreview();
-      });
+      animateRemove(li, saveData);
     };
     li.ondragstart = e=>{ li.classList.add('dragging'); e.dataTransfer.setData('text/plain',''); };
     li.ondragend = ()=> li.classList.remove('dragging');
@@ -2894,7 +2707,7 @@ button.ctrl.clear-list-btn-red {
   addBtn.onclick = ()=>{ 
     if(input.value.trim()){ 
       const currentList = lists[activeListIndex];
-      let initialStatus = 'Pending';
+      let initialStatus = 'pending';
       if (currentList.type === 'Workflow' && currentList.stages && currentList.stages.length > 0) {
           initialStatus = currentList.stages[0];
       }
@@ -2903,7 +2716,6 @@ button.ctrl.clear-list-btn-red {
       addItem(newItem.text, newItem.status); 
       input.value=''; 
       saveData(); 
-      generatePdfPreview();
     } 
   };
   input.onkeydown = e=>{ if(e.key==='Enter') addBtn.click(); };
@@ -2928,9 +2740,6 @@ button.ctrl.clear-list-btn-red {
     menuPanel.style.display = open ? 'block' : 'none';
     menuPanel.setAttribute('aria-hidden', !open);
     menuBtn.setAttribute('aria-expanded', open);
-    if (open && !keepMenusOpen.checked) {
-        menuPanel.querySelectorAll('details').forEach(d => d.open = false);
-    }
   }
 
   menuBtn.onclick = ()=>{ const isOpen = menuPanel.style.display==='block'; setMenu(!isOpen); };
@@ -3772,28 +3581,9 @@ button.ctrl.clear-list-btn-red {
       resetCompletionEffectSettings();
       saveData();
   });
-  completionAnimationType.addEventListener('change', () => {
-      syncScanAngleVisibility();
-      saveData();
-  });
-
-  [completionWorkflowInProgressColor, completionWorkflowCheckColor, completionWorkflowUncheckColor].forEach(el => {
-    el.addEventListener('input', () => {
-        const currentList = lists[activeListIndex];
-        if (currentList && currentList.type === 'Workflow') {
-            if (!currentList.colors) currentList.colors = {}; // Should be initialized by now, but safe
-            switch(el.id) {
-                case 'completionWorkflowInProgressColor': currentList.colors.inProgress = el.value; break;
-                case 'completionWorkflowCheckColor': currentList.colors.check = el.value; break;
-                case 'completionWorkflowUncheckColor': currentList.colors.uncheck = el.value; break;
-            }
-            saveData();
-        }
-    });
-  });
 
 
-  document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiStyleSelect, #completionAnimationType)').forEach(el=> el.addEventListener('change', ()=>{
+  document.querySelectorAll('select:not(#animationStyleSelect, #animationPresetSelect, #shapeSelect, #bubbleOutline, #colorMode, #windPattern, #uiStyleSelect)').forEach(el=> el.addEventListener('change', ()=>{
       if(el===ambianceSelect) applyAmbianceSettings();
       if(el===backgroundType || el===colorWallpaperType) updateWallpaperUI();
       if(el===wallpaperFit){ const data = localStorage.getItem('mysparklist.wallpaperDataUrl'); if(data){ applyImageWallpaper(data, wallpaperFit.value); } } 
@@ -3805,9 +3595,10 @@ button.ctrl.clear-list-btn-red {
   [gradientAngle, gradientSpread].forEach(el => el.addEventListener('input', () => { if (el === gradientAngle && !gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } applyColorWallpaper(); updatePercentages(); saveData(); }));
   gradientSpinToggle.addEventListener('change', ()=>{ if(gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } else { gradientAngle.value = Math.round(gradientAnimationAngle); updatePercentages(); } gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none'; saveData(); });
   enableClock.addEventListener('change', ()=>{ applyClockSettings(); saveData(); });
-  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground].forEach(el => el.addEventListener('change', ()=>{
+  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground, enableScanLine].forEach(el => el.addEventListener('change', ()=>{
       if (el === enableAmbiance) applyAmbianceSettings(); 
       if (el === enableCustomBackground) syncCustomBackgroundVisibility();
+      if (el === enableScanLine) syncScanAngleVisibility();
       saveData(); 
   }));
   simpleModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(simpleModeToggle.checked); saveData(); });
@@ -3986,8 +3777,7 @@ button.ctrl.clear-list-btn-red {
       if (name && temp_listType) {
           const newListData = { name, type: temp_listType, items: [] };
           if (temp_listType === 'Workflow') {
-              newListData.stages = ['Pending', 'In Progress', 'Completion'];
-              newListData.colors = { inProgress: '#2563eb', check: '#16a34a', uncheck: '#ef4444' };
+              newListData.stages = ['Pending', 'In Progress', 'Complete'];
           }
           if (listCreationCallback) {
               listCreationCallback(newListData);
@@ -4024,33 +3814,6 @@ button.ctrl.clear-list-btn-red {
   hideWelcomeBack.addEventListener('change', saveData);
 
   /* ---------- Multi-list & UI Logic ---------- */
-    function syncCompletionEffectUI() {
-        const currentList = lists[activeListIndex];
-        if (!currentList) return;
-
-        const isWorkflow = currentList.type === 'Workflow';
-
-        completionStandardControls.style.display = isWorkflow ? 'none' : 'block';
-        completionWorkflowControls.style.display = isWorkflow ? 'flex' : 'none';
-
-        if (isWorkflow) {
-            if (!currentList.colors || !currentList.colors.inProgress) { // check for new property
-                // Migrate from old data structure if necessary
-                const oldInProgress = currentList.colors?.middle;
-                const oldCheck = currentList.colors?.end;
-
-                currentList.colors = {
-                    inProgress: currentList.colors?.inProgress || oldInProgress || '#2563eb',
-                    check: currentList.colors?.check || oldCheck || '#16a34a',
-                    uncheck: currentList.colors?.uncheck || '#ef4444'
-                };
-            }
-            completionWorkflowInProgressColor.value = currentList.colors.inProgress;
-            completionWorkflowCheckColor.value = currentList.colors.check;
-            completionWorkflowUncheckColor.value = currentList.colors.uncheck;
-        }
-    }
-
     const placeholders = {
         "General Tasks": "Add a task...",
         "Milestones": "Add a milestone...",
@@ -4123,7 +3886,6 @@ button.ctrl.clear-list-btn-red {
         renderList();
         renderTabs();
         renderWorkflowStages();
-        syncCompletionEffectUI();
     }
 
     function animateAndClearChecks() {
@@ -4140,13 +3902,12 @@ button.ctrl.clear-list-btn-red {
 
         setTimeout(() => {
             lists[activeListIndex].items.forEach(item => {
-                if (item.status === 'Complete') {
-                    item.status = 'Pending';
+                if (item.status === 'complete') {
+                    item.status = 'pending';
                 }
             });
             renderList();
             saveData();
-            generatePdfPreview();
         }, parseInt(completionSpeed.value, 10) + 50);
     }
     
@@ -4173,12 +3934,11 @@ button.ctrl.clear-list-btn-red {
             if (isFullClear) {
                  lists[activeListIndex].items = [];
             } else { 
-                lists[activeListIndex].items.forEach(item => item.status = 'Pending');
+                lists[activeListIndex].items.forEach(item => item.status = 'pending');
             }
 
             renderList();
             saveData();
-            generatePdfPreview();
 
             if (currentListType === 'Call Behaviors') {
                 seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter();
@@ -4391,7 +4151,7 @@ button.ctrl.clear-list-btn-red {
     const currentList = lists[activeListIndex];
     if (currentList && currentList.type === 'Workflow') {
         if (confirm('Are you sure you want to reset the stages for this list to the default? This will reset tasks in custom stages to the first stage.')) {
-            currentList.stages = ['Pending', 'In Progress', 'Completion'];
+            currentList.stages = ['Pending', 'In Progress', 'Complete'];
             
             currentList.items.forEach(item => {
                 if (!currentList.stages.includes(item.status)) {
