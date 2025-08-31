@@ -192,6 +192,14 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item.warn{ box-shadow: inset 0 0 0 2px var(--completion-danger-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-color) 10%, transparent); animation:innerWarnPulse var(--completion-duration) ease-out; }
 @keyframes innerWarnPulse{ 0%{box-shadow:inset 0 0 0 10px color-mix(in srgb, var(--completion-danger-strong-color) 42%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 55%{box-shadow:inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-danger-strong-color) 18%, transparent), inset 0 0 0 2px var(--completion-danger-color);} 100%{box-shadow: none;} }
 
+/* New animation to fade out only the checkbox */
+.item.warn input[type="checkbox"] {
+  animation: fadeOutCheckbox var(--completion-duration) ease-out forwards;
+}
+@keyframes fadeOutCheckbox {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 
 /* Scan Line Effect Styles */
 .item::after {
@@ -1693,7 +1701,7 @@ button.ctrl.clear-list-btn-red {
                 const isComplete = data.row.raw.isComplete;
                 const checkboxSize = 3.5;
                 const checkboxX = data.cell.x + 2;
-                const checkboxY = data.cell.y + data.cell.height / 2 - checkboxSize / 2;
+                const checkboxY = data.cell.textPos.y - checkboxSize + 1; // Align bottom of checkbox with text baseline
                 
                 doc.setDrawColor(100);
                 doc.setFillColor(255, 255, 255);
@@ -1838,7 +1846,7 @@ button.ctrl.clear-list-btn-red {
                   const isComplete = data.row.raw.isComplete;
                   const checkboxSize = 3.5;
                   const checkboxX = data.cell.x + 2;
-                  const checkboxY = data.cell.y + data.cell.height / 2 - checkboxSize / 2;
+                  const checkboxY = data.cell.textPos.y - checkboxSize + 1; // Align bottom of checkbox with text baseline
                   
                   doc.setDrawColor(100);
                   doc.setFillColor(255, 255, 255);
@@ -2640,50 +2648,79 @@ button.ctrl.clear-list-btn-red {
         if (itemIndex === -1) return;
         const currentItem = currentList.items[itemIndex];
         const oldStatus = currentItem.status;
+        const isWorkflow = currentList.type === 'Workflow';
 
-        let newStatus;
-        let stageChange = { oldIndex: -1, newIndex: -1, isWorkflow: currentList.type === 'Workflow' };
+        const wasComplete = isWorkflow
+            ? (currentList.stages.indexOf(oldStatus) === currentList.stages.length - 1)
+            : (oldStatus === 'complete');
 
-        if (stageChange.isWorkflow) {
-            stageChange.oldIndex = currentList.stages.indexOf(oldStatus);
-            stageChange.newIndex = (stageChange.oldIndex + 1) % currentList.stages.length;
-            newStatus = currentList.stages[stageChange.newIndex];
-        } else {
-            newStatus = (oldStatus === 'pending') ? 'complete' : 'pending';
-        }
-        currentItem.status = newStatus;
-
-        updateItemUI(li, newStatus);
-        
-        const wasComplete = stageChange.isWorkflow ? (stageChange.oldIndex === currentList.stages.length - 1) : (oldStatus === 'complete');
-        const isNowComplete = stageChange.isWorkflow ? (stageChange.newIndex === currentList.stages.length - 1) : (newStatus === 'complete');
-        const isProgressing = stageChange.isWorkflow ? (stageChange.newIndex > stageChange.oldIndex) : (newStatus === 'complete');
-
-        // Handle forward progress
-        if (isProgressing && !wasComplete) {
-            // Scan line on any forward step (including the last one)
-            if (enableScanLine.checked) {
-                li.classList.add('scan-effect-done');
-            }
-            // Big animation only on the final step
-            if (isNowComplete) {
-                if (enableAnimations.checked) {
-                    spawnParticlesFromEl(cb);
-                }
-                li.classList.add('pulse');
-                setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
-            }
-        }
-        // Handle "un-checking" from a completed state
-        else if (wasComplete && !isNowComplete) {
+        // If un-checking, play animation first, then update state.
+        if (wasComplete) {
+            cb.checked = true; // Keep it visually checked during animation
             li.classList.add('warn');
-            if (enableScanLine.checked) {
-                li.classList.add('scan-effect-warn');
+
+            let warnScanColor = isWorkflow ? currentList.colors.uncheck : getComputedStyle(document.documentElement).getPropertyValue('--completion-danger-strong-color');
+            const rgb = hexToRgb(warnScanColor);
+            if(rgb){
+                const strongColor = rgbToHex(rgb.r * 1.2, rgb.g * 1.2, rgb.b * 1.2);
+                li.style.setProperty('--scan-line-warn-color', strongColor);
             }
-            setTimeout(() => li.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+            li.classList.add('scan-effect-warn');
+
+            setTimeout(() => {
+                const newStatus = isWorkflow ? currentList.stages[0] : 'pending';
+                currentItem.status = newStatus;
+                updateItemUI(li, newStatus);
+
+                li.classList.remove('warn', 'scan-effect-warn');
+                li.style.removeProperty('--scan-line-warn-color');
+
+                cb.style.animation = 'none';
+                requestAnimationFrame(() => { cb.style.animation = ''; });
+
+                saveData();
+                generatePdfPreview();
+            }, parseInt(completionSpeed.value, 10));
+
+        } else { // Handle forward progress
+            const oldIndex = isWorkflow ? currentList.stages.indexOf(oldStatus) : -1;
+            const newIndex = isWorkflow ? (oldIndex + 1) % currentList.stages.length : -1;
+            const newStatus = isWorkflow ? currentList.stages[newIndex] : 'complete';
+            currentItem.status = newStatus;
+
+            updateItemUI(li, newStatus);
+
+            const isNowComplete = isWorkflow ? (newIndex === currentList.stages.length - 1) : (newStatus === 'complete');
+
+            if (isWorkflow) {
+                const colors = currentList.colors;
+                li.style.setProperty('--completion-ok-color', colors.check);
+                li.style.setProperty('--in-progress-color', colors.inProgress);
+            }
+
+            li.classList.remove('pulse', 'pulse-in-progress', 'scan-effect-done');
+
+            let scanColor = isWorkflow ? (isNowComplete ? currentList.colors.check : currentList.colors.inProgress) : getComputedStyle(document.documentElement).getPropertyValue('--completion-ok-strong-color');
+            const scanRgb = hexToRgb(scanColor);
+            if (scanRgb) {
+                li.style.setProperty('--scan-line-color', rgbToHex(scanRgb.r * 1.2, scanRgb.g * 1.2, scanRgb.b * 1.2));
+            }
+            li.classList.add('scan-effect-done');
+
+            if (isNowComplete) {
+                if (enableAnimations.checked) spawnParticlesFromEl(cb);
+                li.classList.add('pulse');
+            } else if (isWorkflow) {
+                li.classList.add('pulse-in-progress');
+            }
+
+            setTimeout(() => {
+                li.classList.remove('pulse', 'pulse-in-progress', 'scan-effect-done');
+            }, parseInt(completionSpeed.value, 10) + 100);
+
+            saveData();
+            generatePdfPreview();
         }
-        
-        saveData();
     };
 
     cb.addEventListener('pointerdown', (e)=>{ 
