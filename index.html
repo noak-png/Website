@@ -1657,6 +1657,7 @@ button.ctrl.clear-list-btn-red {
     const get = (k, fallback) => localStorage.getItem('mysparklist.'+k) ?? fallback;
     const hasLaunchedBefore = (get('hasLaunchedBefore', 'false') === 'true');
     const shouldHideWelcomeBack = (get('hideWelcomeBack', 'false') === 'true');
+    let isSharedListLoaded = false;
     
     // Default loading from localStorage
     lists = JSON.parse(get('lists', '[]'));
@@ -1688,13 +1689,12 @@ button.ctrl.clear-list-btn-red {
                 // Replace all existing lists with the new shared one.
                 lists = [newList];
                 activeListIndex = 0;
+                isSharedListLoaded = true;
 
                 // Clean the URL
                 const newUrl = window.location.pathname;
                 history.replaceState({}, document.title, newUrl);
 
-                // Do not show welcome back prompt when loading a shared list
-                welcomeBackOverlay.classList.remove('visible');
             } else {
                 throw new Error("Invalid shared list data format.");
             }
@@ -1719,7 +1719,7 @@ button.ctrl.clear-list-btn-red {
         lists = [{ name: 'My First List', type: 'General Tasks', items: [] }];
         activeListIndex = 0;
       }
-    } else if (hasLaunchedBefore && !shouldHideWelcomeBack) {
+    } else if (hasLaunchedBefore && !shouldHideWelcomeBack && !isSharedListLoaded) {
         welcomeBackOverlay.classList.add('visible');
     }
     
