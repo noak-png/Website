@@ -182,8 +182,8 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .label{ display:flex; align-items:center; gap:10px; }
 .text{ transition:.2s; }
 .item.done .text{ color:var(--completion-ok-color); text-decoration:line-through; }
-.badge{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
-.item.done .badge{ border-color:var(--completion-ok-color); color:var(--completion-ok-color); }
+.badge{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); background: var(--status-pending-bg, rgba(156, 163, 175, 0.1)); }
+.item.done .badge{ border-color:var(--completion-ok-color); color:var(--completion-ok-color); background: var(--status-complete-bg, rgba(34, 197, 94, 0.1)); }
 
 .item.in-progress {
     box-shadow: inset 0 0 0 2px var(--completion-progress-color);
@@ -191,6 +191,7 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .item.in-progress .badge {
     border-color: var(--completion-progress-color);
     color: var(--completion-progress-color);
+    background: var(--status-progress-bg, rgba(59, 130, 246, 0.1));
 }
 .item.in-progress input[type="checkbox"] {
     accent-color: var(--completion-progress-color);
@@ -320,6 +321,70 @@ button.ctrl.clear-list-btn-red {
 .menu-panel input[type=text] { padding: 6px 8px; background:var(--bg); color:var(--text); }
 .menu-panel input[type=color] { min-height: 32px; padding: 2px; }
 .menu-panel .helper{ font-size:12px; color:var(--muted); }
+
+/* Switch styling */
+.menu-panel .switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.menu-panel .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.menu-panel .switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.menu-panel .switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.menu-panel .switch input:checked + .switch-slider {
+  background-color: var(--accent);
+}
+
+.menu-panel .switch input:checked + .switch-slider:before {
+  transform: translateX(20px);
+}
+
+.menu-panel .switch:hover .switch-slider {
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+}
+
+.menu-panel .switch input:checked + .switch-slider:hover {
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+}
+
+.dark .menu-panel .switch input:checked + .switch-slider {
+  background-color: #0078d4;
+}
+
+.dark .menu-panel .switch input:checked + .switch-slider:hover {
+  box-shadow: 0 0 8px rgba(0, 120, 212, 0.3);
+}
 
 /* Sub-category styling */
 .sub-section-wrapper { display:flex; flex-direction:column; gap:10px; padding-top:10px; }
@@ -621,6 +686,8 @@ button.ctrl.clear-list-btn-red {
   white-space: nowrap;
   user-select: none;
   -webkit-user-select: none;
+  outline: 1px solid var(--border);
+  outline-offset: -1px;
 }
 .tab.active {
   background: var(--accent);
@@ -778,7 +845,13 @@ button.ctrl.clear-list-btn-red {
             <button id="startFreshBtn" class="start-fresh-btn">Start Fresh (Delete All)</button>
         </div>
         <div class="dismiss-prompt-row">
-            <label><input type="checkbox" id="hideWelcomeBack"> Don't show this again</label>
+            <div class="row">
+              <label class="switch">
+                <input type="checkbox" id="hideWelcomeBack">
+                <span class="switch-slider"></span>
+              </label>
+              <span>Don't show this again</span>
+            </div>
         </div>
     </div>
   </div>
@@ -804,6 +877,7 @@ button.ctrl.clear-list-btn-red {
       </div>
       <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark</button>
       <div style="justify-self: end; display: flex; gap: 8px;">
+        <button id="dockPanicBtn" class="ctrl menu-btn" aria-label="Panic - Stop Animations" style="display: none; background: #dc2626; color: white;" title="Immediately stop all particle animations">🛑</button>
         <button id="shareBtn" class="ctrl menu-btn" aria-label="Share List">
             <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L16.04,7.15C16.56,7.62 17.24,7.92 18,7.92C19.66,7.92 21,6.58 21,5C21,3.42 19.66,2 18,2C16.34,2 15,3.42 15,5C15,5.24 15.04,5.47 15.09,5.7L7.96,9.85C7.44,9.38 6.76,9.08 6,9.08C4.34,9.08 3,10.42 3,12C3,13.58 4.34,15 6,15C6.76,15 7.44,14.62 7.96,14.15L15.09,18.3C15.04,18.53 15,18.76 15,19C15,20.58 16.34,22 18,22C19.66,22 21,20.58 21,19C21,17.42 19.66,16.08 18,16.08Z" /></svg>
         </button>
@@ -939,13 +1013,25 @@ button.ctrl.clear-list-btn-red {
                                     </label>
                                 </div>
                                 <div class="row">
-                                    <label class="helper"><input type="checkbox" id="enableAnimations"> Enable Animations</label>
+                                    <label class="switch">
+                                      <input type="checkbox" id="enableAnimations">
+                                      <span class="switch-slider"></span>
+                                    </label>
+                                    <span class="helper">Enable Animations</span>
                                 </div>
                                 <div class="row">
-                                    <label class="helper"><input type="checkbox" id="enableEndless"> Enable Hold-to-Stream</label>
+                                    <label class="switch">
+                                      <input type="checkbox" id="enableEndless">
+                                      <span class="switch-slider"></span>
+                                    </label>
+                                    <span class="helper">Enable Hold-to-Stream</span>
                                 </div>
                                 <div class="row">
-                                    <label class="helper"><input type="checkbox" id="containParticles"> Contain Particles (Bounce)</label>
+                                    <label class="switch">
+                                      <input type="checkbox" id="containParticles">
+                                      <span class="switch-slider"></span>
+                                    </label>
+                                    <span class="helper">Contain Particles (Bounce)</span>
                                 </div>
                                 <div class="slider-row" id="bounceIntensityRow" style="display: none;">
                                     <label for="bounceIntensity">Bounce Intensity</label>
@@ -953,17 +1039,53 @@ button.ctrl.clear-list-btn-red {
                                     <span class="pct" id="bounceIntensityPct">0%</span>
                                 </div>
                                 <div class="row">
-                                    <label class="helper"><input type="checkbox" id="enableTrail"> Enable Particle Trails</label>
+                                    <label class="switch">
+                                      <input type="checkbox" id="enableTrail">
+                                      <span class="switch-slider"></span>
+                                    </label>
+                                    <span class="helper">Enable Particle Trails</span>
                                 </div>
-                                <div class="slider-row" id="trailLengthRow" style="display: none;">
-                                    <label for="trailLength">Trail Length (seconds)</label>
-                                    <input type="range" id="trailLength" min="0.1" max="3" step="0.1" value="0.5" />
-                                    <span class="pct" id="trailLengthPct">0s</span>
-                                </div>
-                                <div class="slider-row" id="trailThicknessRow" style="display: none;">
-                                    <label for="trailThickness">Trail Thickness</label>
-                                    <input type="range" id="trailThickness" min="0.1" max="2" step="0.1" value="0.3" />
-                                    <span class="pct" id="trailThicknessPct">0%</span>
+                                <div id="trailEffectsContainer" style="display: none;">
+                                    <div class="sub-section">
+                                        <details id="secTrailEffects">
+                                            <summary>Trail Effects</summary>
+                                            <div class="content">
+                                                <div class="stack">
+                                                    <label for="trailEffectSelect">Trail Effect</label>
+                                                    <select id="trailEffectSelect">
+                                                        <option value="default" selected>Default</option>
+                                                        <option value="rainbow">Rainbow</option>
+                                                        <option value="neon">Neon</option>
+                                                        <option value="negative">Negative</option>
+                                                        <option value="custom">Custom Color</option>
+                                                        <option value="smoke">Smoke</option>
+                                                        <option value="liquid">Liquid</option>
+                                                    </select>
+                                                </div>
+                                                <div class="row" id="trailCustomColorRow" style="display: none;">
+                                                    <label for="trailCustomColor" style="flex: 1;">Custom Trail Color</label>
+                                                    <input type="color" id="trailCustomColor" value="#ffffff">
+                                                </div>
+                                                <div class="slider-row">
+                                                    <label for="trailLength">Trail Length (seconds)</label>
+                                                    <input type="range" id="trailLength" min="0.1" max="3" step="0.1" value="0.5" />
+                                                    <span class="pct" id="trailLengthPct">0s</span>
+                                                </div>
+                                                <div class="slider-row">
+                                                    <label for="trailThickness">Trail Thickness</label>
+                                                    <input type="range" id="trailThickness" min="0.1" max="2" step="0.1" value="0.3" />
+                                                    <span class="pct" id="trailThicknessPct">0%</span>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="switch">
+                                                      <input type="checkbox" id="enableTrailFade" checked>
+                                                      <span class="switch-slider"></span>
+                                                    </label>
+                                                    <span class="helper">Smooth Trail Fade-Out</span>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <button id="resetAnimBtn" type="button" title="Reset bubble settings to default">Reset to Default</button>
@@ -982,7 +1104,13 @@ button.ctrl.clear-list-btn-red {
                                 Wind <span class="hint">directional flow, push-back & more</span>
                             </summary>
                             <div class="content">
-                                <div class="row"><label class="helper"><input type="checkbox" id="enableWind"> Enable Wind</label></div>
+                                <div class="row">
+                                  <label class="switch">
+                                    <input type="checkbox" id="enableWind">
+                                    <span class="switch-slider"></span>
+                                  </label>
+                                  <span class="helper">Enable Wind</span>
+                                </div>
                                 <div class="hr"></div>
                                 <label for="windPattern">Wind Pattern</label>
                                 <select id="windPattern">
@@ -1005,7 +1133,13 @@ button.ctrl.clear-list-btn-red {
                                     <input type="range" id="windDirection" min="0" max="360" value="0" />
                                     <span class="pct" id="windDirectionPct">0%</span>
                                 </div>
-                                <div class="row"><label class="helper"><input type="checkbox" id="windAutoRotate"> Auto Rotate Direction</label></div>
+                                <div class="row">
+                                  <label class="switch">
+                                    <input type="checkbox" id="windAutoRotate">
+                                    <span class="switch-slider"></span>
+                                  </label>
+                                  <span class="helper">Auto Rotate Direction</span>
+                                </div>
                                 <div class="slider-row" id="windRotateSpeedRow" style="display: none;">
                                     <label for="windRotateSpeed">Rotation Speed</label>
                                     <input type="range" id="windRotateSpeed" min="1" max="100" value="30" />
@@ -1086,12 +1220,20 @@ button.ctrl.clear-list-btn-red {
                     </div>
                     <div class="hr"></div>
                     <div class="row">
-                       <label class="helper"><input type="checkbox" id="keepMenuExpanded"> Keep Menu Sections Expanded</label>
+                       <label class="switch">
+                         <input type="checkbox" id="keepMenuExpanded">
+                         <span class="switch-slider"></span>
+                       </label>
+                       <span class="helper">Keep Menu Sections Expanded</span>
                     </div>
                     <div class="hr"></div>
                     <div class="stack">
                         <div class="row">
-                           <label class="helper"><input type="checkbox" id="enableNaturalSlide"> Natural Slide Gestures</label>
+                           <label class="switch">
+                             <input type="checkbox" id="enableNaturalSlide">
+                             <span class="switch-slider"></span>
+                           </label>
+                           <span class="helper">Natural Slide Gestures</span>
                         </div>
                         <div class="slider-row">
                           <label for="slideSpeed">Slide Speed</label>
@@ -1119,6 +1261,19 @@ button.ctrl.clear-list-btn-red {
                         <label for="completionInProgressColor" style="flex: 1;">In Progress Color</label>
                         <input type="color" id="completionInProgressColor" value="#2563eb">
                     </div>
+                    <div class="hr"></div>
+                    <div class="row">
+                        <label for="statusCompleteBgColor" style="flex: 1;">Complete Status Background</label>
+                        <input type="color" id="statusCompleteBgColor" value="#22c55e">
+                    </div>
+                    <div class="row">
+                        <label for="statusPendingBgColor" style="flex: 1;">Pending Status Background</label>
+                        <input type="color" id="statusPendingBgColor" value="#9ca3af">
+                    </div>
+                    <div id="statusProgressBgColorRow" class="row" style="display: none;">
+                        <label for="statusProgressBgColor" style="flex: 1;">Progress Status Background</label>
+                        <input type="color" id="statusProgressBgColor" value="#3b82f6">
+                    </div>
                     <div class="slider-row">
                       <label for="completionGlow">Glow Intensity</label>
                       <input type="range" id="completionGlow" min="4" max="12" value="6" />
@@ -1130,7 +1285,11 @@ button.ctrl.clear-list-btn-red {
                       <span class="pct" id="completionSpeedPct">900ms</span>
                     </div>
                     <div class="row">
-                       <label class="helper"><input type="checkbox" id="enableScanLine"> Enable Scan Line Effect</label>
+                       <label class="switch">
+                         <input type="checkbox" id="enableScanLine">
+                         <span class="switch-slider"></span>
+                       </label>
+                       <span class="helper">Enable Scan Line Effect</span>
                     </div>
                     <div class="slider-row" id="scanAngleControls" style="display:none;">
                       <label for="scanAngle">Scan Angle</label>
@@ -1149,7 +1308,13 @@ button.ctrl.clear-list-btn-red {
                 <summary>Background</summary>
                 <div class="content">
                     <div class="stack">
-                        <label><input type="checkbox" id="enableCustomBackground"> Enable Custom Background</label>
+                        <div class="row">
+                          <label class="switch">
+                            <input type="checkbox" id="enableCustomBackground">
+                            <span class="switch-slider"></span>
+                          </label>
+                          <span>Enable Custom Background</span>
+                        </div>
                     </div>
                     <div id="customBackgroundOptions" class="stack" style="display:none;">
                         <div class="hr"></div>
@@ -1200,7 +1365,13 @@ button.ctrl.clear-list-btn-red {
                                 <span class="pct" id="gradientSpreadPct">0%</span>
                               </div>
                               <div class="hr"></div>
-                              <label><input type="checkbox" id="gradientSpinToggle"> Enable Spinning</label>
+                              <div class="row">
+                                <label class="switch">
+                                  <input type="checkbox" id="gradientSpinToggle">
+                                  <span class="switch-slider"></span>
+                                </label>
+                                <span>Enable Spinning</span>
+                              </div>
                               <div class="slider-row" id="gradientSpinControls" style="display:none;">
                                   <label for="gradientSpinSpeed">Spin Speed</label>
                                   <input type="range" id="gradientSpinSpeed" min="1" max="100" value="10">
@@ -1213,7 +1384,13 @@ button.ctrl.clear-list-btn-red {
                     <div class="hr"></div>
     
                     <div class="stack">
-                        <label><input type="checkbox" id="enableAmbiance"> Enable Background Live Effects</label>
+                        <div class="row">
+                          <label class="switch">
+                            <input type="checkbox" id="enableAmbiance">
+                            <span class="switch-slider"></span>
+                          </label>
+                          <span>Enable Background Live Effects</span>
+                        </div>
                         <div id="ambianceSettings" class="stack" style="display:none; margin-top: 10px; gap: 10px;">
                             <label for="ambianceSelect">Effect Type</label>
                             <select id="ambianceSelect">
@@ -1311,13 +1488,25 @@ button.ctrl.clear-list-btn-red {
             </summary>
             <div class="content">
                 <div class="stack">
-                    <label><input type="checkbox" id="wizardEnableSubgoals"> Enable Subgoals (Educational)</label>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="wizardEnableSubgoals">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Enable Subgoals (Educational)</span>
+                    </div>
                     <div class="helper">Add nested subgoals under parent items. Parent auto-completes when all subgoals are done.</div>
                 </div>
                 <div class="hr"></div>
                 
                 <div class="stack">
-                    <label><input type="checkbox" id="wizardEnableMultiStage"> Enable Multi-Stage Workflow</label>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="wizardEnableMultiStage">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Enable Multi-Stage Workflow</span>
+                    </div>
                     <div class="helper">Items progress through customizable stages instead of simple pending/complete.</div>
                     
                     <!-- Multi-Stage Settings (shown when enabled) -->
@@ -1335,12 +1524,24 @@ button.ctrl.clear-list-btn-red {
                 <div class="hr"></div>
                 
                 <div class="stack">
-                    <label><input type="checkbox" id="wizardEnableTimer"> Enable Timer Integration (Call Behaviors)</label>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="wizardEnableTimer">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Enable Timer Integration (Call Behaviors)</span>
+                    </div>
                     <div class="helper">Timer resets when you clear the list. Useful for tracking time per session.</div>
                     
                     <!-- Timer Settings (shown when enabled) -->
                     <div id="wizardTimerSettings" class="stack" style="display:none; margin-top: 10px; border:1px solid var(--border); border-radius:8px; padding:10px; gap: 10px;">
-                        <label><input type="checkbox" id="wizardAutoEnableSecCounter"> Auto-Enable Second Counter</label>
+                        <div class="row">
+                          <label class="switch">
+                            <input type="checkbox" id="wizardAutoEnableSecCounter">
+                            <span class="switch-slider"></span>
+                          </label>
+                          <span>Auto-Enable Second Counter</span>
+                        </div>
                         <div class="stack" id="wizardTimerPositionWrapper">
                             <label for="wizardTimerPosition">Timer Position</label>
                             <select id="wizardTimerPosition">
@@ -1380,13 +1581,31 @@ button.ctrl.clear-list-btn-red {
             </summary>
             <div class="content">
                 <div class="stack">
-                    <label><input type="checkbox" id="enableSecCounter"> Second Counter</label>
-                    <label><input type="checkbox" id="enableClickCounter"> Click Counter</label>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="enableSecCounter">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Second Counter</span>
+                    </div>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="enableClickCounter">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Click Counter</span>
+                    </div>
                     <button id="resetClickCounter" type="button">Reset Click Counter</button>
                 </div>
                 <div class="hr"></div>
                 <div class="stack">
-                    <label><input type="checkbox" id="enableClock"> Enable Clock</label>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="enableClock">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Enable Clock</span>
+                    </div>
                     <div id="clockOptionsWrapper" class="stack">
                         <label for="clockPosition">Position</label>
                         <select id="clockPosition">
@@ -1408,7 +1627,13 @@ button.ctrl.clear-list-btn-red {
                 </div>
                 <div class="hr"></div>
                 <div class="stack">
-                    <label><input type="checkbox" id="simpleModeToggle"> Simple Mode</label>
+                    <div class="row">
+                      <label class="switch">
+                        <input type="checkbox" id="simpleModeToggle">
+                        <span class="switch-slider"></span>
+                      </label>
+                      <span>Simple Mode</span>
+                    </div>
                     <div class="helper">Enable to simplify the UI and hide advanced customization options.</div>
                 </div>
                 <div class="hr"></div>
@@ -1480,13 +1705,37 @@ button.ctrl.clear-list-btn-red {
                                 </select>
                             </div>
                             <div class="stack">
-                                <label class="helper"><input type="checkbox" id="pdfIncludeDate" checked> Include Date</label>
                                 <div class="row">
-                                    <label for="pdfIncludeTime" class="helper" style="flex: 1;"><input type="checkbox" id="pdfIncludeTime" checked> Include Time</label>
+                                  <label class="switch">
+                                    <input type="checkbox" id="pdfIncludeDate" checked>
+                                    <span class="switch-slider"></span>
+                                  </label>
+                                  <span class="helper">Include Date</span>
+                                </div>
+                                <div class="row">
+                                    <div style="flex: 1;">
+                                      <label class="switch">
+                                        <input type="checkbox" id="pdfIncludeTime" checked>
+                                        <span class="switch-slider"></span>
+                                      </label>
+                                      <span class="helper">Include Time</span>
+                                    </div>
                                     <input type="text" id="pdfCustomTime" placeholder="auto" style="width: 100px; font-size: 12px;">
                                 </div>
-                                <label class="helper"><input type="checkbox" id="pdfIncludeAuthor" checked> Include Author</label>
-                                <label class="helper"><input type="checkbox" id="pdfIncludeCheckboxes"> Include Checkboxes</label>
+                                <div class="row">
+                                  <label class="switch">
+                                    <input type="checkbox" id="pdfIncludeAuthor" checked>
+                                    <span class="switch-slider"></span>
+                                  </label>
+                                  <span class="helper">Include Author</span>
+                                </div>
+                                <div class="row">
+                                  <label class="switch">
+                                    <input type="checkbox" id="pdfIncludeCheckboxes">
+                                    <span class="switch-slider"></span>
+                                  </label>
+                                  <span class="helper">Include Checkboxes</span>
+                                </div>
                             </div>
                             <div class="pdf-preview-container" style="display: none;">
                                 <iframe id="pdfPreview" style="width: 100%; height: 250px;"></iframe>
@@ -1500,6 +1749,14 @@ button.ctrl.clear-list-btn-red {
                             </div>
                         </div>
                     </details>
+                </div>
+                <div class="hr"></div>
+                <div class="row">
+                  <label class="switch">
+                    <input type="checkbox" id="enableDockPanicBtn">
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="helper">Show Panic Button in Dock</span>
                 </div>
                 <div class="hr"></div>
                 <button id="panicResetBtn" type="button" style="background:var(--danger);" title="Warning: This will clear all items and reset all settings to default.">Panic Reset to Factory Default</button>
@@ -1539,6 +1796,7 @@ button.ctrl.clear-list-btn-red {
 
   const clearControlsContainer = document.getElementById('clearControlsContainer');
   const darkToggle = document.getElementById('darkToggle');
+  const dockPanicBtn = document.getElementById('dockPanicBtn');
   const menuBtn = document.getElementById('menuBtn');
   const shareBtn = document.getElementById('shareBtn');
   const menuPanel = document.getElementById('menuPanel');
@@ -1598,10 +1856,13 @@ button.ctrl.clear-list-btn-red {
   const enableAnimations = document.getElementById('enableAnimations');
   const enableEndless = document.getElementById('enableEndless');
   const enableTrail = document.getElementById('enableTrail');
+  const trailEffectsContainer = document.getElementById('trailEffectsContainer');
+  const trailEffectSelect = document.getElementById('trailEffectSelect');
+  const trailCustomColor = document.getElementById('trailCustomColor');
+  const trailCustomColorRow = document.getElementById('trailCustomColorRow');
   const trailLength = document.getElementById('trailLength');
-  const trailLengthRow = document.getElementById('trailLengthRow');
   const trailThickness = document.getElementById('trailThickness');
-  const trailThicknessRow = document.getElementById('trailThicknessRow');
+  const enableTrailFade = document.getElementById('enableTrailFade');
   const resetAnimBtn = document.getElementById('resetAnimBtn');
   const panicBtn = document.getElementById('panicBtn');
 
@@ -1683,6 +1944,10 @@ button.ctrl.clear-list-btn-red {
   const completionUncheckedColor = document.getElementById('completionUncheckedColor');
   const completionInProgressColor = document.getElementById('completionInProgressColor');
   const completionInProgressColorRow = document.getElementById('completionInProgressColorRow');
+  const statusCompleteBgColor = document.getElementById('statusCompleteBgColor');
+  const statusPendingBgColor = document.getElementById('statusPendingBgColor');
+  const statusProgressBgColor = document.getElementById('statusProgressBgColor');
+  const statusProgressBgColorRow = document.getElementById('statusProgressBgColorRow');
   const completionGlow = document.getElementById('completionGlow');
   const completionSpeed = document.getElementById('completionSpeed');
   const completionResetBtn = document.getElementById('completionResetBtn');
@@ -2106,6 +2371,7 @@ button.ctrl.clear-list-btn-red {
 
   // Utility
   const panicResetBtn = document.getElementById('panicResetBtn');
+  const enableDockPanicBtn = document.getElementById('enableDockPanicBtn');
   const enableClock = document.getElementById('enableClock');
   const clockDisplay = document.getElementById('clockDisplay');
   const clockPosition = document.getElementById('clockPosition');
@@ -2150,6 +2416,333 @@ button.ctrl.clear-list-btn-red {
   const ctxBubbles = bubblesCanvas.getContext('2d');
   const ambianceCanvas = document.getElementById('ambianceCanvas');
   const ctxAmbiance = ambianceCanvas.getContext('2d');
+
+  // WebGPU setup
+  let webgpuSupported = false;
+  let webgpuDevice = null;
+  let webgpuContext = null;
+  let useWebGPU = false;
+
+  // WebGPU resources
+  let particlePipeline = null;
+  let vertexBuffer = null;
+  let indexBuffer = null;
+  let uniformBuffer = null;
+  let particleBindGroup = null;
+
+  // Check WebGPU support
+  async function initWebGPU() {
+    try {
+      if (!navigator.gpu) {
+        console.log('WebGPU not supported');
+        return false;
+      }
+
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) {
+        console.log('No WebGPU adapter found');
+        return false;
+      }
+
+      webgpuDevice = await adapter.requestDevice();
+      webgpuContext = bubblesCanvas.getContext('webgpu');
+      if (!webgpuContext) {
+        console.log('WebGPU context not available');
+        return false;
+      }
+
+      // Configure the context
+      const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+      webgpuContext.configure({
+        device: webgpuDevice,
+        format: presentationFormat,
+        alphaMode: 'premultiplied',
+      });
+
+      // Create shaders and pipeline
+      await createWebGPUPipeline();
+
+      webgpuSupported = true;
+      useWebGPU = true;
+      console.log('WebGPU initialized successfully');
+      return true;
+
+    } catch (error) {
+      console.log('WebGPU initialization failed:', error);
+      return false;
+    }
+  }
+
+  // Create WebGPU pipeline and resources
+  async function createWebGPUPipeline() {
+    // Vertex shader for particles (simple quad)
+    const vertexShaderCode = `
+      struct VertexInput {
+        @location(0) position : vec2<f32>,
+        @location(1) uv : vec2<f32>,
+        @location(2) instance_pos : vec2<f32>,
+        @location(3) instance_size : f32,
+        @location(4) instance_color : vec4<f32>,
+        @location(5) instance_alpha : f32,
+      };
+
+      struct VertexOutput {
+        @builtin(position) position : vec4<f32>,
+        @location(0) uv : vec2<f32>,
+        @location(1) color : vec4<f32>,
+      };
+
+      struct Uniforms {
+        viewport_size : vec2<f32>,
+      };
+
+      @group(0) @binding(0) var<uniform> uniforms : Uniforms;
+
+      @vertex
+      fn main(input : VertexInput) -> VertexOutput {
+        var output : VertexOutput;
+
+        // Convert from canvas coordinates to clip space
+        let canvas_pos = input.position * input.instance_size + input.instance_pos;
+        let clip_pos = (canvas_pos / uniforms.viewport_size) * 2.0 - 1.0;
+
+        output.position = vec4<f32>(clip_pos.x, -clip_pos.y, 0.0, 1.0);
+        output.uv = input.uv;
+        output.color = input.instance_color * input.instance_alpha;
+        return output;
+      }
+    `;
+
+    // Fragment shader for particles
+    const fragmentShaderCode = `
+      @fragment
+      fn main(@location(0) uv : vec2<f32>, @location(1) color : vec4<f32>) -> @location(0) vec4<f32> {
+        // Simple circle shape
+        let dist = length(uv - vec2<f32>(0.5, 0.5));
+        if (dist > 0.5) {
+          discard;
+        }
+        return color;
+      }
+    `;
+
+    // Create shader modules
+    const vertexShader = webgpuDevice.createShaderModule({
+      code: vertexShaderCode,
+    });
+
+    const fragmentShader = webgpuDevice.createShaderModule({
+      code: fragmentShaderCode,
+    });
+
+    // Create bind group layout for uniforms
+    const bindGroupLayout = webgpuDevice.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    // Create pipeline
+    const pipelineLayout = webgpuDevice.createPipelineLayout({
+      bindGroupLayouts: [bindGroupLayout],
+    });
+
+    particlePipeline = webgpuDevice.createRenderPipeline({
+      layout: pipelineLayout,
+      vertex: {
+        module: vertexShader,
+        entryPoint: 'main',
+        buffers: [
+          {
+            // Quad vertices
+            arrayStride: 4 * 4, // 2 position + 2 uv floats
+            attributes: [
+              { shaderLocation: 0, offset: 0, format: 'float32x2' }, // position
+              { shaderLocation: 1, offset: 8, format: 'float32x2' }, // uv
+            ],
+          },
+          {
+            // Instance data
+            arrayStride: 7 * 4, // 2 pos + 1 size + 4 color floats
+            stepMode: 'instance',
+            attributes: [
+              { shaderLocation: 2, offset: 0, format: 'float32x2' }, // instance_pos
+              { shaderLocation: 3, offset: 8, format: 'float32' },   // instance_size
+              { shaderLocation: 4, offset: 12, format: 'float32x4' }, // instance_color
+              { shaderLocation: 5, offset: 28, format: 'float32' },   // instance_alpha
+            ],
+          },
+        ],
+      },
+      fragment: {
+        module: fragmentShader,
+        entryPoint: 'main',
+        targets: [{
+          format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: 'src-alpha',
+              dstFactor: 'one-minus-src-alpha',
+              operation: 'add',
+            },
+            alpha: {
+              srcFactor: 'one',
+              dstFactor: 'one-minus-src-alpha',
+              operation: 'add',
+            },
+          },
+        }],
+      },
+      primitive: {
+        topology: 'triangle-list',
+      },
+    });
+
+    // Create quad geometry (two triangles)
+    const quadVertices = new Float32Array([
+      // Triangle 1
+      -0.5, -0.5, 0.0, 0.0,  // bottom-left
+       0.5, -0.5, 1.0, 0.0,  // bottom-right
+       0.5,  0.5, 1.0, 1.0,  // top-right
+      // Triangle 2
+      -0.5, -0.5, 0.0, 0.0,  // bottom-left
+       0.5,  0.5, 1.0, 1.0,  // top-right
+      -0.5,  0.5, 0.0, 1.0,  // top-left
+    ]);
+
+    vertexBuffer = webgpuDevice.createBuffer({
+      size: quadVertices.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+    webgpuDevice.queue.writeBuffer(vertexBuffer, 0, quadVertices);
+
+    // Create uniform buffer for viewport size
+    uniformBuffer = webgpuDevice.createBuffer({
+      size: 8, // 2 floats for width/height
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    // Create bind group
+    particleBindGroup = webgpuDevice.createBindGroup({
+      layout: bindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: { buffer: uniformBuffer },
+        },
+      ],
+    });
+  }
+
+  // WebGPU rendering function
+  function renderParticlesWebGPU() {
+    if (!webgpuSupported || !useWebGPU || particles.length === 0) {
+      return false; // Fall back to Canvas2D
+    }
+
+    try {
+      // Update viewport uniform
+      const dpr = window.devicePixelRatio || 1;
+      const viewportSize = new Float32Array([bubblesCanvas.width / dpr, bubblesCanvas.height / dpr]);
+      webgpuDevice.queue.writeBuffer(uniformBuffer, 0, viewportSize);
+
+      // Create instance buffer for particles
+      const instanceData = new Float32Array(particles.length * 7); // 7 floats per particle
+      particles.forEach((p, i) => {
+        const baseIndex = i * 7;
+        const lifeRatio = p.life / (p.lifeMax || 1);
+
+        // Position (canvas coordinates)
+        instanceData[baseIndex] = p.x;
+        instanceData[baseIndex + 1] = p.y;
+
+        // Size
+        instanceData[baseIndex + 2] = p.size * p.pushScale;
+
+        // Color (RGBA)
+        let r = 0, g = 0, b = 0, a = 1;
+        if (p.mode === 'fade') {
+          const color = lerpColor(p.colorStart, p.colorEnd, 1 - lifeRatio);
+          r = parseInt(color.slice(1, 3), 16) / 255;
+          g = parseInt(color.slice(3, 5), 16) / 255;
+          b = parseInt(color.slice(5, 7), 16) / 255;
+        } else if (p.mode === 'tie') {
+          const hue = (Math.atan2(p.y - p.oy, p.x - p.ox) * 180 / Math.PI + Math.hypot(p.x - p.ox, p.y - p.oy) * 0.8 + t * 40 + p.tieJitter) % 360;
+          const color = hslToHex(hue, 90, 55);
+          r = parseInt(color.slice(1, 3), 16) / 255;
+          g = parseInt(color.slice(3, 5), 16) / 255;
+          b = parseInt(color.slice(5, 7), 16) / 255;
+        } else if (p.mode === 'velocityHeatmap') {
+          const speed = Math.hypot(p.vx, p.vy);
+          const hue = Math.max(0, 240 - speed * 12);
+          const color = hslToHex(hue, 100, 55);
+          r = parseInt(color.slice(1, 3), 16) / 255;
+          g = parseInt(color.slice(3, 5), 16) / 255;
+          b = parseInt(color.slice(5, 7), 16) / 255;
+        } else if (p.mode === 'screenSpace') {
+          const hue = ((p.x / (bubblesCanvas.width / dpr)) * 180 + (p.y / (bubblesCanvas.height / dpr)) * 180) % 360;
+          const color = hslToHex(hue, 85, 60);
+          r = parseInt(color.slice(1, 3), 16) / 255;
+          g = parseInt(color.slice(3, 5), 16) / 255;
+          b = parseInt(color.slice(5, 7), 16) / 255;
+        } else if (p.mode === 'party') {
+          const hue = (t * 300 + p.randomOffset) % 360;
+          const color = hslToHex(hue, 100, 55);
+          r = parseInt(color.slice(1, 3), 16) / 255;
+          g = parseInt(color.slice(3, 5), 16) / 255;
+          b = parseInt(color.slice(5, 7), 16) / 255;
+        } else {
+          const color = p.colorSingle;
+          r = parseInt(color.slice(1, 3), 16) / 255;
+          g = parseInt(color.slice(3, 5), 16) / 255;
+          b = parseInt(color.slice(5, 7), 16) / 255;
+        }
+
+        instanceData[baseIndex + 3] = r;
+        instanceData[baseIndex + 4] = g;
+        instanceData[baseIndex + 5] = b;
+        instanceData[baseIndex + 6] = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
+      });
+
+      // Create instance buffer
+      const instanceBuffer = webgpuDevice.createBuffer({
+        size: instanceData.byteLength,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      });
+      webgpuDevice.queue.writeBuffer(instanceBuffer, 0, instanceData);
+
+      // Render
+      const commandEncoder = webgpuDevice.createCommandEncoder();
+      const renderPass = commandEncoder.beginRenderPass({
+        colorAttachments: [{
+          view: webgpuContext.getCurrentTexture().createView(),
+          clearValue: { r: 0, g: 0, b: 0, a: 0 },
+          loadOp: 'clear',
+          storeOp: 'store',
+        }],
+      });
+
+      renderPass.setPipeline(particlePipeline);
+      renderPass.setBindGroup(0, particleBindGroup);
+      renderPass.setVertexBuffer(0, vertexBuffer);
+      renderPass.setVertexBuffer(1, instanceBuffer);
+      renderPass.draw(6, particles.length); // 6 vertices per quad, number of instances
+
+      renderPass.end();
+      webgpuDevice.queue.submit([commandEncoder.finish()]);
+
+      return true;
+
+    } catch (error) {
+      console.error('WebGPU rendering failed:', error);
+      useWebGPU = false; // Fall back to Canvas2D
+      return false;
+    }
+  }
 
   // Sections
   const secCheckmarkAnims = document.getElementById('secCheckmarkAnims');
@@ -2278,7 +2871,7 @@ button.ctrl.clear-list-btn-red {
     store('bubbleStartColor',bubbleStartColor.value); store('bubbleEndColor',bubbleEndColor.value); store('shape',shapeSelect.value);
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
     store('bounceIntensity', bounceIntensity.value);
-    store('enableTrail', enableTrail.checked); store('trailLength', trailLength.value); store('trailThickness', trailThickness.value);
+    store('enableTrail', enableTrail.checked); store('trailEffect', trailEffectSelect.value); store('trailCustomColor', trailCustomColor.value); store('trailLength', trailLength.value); store('trailThickness', trailThickness.value); store('enableTrailFade', enableTrailFade.checked);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
     store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); 
     store('windAutoRotate', windAutoRotate.checked); store('windRotateSpeed', windRotateSpeed.value);
@@ -2446,8 +3039,11 @@ button.ctrl.clear-list-btn-red {
     containParticles.checked = (get('containParticles', 'false') === 'true');
     bounceIntensity.value = get('bounceIntensity', '0.8');
     enableTrail.checked = (get('enableTrail', 'false') === 'true');
+    trailEffectSelect.value = get('trailEffect', 'default');
+    trailCustomColor.value = get('trailCustomColor', '#ffffff');
     trailLength.value = get('trailLength', '0.5');
     trailThickness.value = get('trailThickness', '0.3');
+    enableTrailFade.checked = (get('enableTrailFade', 'true') === 'true');
     enableWind.checked = (get('enableWind', 'false') === 'true');
     windPattern.value = get('windPattern', 'steady');
     windIntensity.value = get('windIntensity', '30');
@@ -2550,21 +3146,23 @@ button.ctrl.clear-list-btn-red {
   }
 
   function applyAllSettings() {
-    updatePercentages(); 
-    syncColorControlVisibility(); 
+    updatePercentages();
+    syncColorControlVisibility();
     syncWindControls();
     windRotateSpeedRow.style.display = windAutoRotate.checked ? 'flex' : 'none';
     bounceIntensityRow.style.display = containParticles.checked ? 'flex' : 'none';
-    trailLengthRow.style.display = enableTrail.checked ? 'flex' : 'none';
-    trailThicknessRow.style.display = enableTrail.checked ? 'flex' : 'none';
+    trailEffectsContainer.style.display = enableTrail.checked ? 'block' : 'none';
+    trailCustomColorRow.style.display = trailEffectSelect.value === 'custom' ? 'flex' : 'none';
     applyGlassOpacity();
     applyGlassBlur();
     applyGlassSaturation();
+    applyStatusBackgroundColors();
     applyGlassBorderOpacity();
     applyMaterialStyle();
     applyCompletionEffectSettings();
     applyScanAngle();
     syncScanAngleVisibility();
+    dockPanicBtn.style.display = enableDockPanicBtn.checked ? 'flex' : 'none';
     updateWallpaper(); 
     applyClockSettings(); 
     updateCountersVisibility(); 
@@ -2682,6 +3280,14 @@ button.ctrl.clear-list-btn-red {
     applyGlassBlur();
     applyGlassSaturation();
     applyGlassBorderOpacity();
+  }
+
+  /* ---------- Status Background Colors ---------- */
+  function applyStatusBackgroundColors() {
+      const root = document.documentElement;
+      root.style.setProperty('--status-complete-bg', statusCompleteBgColor.value + '20'); // Add alpha
+      root.style.setProperty('--status-pending-bg', statusPendingBgColor.value + '20'); // Add alpha
+      root.style.setProperty('--status-progress-bg', statusProgressBgColor.value + '20'); // Add alpha
   }
 
   /* ---------- Completion Effects ---------- */
@@ -2823,12 +3429,38 @@ button.ctrl.clear-list-btn-red {
   }
 
   /* ---------- Items ---------- */
+
+  // Helper function to remove CSS classes after a delay using requestAnimationFrame
+  function removeClassAfterDelay(element, className, delay) {
+    const startTime = performance.now();
+
+    function checkTime(currentTime) {
+      if (currentTime - startTime >= delay) {
+        element.classList.remove(className);
+      } else {
+        requestAnimationFrame(checkTime);
+      }
+    }
+    requestAnimationFrame(checkTime);
+  }
   function animateEnter(li){
     if(!enableNaturalSlide.checked) return;
     li.classList.add('slide-enter');
     void li.offsetHeight;
     li.classList.add('slide-enter-active');
-    setTimeout(()=>{ li.classList.remove('slide-enter','slide-enter-active'); }, parseInt(slideSpeed.value,10)+20);
+
+    // Use requestAnimationFrame for precise timing
+    const startTime = performance.now();
+    const duration = parseInt(slideSpeed.value,10) + 20;
+
+    function checkAnimationEnd(currentTime) {
+      if (currentTime - startTime >= duration) {
+        li.classList.remove('slide-enter','slide-enter-active');
+      } else {
+        requestAnimationFrame(checkAnimationEnd);
+      }
+    }
+    requestAnimationFrame(checkAnimationEnd);
   }
 
   function animateRemove(li, done){
@@ -2837,10 +3469,24 @@ button.ctrl.clear-list-btn-red {
     li.style.height = height+'px';
     li.style.transition = `height var(--slide-duration) var(--slide-ease)`;
     li.classList.add('slide-out');
+
+    // Use requestAnimationFrame for precise timing
+    const startTime = performance.now();
+    const duration = parseInt(slideSpeed.value,10) + 30;
+
     requestAnimationFrame(()=>{
       li.classList.add('collapsing');
       li.style.height = '0px';
-      setTimeout(()=>{ li.remove(); done&&done(); }, parseInt(slideSpeed.value,10)+30);
+
+      function checkRemoveEnd(currentTime) {
+        if (currentTime - startTime >= duration) {
+          li.remove();
+          done && done();
+        } else {
+          requestAnimationFrame(checkRemoveEnd);
+        }
+      }
+      requestAnimationFrame(checkRemoveEnd);
     });
   }
 
@@ -2874,7 +3520,7 @@ button.ctrl.clear-list-btn-red {
         isPending = (status === 'pending');
     }
 
-    badge.textContent = status;
+    badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
     cb.checked = isComplete;
 
     if (isComplete) {
@@ -3032,7 +3678,7 @@ button.ctrl.clear-list-btn-red {
                                 if (parentCb) spawnParticlesFromEl(parentCb);
                             }
                             parentLi.classList.add('pulse');
-                            setTimeout(() => parentLi.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+                            removeClassAfterDelay(parentLi, 'pulse', parseInt(completionSpeed.value, 10) + 50);
                         }
                     } else if (anySubgoalProgressed && !allSubgoalsPending) {
                         // Some subgoals have progressed - set parent to "In Progress" (stage 1)
@@ -3055,7 +3701,7 @@ button.ctrl.clear-list-btn-red {
                                 void parentLi.offsetWidth;
                                 parentLi.classList.add('scan-effect-warn');
                             }
-                            setTimeout(() => parentLi.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+                            removeClassAfterDelay(parentLi, 'warn', parseInt(completionSpeed.value, 10) + 50);
                         }
                     }
                 } else {
@@ -3073,7 +3719,7 @@ button.ctrl.clear-list-btn-red {
                                 if (parentCb) spawnParticlesFromEl(parentCb);
                             }
                             parentLi.classList.add('pulse');
-                            setTimeout(() => parentLi.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+                            removeClassAfterDelay(parentLi, 'pulse', parseInt(completionSpeed.value, 10) + 50);
                         }
                     } else if (!allSubgoalsComplete && parentItem.status === 'complete') {
                         // A subgoal was unchecked - uncheck parent too
@@ -3086,7 +3732,7 @@ button.ctrl.clear-list-btn-red {
                                 void parentLi.offsetWidth;
                                 parentLi.classList.add('scan-effect-warn');
                             }
-                            setTimeout(() => parentLi.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+                            removeClassAfterDelay(parentLi, 'warn', parseInt(completionSpeed.value, 10) + 50);
                         }
                     }
                 }
@@ -3116,7 +3762,7 @@ button.ctrl.clear-list-btn-red {
                     spawnParticlesFromEl(cb);
                 }
                 li.classList.add('pulse');
-                setTimeout(() => li.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+                removeClassAfterDelay(li, 'pulse', parseInt(completionSpeed.value, 10) + 50);
             }
         }
         // Handle "un-checking" from a completed state
@@ -3127,7 +3773,7 @@ button.ctrl.clear-list-btn-red {
                 void li.offsetWidth; // Trigger reflow
                 li.classList.add('scan-effect-warn');
             }
-            setTimeout(() => li.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+            removeClassAfterDelay(li, 'warn', parseInt(completionSpeed.value, 10) + 50);
         }
         
         saveData();
@@ -3328,6 +3974,13 @@ button.ctrl.clear-list-btn-red {
     menuPanel.style.display = open ? 'block' : 'none';
     menuPanel.setAttribute('aria-hidden', !open);
     menuBtn.setAttribute('aria-expanded', open);
+
+    // Collapse all menu sections when menu is closed
+    if (!open) {
+      document.querySelectorAll('.menu-panel details').forEach(details => {
+        details.open = false;
+      });
+    }
   }
 
   menuBtn.onclick = ()=>{ const isOpen = menuPanel.style.display==='block'; setMenu(!isOpen); };
@@ -3358,16 +4011,54 @@ button.ctrl.clear-list-btn-red {
   enableAnimations.onchange = ()=>{ if(!enableAnimations.checked){ streams.length=0; } saveData(); };
   resetClickCounter.onclick = ()=>{ totalClicks=0; clickCount.textContent='0'; saveData(); };
   document.addEventListener('click',(e)=>{ if(enableClickCounter.checked){ totalClicks++; clickCount.textContent=totalClicks; if(totalClicks%5===0) saveData(); } }, true);
-  function startCounter(){ if(!enableSecCounter.checked) return; stopCounter(); secInterval=setInterval(()=>{ if(!counterPaused){ seconds++; updateSecondCounter(); } },1000); }
-  function stopCounter(){ if(secInterval){ clearInterval(secInterval); secInterval=null; } }
+  let lastSecondUpdate = 0;
+  function startCounter(){
+    if(!enableSecCounter.checked) return;
+    stopCounter();
+    lastSecondUpdate = performance.now();
+    requestAnimationFrame(updateCounter);
+  }
+  function stopCounter(){
+    // requestAnimationFrame doesn't need explicit stopping
+    lastSecondUpdate = 0;
+  }
+  function updateCounter(currentTime){
+    if(!enableSecCounter.checked || lastSecondUpdate === 0) return;
+
+    if(!counterPaused && currentTime - lastSecondUpdate >= 1000){
+      seconds++;
+      updateSecondCounter();
+      lastSecondUpdate = currentTime;
+    }
+
+    requestAnimationFrame(updateCounter);
+  }
   function updateSecondCounter(){ secCount.textContent = seconds + ' s'; }
   pauseCounter.onclick = ()=>{ counterPaused = !counterPaused; pauseCounter.textContent = counterPaused ? 'Resume' : 'Pause'; };
   
+  let lastClockUpdate = 0;
   function startClock() {
     stopClock();
-    if(enableClock.checked){ clockInterval = setInterval(updateClock, 1000); updateClock(); }
+    if(enableClock.checked){
+      lastClockUpdate = performance.now();
+      updateClock(); // Update immediately
+      requestAnimationFrame(updateClockLoop);
+    }
   }
-  function stopClock() { if(clockInterval) clearInterval(clockInterval); clockInterval = null; }
+  function stopClock() {
+    // requestAnimationFrame doesn't need explicit stopping
+    lastClockUpdate = 0;
+  }
+  function updateClockLoop(currentTime){
+    if(!enableClock.checked || lastClockUpdate === 0) return;
+
+    if(currentTime - lastClockUpdate >= 1000){
+      updateClock();
+      lastClockUpdate = currentTime;
+    }
+
+    requestAnimationFrame(updateClockLoop);
+  }
   function updateClock() {
       const now = new Date(), level = clockDetail.value;
       const timeOpts = { hour: 'numeric', minute: '2-digit' };
@@ -3406,11 +4097,11 @@ button.ctrl.clear-list-btn-red {
 
   function collectSettings(){
     return {
-      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, bounceIntensity: bounceIntensity.value, trail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value },
+      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, bounceIntensity: bounceIntensity.value, trail: enableTrail.checked, trailEffect: trailEffectSelect.value, trailCustomColor: trailCustomColor.value, trailLength: trailLength.value, trailThickness: trailThickness.value, trailFade: enableTrailFade.checked },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value, autoRotate: windAutoRotate.checked, rotateSpeed: windRotateSpeed.value },
-      toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
+      toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked, dockPanicBtn: enableDockPanicBtn.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
-      completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, inProgressColor: completionInProgressColor.value, glow: completionGlow.value, speed: completionSpeed.value, scanAngle: scanAngle.value },
+      completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, inProgressColor: completionInProgressColor.value, statusCompleteBg: statusCompleteBgColor.value, statusPendingBg: statusPendingBgColor.value, statusProgressBg: statusProgressBgColor.value, glow: completionGlow.value, speed: completionSpeed.value, scanAngle: scanAngle.value },
       ambiance: { effect: ambianceSelect.value, snowDensity: snowDensity.value, snowSize: snowSize.value, snowSpeed: snowSpeed.value, orbsDensity: orbsDensity.value, orbsSize: orbsSize.value, orbsSpeed: orbsSpeed.value, orbsColor: orbsColor.value, starfieldDensity: starfieldDensity.value, starfieldSize: starfieldSize.value, starfieldSpeed: starfieldSpeed.value, matrixDensity: matrixDensity.value, matrixSize: matrixSize.value, matrixSpeed: matrixSpeed.value, matrixColor: matrixColor.value },
       slideSpeed: slideSpeed.value,
       clock: { position: clockPosition.value, detail: clockDetail.value },
@@ -3428,8 +4119,11 @@ button.ctrl.clear-list-btn-red {
           containParticles.checked = s.animations.contain;
           bounceIntensity.value = s.animations.bounceIntensity ?? 0.8;
           enableTrail.checked = s.animations.trail ?? false;
+          trailEffectSelect.value = s.animations.trailEffect ?? 'default';
+          trailCustomColor.value = s.animations.trailCustomColor ?? '#ffffff';
           trailLength.value = s.animations.trailLength ?? 0.5;
           trailThickness.value = s.animations.trailThickness ?? 0.3;
+          enableTrailFade.checked = s.animations.trailFade ?? true;
       }
       if (s.wind) {
           enableWind.checked = s.wind.enabled; windPattern.value = s.wind.pattern;
@@ -3445,6 +4139,7 @@ button.ctrl.clear-list-btn-red {
           enableClock.checked = s.toggles.clock;
           enableAmbiance.checked = s.toggles.ambiance;
           enableCustomBackground.checked = s.toggles.customBackground;
+          enableDockPanicBtn.checked = s.toggles.dockPanicBtn || false;
       }
       if (s.appearance) {
           glassOpacity.value = s.appearance.glassOpacity;
@@ -3466,6 +4161,9 @@ button.ctrl.clear-list-btn-red {
           completionCheckedColor.value = s.completion.checkedColor;
           completionUncheckedColor.value = s.completion.uncheckedColor;
           completionInProgressColor.value = s.completion.inProgressColor || '#3b82f6';
+          statusCompleteBgColor.value = s.completion.statusCompleteBg || '#22c55e';
+          statusPendingBgColor.value = s.completion.statusPendingBg || '#9ca3af';
+          statusProgressBgColor.value = s.completion.statusProgressBg || '#3b82f6';
           completionGlow.value = s.completion.glow;
           completionSpeed.value = s.completion.speed;
           scanAngle.value = s.completion.scanAngle || '180';
@@ -3874,7 +4572,7 @@ button.ctrl.clear-list-btn-red {
   function createParticle(x, y, settings) {
     if (particles.length >= PARTICLE_CAP) return null;
     const p = { x, y, ox: x, oy: y, vx: settings.vx ?? 0, vy: settings.vy ?? 0, size: Math.max(1, (settings.size ?? 6) * (0.85 + Math.random() * 0.3)), life: settings.life, lifeMax: settings.life, mode: settings.mode, colorSingle: settings.cSingle, colorStart: settings.cStart, colorEnd: settings.cEnd, shape: settings.shape || 'circle', rot: Math.random() * Math.PI * 2, tieJitter: Math.random() * 120, pushScale: 1, animType: settings.animType, particleType: settings.particleType || 'default', randomOffset: Math.random() * 360, rotSpeed: 0, trail: [] };
-    
+
     // Give all particles an initial random rotation based on initial velocity
     // This simulates the "throw" of a dice - each particle starts with slightly different spin
     const initialSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
@@ -4098,7 +4796,7 @@ button.ctrl.clear-list-btn-red {
   }
   function saveCurrentPattern() {
       const name = patternNameInput.value.trim(); if (!name) { alert('Please enter a name for the pattern.'); return; }
-      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, bounceIntensity: bounceIntensity.value, enableTrail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value } };
+      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, bounceIntensity: bounceIntensity.value, enableTrail: enableTrail.checked, trailEffect: trailEffectSelect.value, trailCustomColor: trailCustomColor.value, trailLength: trailLength.value, trailThickness: trailThickness.value, enableTrailFade: enableTrailFade.checked } };
       savedPatterns.push(newPattern); patternNameInput.value = ''; renderPatternsList(); saveData();
   }
   function loadPattern(id) {
@@ -4117,7 +4815,7 @@ button.ctrl.clear-list-btn-red {
       windAutoRotate.checked = s.windAutoRotate ?? false; windRotateSpeed.value = s.windRotateSpeed ?? 30;
       containParticles.checked = s.containParticles;
       bounceIntensity.value = s.bounceIntensity ?? 0.8;
-      enableTrail.checked = s.enableTrail ?? false; trailLength.value = s.trailLength ?? 0.5; trailThickness.value = s.trailThickness ?? 0.3;
+      enableTrail.checked = s.enableTrail ?? false; trailEffectSelect.value = s.trailEffect ?? 'default'; trailCustomColor.value = s.trailCustomColor ?? '#ffffff'; trailLength.value = s.trailLength ?? 0.5; trailThickness.value = s.trailThickness ?? 0.3; enableTrailFade.checked = s.enableTrailFade ?? true;
       applyAllSettings();
       
       populatePresetSelector(s.animationStyle);
@@ -4208,9 +4906,14 @@ button.ctrl.clear-list-btn-red {
       pct.windDir.textContent = Math.round(windRotationAngle) + '°';
     }
     
-    ctxBubbles.clearRect(0,0,bubblesCanvas.width,bubblesCanvas.height);
-    const dpr = window.devicePixelRatio || 1, screenW = bubblesCanvas.width/dpr, screenH = bubblesCanvas.height/dpr;
-    for(let i=particles.length-1;i>=0;i--){
+    // Try WebGPU rendering first, fall back to Canvas2D
+    const webgpuRendered = renderParticlesWebGPU();
+
+    if (!webgpuRendered) {
+      // Fall back to Canvas2D rendering
+      ctxBubbles.clearRect(0,0,bubblesCanvas.width,bubblesCanvas.height);
+      const dpr = window.devicePixelRatio || 1, screenW = bubblesCanvas.width/dpr, screenH = bubblesCanvas.height/dpr;
+      for(let i=particles.length-1;i>=0;i--){
       const p = particles[i], wf = windField(p);
       p.vx += wf.fx; p.vy += wf.fy;
       let gravity = 0.07 * (wf.gScale ?? 1);
@@ -4252,7 +4955,9 @@ button.ctrl.clear-list-btn-red {
           if (newY + collisionRadius > screenH) {
               // Simple bounce: reverse vertical velocity with energy loss
               const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
-              const bounceEnergy = Math.abs(p.vy) * restitution * userBounceMultiplier;
+              // Make bounce exponentially more intense at higher settings for "wild" bounces
+              const wildMultiplier = Math.pow(userBounceMultiplier, 1.5) * 2.5;
+              const bounceEnergy = Math.abs(p.vy) * restitution * wildMultiplier;
               p.vy = -bounceEnergy;
               newY = screenH - collisionRadius;
 
@@ -4425,7 +5130,7 @@ button.ctrl.clear-list-btn-red {
 
           p.rot += p.rotSpeed;
       }
-      const lifeRatio = p.life / (p.lifeMax || 1);
+      let lifeRatio = p.life / (p.lifeMax || 1);
       ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
       let drawColor;
       if(p.mode==='fade'){ drawColor = lerpColor(p.colorStart,p.colorEnd, 1 - lifeRatio); }
@@ -4440,22 +5145,73 @@ button.ctrl.clear-list-btn-red {
       if (enableTrail.checked && p.trail && p.trail.length > 1) {
           const trailDuration = parseFloat(trailLength.value) || 0.5;
           const thicknessMult = parseFloat(trailThickness.value) || 0.3;
-          ctxBubbles.beginPath();
-          for (let i = 0; i < p.trail.length; i++) {
-              const trailPos = p.trail[i];
-              const age = t - trailPos.time;
-              const trailAlpha = Math.max(0, 1 - (age / trailDuration));
-              
-              if (i === 0) {
-                  ctxBubbles.moveTo(trailPos.x, trailPos.y);
-              } else {
-                  ctxBubbles.lineTo(trailPos.x, trailPos.y);
-              }
+          const trailEffect = trailEffectSelect.value;
+          ctxBubbles.lineCap = 'round';
+          ctxBubbles.lineJoin = 'round';
+
+          // Determine trail color based on effect
+          let trailColor;
+          switch (trailEffect) {
+              case 'rainbow':
+                  trailColor = hslToHex((t * 80 + (p.x + p.y) * 0.2) % 360, 95, 60);
+                  break;
+              case 'neon':
+                  trailColor = hslToHex((t * 120 + (p.x + p.y) * 0.1) % 360, 100, 70);
+                  break;
+              case 'negative':
+                  trailColor = hslToHex(0, 0, 100 - ((t * 50 + (p.x + p.y) * 0.05) % 50));
+                  break;
+              case 'custom':
+                  trailColor = trailCustomColor.value;
+                  break;
+              case 'smoke':
+                  trailColor = `rgba(200, 200, 200, ${0.3 + Math.random() * 0.4})`;
+                  break;
+              case 'liquid':
+                  trailColor = `rgba(100, 150, 255, ${0.4 + Math.random() * 0.3})`;
+                  break;
+              default: // 'default'
+                  trailColor = drawColor; // Use the particle's color
+                  break;
           }
-          ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
-          ctxBubbles.globalAlpha = ctxBubbles.globalAlpha * 0.6;
-          ctxBubbles.stroke();
+
+          ctxBubbles.strokeStyle = trailColor;
+
+          if (enableTrailFade.checked) {
+              // Draw each trail segment with its own alpha for smooth fading
+              for (let i = 1; i < p.trail.length; i++) {
+                  const currentPos = p.trail[i];
+                  const prevPos = p.trail[i - 1];
+                  const age = t - currentPos.time;
+                  const trailAlpha = Math.max(0, 1 - (age / trailDuration));
+
+                  if (trailAlpha > 0) {
+                      ctxBubbles.beginPath();
+                      ctxBubbles.moveTo(prevPos.x, prevPos.y);
+                      ctxBubbles.lineTo(currentPos.x, currentPos.y);
+                      ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
+                      ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1) * trailAlpha;
+                      ctxBubbles.stroke();
+                  }
+              }
+          } else {
+              // Simple trail without fade-out for better performance
+              ctxBubbles.beginPath();
+              for (let i = 0; i < p.trail.length; i++) {
+                  const trailPos = p.trail[i];
+                  if (i === 0) {
+                      ctxBubbles.moveTo(trailPos.x, trailPos.y);
+                  } else {
+                      ctxBubbles.lineTo(trailPos.x, trailPos.y);
+                  }
+              }
+              ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
+              ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
+              ctxBubbles.stroke();
+          }
           ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
+          // Reset stroke style back to particle color for the particle itself
+          ctxBubbles.strokeStyle = drawColor;
       }
       
       drawParticle(ctxBubbles, p);
@@ -4474,6 +5230,7 @@ button.ctrl.clear-list-btn-red {
         bolt.opacity = bolt.life / (bolt.lifeMax || 12);
         if (bolt.life <= 0) lightningBolts.splice(i, 1);
     }
+    } // End Canvas2D fallback rendering
     if (gradientSpinToggle.checked && backgroundType.value === 'color' && colorWallpaperType.value === 'gradient') {
         gradientAnimationAngle = (gradientAnimationAngle + (parseFloat(gradientSpinSpeed.value)/100)*0.48)%360;
         const spread = parseInt(gradientSpread.value,10);
@@ -4515,11 +5272,7 @@ button.ctrl.clear-list-btn-red {
         }
 
         if (el.id === 'enableTrail') {
-            trailLengthRow.style.display = enableTrail.checked ? 'flex' : 'none';
-            trailThicknessRow.style.display = enableTrail.checked ? 'flex' : 'none';
-            if (enableTrail.checked) {
-                bubbleOutline.value = 'none'; // Auto-set outline to none
-            }
+            trailEffectsContainer.style.display = enableTrail.checked ? 'block' : 'none';
         }
 
         // Update existing particles when certain settings change
@@ -4562,10 +5315,11 @@ button.ctrl.clear-list-btn-red {
       saveData();
   });
 
-  [completionCheckedColor, completionUncheckedColor, completionInProgressColor].forEach(el => {
+  [completionCheckedColor, completionUncheckedColor, completionInProgressColor, statusCompleteBgColor, statusPendingBgColor, statusProgressBgColor].forEach(el => {
       const eventType = el.type === 'color' ? 'input' : 'change';
       el.addEventListener(eventType, () => {
           applyCompletionEffectSettings();
+          applyStatusBackgroundColors();
           saveData();
       });
   });
@@ -4587,18 +5341,48 @@ button.ctrl.clear-list-btn-red {
   [gradientAngle, gradientSpread].forEach(el => el.addEventListener('input', () => { if (el === gradientAngle && !gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } applyColorWallpaper(); updatePercentages(); saveData(); }));
   gradientSpinToggle.addEventListener('change', ()=>{ if(gradientSpinToggle.checked) { gradientAnimationAngle = parseFloat(gradientAngle.value); } else { gradientAngle.value = Math.round(gradientAnimationAngle); updatePercentages(); } gradientSpinControls.style.display = gradientSpinToggle.checked ? 'flex' : 'none'; saveData(); });
   enableClock.addEventListener('change', ()=>{ applyClockSettings(); saveData(); });
-  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground, enableScanLine, document.getElementById('keepMenuExpanded')].forEach(el => {
+  [enableNaturalSlide, enableAmbiance, containParticles, enableCustomBackground, enableScanLine, document.getElementById('keepMenuExpanded'), enableDockPanicBtn, enableTrail].forEach(el => {
     if (!el) return;
-    el.addEventListener('change', ()=>{ 
-      if (el.id === 'keepMenuExpanded' && !el.checked) {
-        document.querySelectorAll('.menu-panel details').forEach(d => d.open = false);
+    el.addEventListener('change', ()=>{
+      if (el.id === 'keepMenuExpanded') {
+        if (el.checked) {
+          // When enabling, save current section states
+          document.querySelectorAll('.menu-panel details').forEach(d => {
+            if (d.id) {
+              localStorage.setItem('mysparklist.secOpen.' + d.id, d.open);
+            }
+          });
+        } else {
+          // When disabling, close all sections and clear saved states
+          document.querySelectorAll('.menu-panel details').forEach(d => {
+            d.open = false;
+            if (d.id) {
+              localStorage.removeItem('mysparklist.secOpen.' + d.id);
+            }
+          });
+        }
       }
-      if (el === enableAmbiance) applyAmbianceSettings(); 
+      if (el === enableAmbiance) applyAmbianceSettings();
       if (el === enableCustomBackground) syncCustomBackgroundVisibility();
       if (el === enableScanLine) syncScanAngleVisibility();
-      saveData(); 
+      if (el === enableDockPanicBtn) {
+        dockPanicBtn.style.display = el.checked ? 'flex' : 'none';
+      }
+      saveData();
     })
   });
+
+  // Trail effect selector
+  trailEffectSelect.addEventListener('change', () => {
+    trailCustomColorRow.style.display = trailEffectSelect.value === 'custom' ? 'flex' : 'none';
+    saveData();
+  });
+
+  // Trail custom color
+  trailCustomColor.addEventListener('input', () => {
+    saveData();
+  });
+
   simpleModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(simpleModeToggle.checked); saveData(); });
   
   // Wizard Mode Modifiers event listeners
@@ -4702,6 +5486,13 @@ button.ctrl.clear-list-btn-red {
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
   panicBtn.addEventListener('click', ()=> {
     // Immediately clear all particles
+    particles = [];
+    streams = [];
+    // Clear trails from any remaining particles
+    particles.forEach(p => p.trail = []);
+  });
+  dockPanicBtn.addEventListener('click', ()=> {
+    // Immediately clear all particles (same as panicBtn)
     particles = [];
     streams = [];
     // Clear trails from any remaining particles
@@ -5136,6 +5927,7 @@ button.ctrl.clear-list-btn-red {
         // Show/hide the 'In Progress' color setting
         const shouldShowProgressColor = (listType === 'Workflow') || (wizardMods && wizardMods.enableMultiStage);
         completionInProgressColorRow.style.display = shouldShowProgressColor ? 'flex' : 'none';
+        statusProgressBgColorRow.style.display = shouldShowProgressColor ? 'flex' : 'none';
     }
 
     function animateAndClearChecks() {
@@ -5510,8 +6302,12 @@ button.ctrl.clear-list-btn-red {
 
 
   /* ---------- Init ---------- */
-  resizeCanvas(bubblesCanvas); resizeCanvas(ambianceCanvas);
-  loadData(); startCounter(); requestAnimationFrame(mainLoop);
+  async function initializeApp() {
+    resizeCanvas(bubblesCanvas); resizeCanvas(ambianceCanvas);
+    await initWebGPU(); // Initialize WebGPU if available
+    loadData(); startCounter(); requestAnimationFrame(mainLoop);
+  }
+  initializeApp();
 })();
 </script>
 </body>
