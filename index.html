@@ -947,6 +947,11 @@ button.ctrl.clear-list-btn-red {
                                 <div class="row">
                                     <label class="helper"><input type="checkbox" id="containParticles"> Contain Particles (Bounce)</label>
                                 </div>
+                                <div class="slider-row" id="bounceIntensityRow" style="display: none;">
+                                    <label for="bounceIntensity">Bounce Intensity</label>
+                                    <input type="range" id="bounceIntensity" min="0.1" max="1" step="0.1" value="0.8" />
+                                    <span class="pct" id="bounceIntensityPct">0%</span>
+                                </div>
                                 <div class="row">
                                     <label class="helper"><input type="checkbox" id="enableTrail"> Enable Particle Trails</label>
                                 </div>
@@ -1608,6 +1613,7 @@ button.ctrl.clear-list-btn-red {
     size: document.getElementById('bubbleSizePct'),
     speed: document.getElementById('bubbleSpeedPct'),
     life: document.getElementById('bubbleLifePct'),
+    bounceIntensity: document.getElementById('bounceIntensityPct'),
     trailLength: document.getElementById('trailLengthPct'),
     trailThickness: document.getElementById('trailThicknessPct'),
     windI: document.getElementById('windIntensityPct'),
@@ -1651,6 +1657,8 @@ button.ctrl.clear-list-btn-red {
   // Wind controls
   const enableWind = document.getElementById('enableWind');
   const containParticles = document.getElementById('containParticles');
+  const bounceIntensity = document.getElementById('bounceIntensity');
+  const bounceIntensityRow = document.getElementById('bounceIntensityRow');
   const windPattern = document.getElementById('windPattern');
   const windIntensity = document.getElementById('windIntensity');
   const windDirection = document.getElementById('windDirection');
@@ -2269,6 +2277,7 @@ button.ctrl.clear-list-btn-red {
     store('animationsEnabled',enableAnimations.checked); store('colorMode',colorMode.value); store('bubbleColor',bubbleColor.value);
     store('bubbleStartColor',bubbleStartColor.value); store('bubbleEndColor',bubbleEndColor.value); store('shape',shapeSelect.value);
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
+    store('bounceIntensity', bounceIntensity.value);
     store('enableTrail', enableTrail.checked); store('trailLength', trailLength.value); store('trailThickness', trailThickness.value);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
     store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); 
@@ -2435,6 +2444,7 @@ button.ctrl.clear-list-btn-red {
     shapeSelect.value = get('shape', 'circle');
     bubbleOutline.value = get('bubbleOutline', 'none');
     containParticles.checked = (get('containParticles', 'false') === 'true');
+    bounceIntensity.value = get('bounceIntensity', '0.8');
     enableTrail.checked = (get('enableTrail', 'false') === 'true');
     trailLength.value = get('trailLength', '0.5');
     trailThickness.value = get('trailThickness', '0.3');
@@ -2542,11 +2552,12 @@ button.ctrl.clear-list-btn-red {
   function applyAllSettings() {
     updatePercentages(); 
     syncColorControlVisibility(); 
-    syncWindControls(); 
+    syncWindControls();
     windRotateSpeedRow.style.display = windAutoRotate.checked ? 'flex' : 'none';
+    bounceIntensityRow.style.display = containParticles.checked ? 'flex' : 'none';
     trailLengthRow.style.display = enableTrail.checked ? 'flex' : 'none';
     trailThicknessRow.style.display = enableTrail.checked ? 'flex' : 'none';
-    applyGlassOpacity(); 
+    applyGlassOpacity();
     applyGlassBlur();
     applyGlassSaturation();
     applyGlassBorderOpacity();
@@ -3395,7 +3406,7 @@ button.ctrl.clear-list-btn-red {
 
   function collectSettings(){
     return {
-      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, trail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value },
+      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, bounceIntensity: bounceIntensity.value, trail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value, autoRotate: windAutoRotate.checked, rotateSpeed: windRotateSpeed.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
@@ -3415,6 +3426,7 @@ button.ctrl.clear-list-btn-red {
           shapeSelect.value = s.animations.shape; bubbleOutline.value = s.animations.outline; colorMode.value = s.animations.colorMode;
           bubbleColor.value = s.animations.color; bubbleStartColor.value = s.animations.startColor; bubbleEndColor.value = s.animations.endColor;
           containParticles.checked = s.animations.contain;
+          bounceIntensity.value = s.animations.bounceIntensity ?? 0.8;
           enableTrail.checked = s.animations.trail ?? false;
           trailLength.value = s.animations.trailLength ?? 0.5;
           trailThickness.value = s.animations.trailThickness ?? 0.3;
@@ -3486,6 +3498,7 @@ button.ctrl.clear-list-btn-red {
     const pctOf=(el)=> Math.round(((parseFloat(el.value)-parseFloat(el.min))/(parseFloat(el.max)-parseFloat(el.min)))*100); 
     pct.anim.textContent=pctOf(animIntensity)+'%'; pct.escale.textContent=pctOf(emissionScale)+'%'; pct.hold.textContent=pctOf(holdRate)+'%'; 
     pct.size.textContent=pctOf(bubbleSize)+'%'; pct.speed.textContent=pctOf(bubbleSpeed)+'%';
+    if(pct.bounceIntensity) pct.bounceIntensity.textContent=pctOf(bounceIntensity)+'%';
     if(pct.trailLength) pct.trailLength.textContent=trailLength.value+'s';
     if(pct.trailThickness) pct.trailThickness.textContent=pctOf(trailThickness)+'%';
     pct.windI.textContent=pctOf(windIntensity)+'%'; 
@@ -4085,7 +4098,7 @@ button.ctrl.clear-list-btn-red {
   }
   function saveCurrentPattern() {
       const name = patternNameInput.value.trim(); if (!name) { alert('Please enter a name for the pattern.'); return; }
-      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, enableTrail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value } };
+      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, bounceIntensity: bounceIntensity.value, enableTrail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value } };
       savedPatterns.push(newPattern); patternNameInput.value = ''; renderPatternsList(); saveData();
   }
   function loadPattern(id) {
@@ -4103,6 +4116,7 @@ button.ctrl.clear-list-btn-red {
       enableWind.checked = s.enableWind; windPattern.value = s.windPattern; windIntensity.value = s.windIntensity; windDirection.value = s.windDirection;
       windAutoRotate.checked = s.windAutoRotate ?? false; windRotateSpeed.value = s.windRotateSpeed ?? 30;
       containParticles.checked = s.containParticles;
+      bounceIntensity.value = s.bounceIntensity ?? 0.8;
       enableTrail.checked = s.enableTrail ?? false; trailLength.value = s.trailLength ?? 0.5; trailThickness.value = s.trailThickness ?? 0.3;
       applyAllSettings();
       
@@ -4237,7 +4251,8 @@ button.ctrl.clear-list-btn-red {
           // Handle bottom boundary (most important for gravity)
           if (newY + collisionRadius > screenH) {
               // Simple bounce: reverse vertical velocity with energy loss
-              const bounceEnergy = Math.abs(p.vy) * restitution;
+              const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
+              const bounceEnergy = Math.abs(p.vy) * restitution * userBounceMultiplier;
               p.vy = -bounceEnergy;
               newY = screenH - collisionRadius;
 
@@ -4280,7 +4295,8 @@ button.ctrl.clear-list-btn-red {
           }
           // Handle top boundary
           else if (newY - collisionRadius < 0 && p.vy < 0) {
-              p.vy = Math.abs(p.vy) * restitution;
+              const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
+              p.vy = Math.abs(p.vy) * restitution * userBounceMultiplier;
               newY = collisionRadius;
               
               // Chaotic spin on top hits
@@ -4298,7 +4314,8 @@ button.ctrl.clear-list-btn-red {
 
           // Handle left boundary
           if (newX - collisionRadius < 0) {
-              p.vx = Math.abs(p.vx) * restitution;
+              const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
+              p.vx = Math.abs(p.vx) * restitution * userBounceMultiplier;
               newX = collisionRadius;
               
               // Chaotic spin on left wall hits
@@ -4315,7 +4332,8 @@ button.ctrl.clear-list-btn-red {
           }
           // Handle right boundary
           else if (newX + collisionRadius > screenW) {
-              p.vx = -Math.abs(p.vx) * restitution;
+              const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
+              p.vx = -Math.abs(p.vx) * restitution * userBounceMultiplier;
               newX = screenW - collisionRadius;
               
               // Chaotic spin on right wall hits
@@ -4470,7 +4488,7 @@ button.ctrl.clear-list-btn-red {
   /* ---------- Event Wiring ---------- */
   window.addEventListener('resize', ()=>{ resizeCanvas(bubblesCanvas); resizeCanvas(ambianceCanvas); applyAmbianceSettings(); updateTabScrollIndicators(); });
   
-  const animControls = [animIntensity, emissionScale, holdRate, bubbleSize, bubbleSpeed, bubbleLifeSlider, bubbleLifeSeconds, shapeSelect, bubbleOutline, colorMode, bubbleColor, bubbleStartColor, bubbleEndColor, enableWind, windPattern, windIntensity, windDirection, windAutoRotate, windRotateSpeed, containParticles, enableTrail, trailLength, trailThickness];
+  const animControls = [animIntensity, emissionScale, holdRate, bubbleSize, bubbleSpeed, bubbleLifeSlider, bubbleLifeSeconds, shapeSelect, bubbleOutline, colorMode, bubbleColor, bubbleStartColor, bubbleEndColor, enableWind, windPattern, windIntensity, windDirection, windAutoRotate, windRotateSpeed, containParticles, bounceIntensity, enableTrail, trailLength, trailThickness];
   
   animControls.forEach(el => {
     const eventType = (el.type === 'range' || el.type === 'number' || el.type === 'color') ? 'input' : 'change';
@@ -4490,6 +4508,10 @@ button.ctrl.clear-list-btn-red {
         if (el.id === 'windAutoRotate') {
             windRotateSpeedRow.style.display = windAutoRotate.checked ? 'flex' : 'none';
             syncWindControls(); // Update direction slider visibility
+        }
+
+        if (el.id === 'containParticles') {
+            bounceIntensityRow.style.display = containParticles.checked ? 'flex' : 'none';
         }
 
         if (el.id === 'enableTrail') {
