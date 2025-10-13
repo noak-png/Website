@@ -2,7 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="msapplication-tap-highlight" content="no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="MySparkList" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="A modern task management app - Taking out goals with a spark" />
+<meta name="keywords" content="tasks,todo,list,productivity,goals,management" />
+<meta name="author" content="MySparkList Team" />
+<link rel="apple-touch-icon" href="res/icon/icon.png" />
+<link rel="icon" type="image/png" href="res/icon/icon.png" />
 <title>MySparkList</title>
 
 <style>
@@ -188,6 +199,23 @@ ul#list{ margin:0; padding:0; list-style:none; text-align:left; width:100%; }
 .remove{ background:transparent; border:1px solid var(--border); color:var(--danger); padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .15s; }
 .remove:active{ transform:scale(0.95); background:var(--border); }
 
+/* Subgoal styles */
+.add-subgoal-btn{ background:transparent; border:1px solid var(--border); color:var(--accent); padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .15s; font-weight:bold; margin-right: 8px; }
+.add-subgoal-btn:active{ transform:scale(0.95); background:var(--border); }
+
+/* Educational parent items with subgoal controls */
+.item.has-subgoal-controls{ grid-template-columns:auto 1fr auto auto; }
+.item.has-subgoal-controls .button-group{ display: flex; gap: 8px; align-items: baseline; }
+
+.item.subgoal{ 
+  margin-left: 40px; 
+  padding-left: 12px;
+  border-left: 2px solid var(--accent);
+  opacity: 0.9;
+}
+.item.subgoal .text{ font-size: 14px; }
+.item.subgoal .badge{ font-size: 11px; }
+
 /* Completion inset ring */
 .item.done{ box-shadow: inset 0 0 0 2px var(--completion-ok-color), inset 0 0 0 var(--completion-glow-spread) color-mix(in srgb, var(--completion-ok-color) 10%, transparent); }
 .item.done.pulse{ animation:innerRingPulse var(--completion-duration) ease-out; }
@@ -267,10 +295,13 @@ button.ctrl.clear-list-btn-red {
 .menu-panel summary{ 
   list-style:none; cursor:pointer; padding:12px 14px; 
   outline:none; display:flex; align-items:center; justify-content:space-between; 
-  gap:12px; font-weight:700; background:rgba(128,128,128,0.08);
-  border-radius: 8px; transition: background .2s;
+  gap:12px; font-weight:800; background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 8px; transition: background .2s, border-color .2s;
 }
-.menu-panel summary:hover{ background:rgba(128,128,128,0.12); }
+.menu-panel summary:hover{ background: rgba(37, 99, 235, 0.15); border-color: rgba(37, 99, 235, 0.3); }
+
+.dark .menu-panel summary{ background: rgba(0, 120, 215, 0.15); border-color: rgba(0, 120, 215, 0.3); }
+.dark .menu-panel summary:hover{ background: rgba(0, 120, 215, 0.25); border-color: rgba(0, 120, 215, 0.4); }
 .menu-panel details[open] > summary {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -437,7 +468,7 @@ button.ctrl.clear-list-btn-red {
 }
 .list-type-options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
 }
 .list-type-option {
@@ -660,20 +691,20 @@ button.ctrl.clear-list-btn-red {
 }
 
 /* Workflow Stages Styling */
-#workflowStagesList .row {
+#workflowStagesList .row, #wizardStagesList .row {
     padding: 6px;
     border-radius: 6px;
     align-items: center;
 }
-#workflowStagesList .row:nth-child(odd) {
+#workflowStagesList .row:nth-child(odd), #wizardStagesList .row:nth-child(odd) {
     background: rgba(128,128,128,0.05);
 }
-#workflowStagesList .row span {
+#workflowStagesList .row span, #wizardStagesList .row span {
     flex-grow: 1;
     text-align: left;
     font-size: 14px;
 }
-#workflowStagesList .row button {
+#workflowStagesList .row button, #wizardStagesList .row button {
     font-size: 11px;
     padding: 4px 8px;
 }
@@ -718,6 +749,10 @@ button.ctrl.clear-list-btn-red {
             <div class="list-type-option" data-type="Workflow">
               <h3>Workflow / Staged Tasks</h3>
               <p>For projects, multi-step tasks, or any process you want to track with more detail.</p>
+            </div>
+            <div class="list-type-option" data-type="Wizard Mode">
+              <h3>🧙 Wizard Mode</h3>
+              <p>Advanced mode with customizable features - combine any list type capabilities.</p>
             </div>
           </div>
       </div>
@@ -913,9 +948,25 @@ button.ctrl.clear-list-btn-red {
                                     <label class="helper"><input type="checkbox" id="containParticles"> Contain Particles (Bounce)</label>
                                 </div>
                                 <div class="row">
+                                    <label class="helper"><input type="checkbox" id="enableTrail"> Enable Particle Trails</label>
+                                </div>
+                                <div class="slider-row" id="trailLengthRow" style="display: none;">
+                                    <label for="trailLength">Trail Length (seconds)</label>
+                                    <input type="range" id="trailLength" min="0.1" max="3" step="0.1" value="0.5" />
+                                    <span class="pct" id="trailLengthPct">0s</span>
+                                </div>
+                                <div class="slider-row" id="trailThicknessRow" style="display: none;">
+                                    <label for="trailThickness">Trail Thickness</label>
+                                    <input type="range" id="trailThickness" min="0.1" max="2" step="0.1" value="0.3" />
+                                    <span class="pct" id="trailThicknessPct">0%</span>
+                                </div>
+                                <div class="row">
                                     <button id="resetAnimBtn" type="button" title="Reset bubble settings to default">Reset to Default</button>
                                 </div>
-                                <div class="helper">Settings % reflect how far you are across each slider’s range.</div>
+                                <div class="row">
+                                    <button id="panicBtn" type="button" style="background: #dc2626; color: white; font-weight: bold;" title="Immediately stop all particle animations">🛑 PANIC - Stop Animations</button>
+                                </div>
+                                <div class="helper">Settings % reflect how far you are across each slider's range.</div>
                             </div>
                         </details>
                     </div>
@@ -948,6 +999,12 @@ button.ctrl.clear-list-btn-red {
                                     <label for="windDirection">Direction (°)</label>
                                     <input type="range" id="windDirection" min="0" max="360" value="0" />
                                     <span class="pct" id="windDirectionPct">0%</span>
+                                </div>
+                                <div class="row"><label class="helper"><input type="checkbox" id="windAutoRotate"> Auto Rotate Direction</label></div>
+                                <div class="slider-row" id="windRotateSpeedRow" style="display: none;">
+                                    <label for="windRotateSpeed">Rotation Speed</label>
+                                    <input type="range" id="windRotateSpeed" min="1" max="100" value="30" />
+                                    <span class="pct" id="windRotateSpeedPct">0%</span>
                                 </div>
                                 <div class="helper">Use the Direction slider for Steady and Sine patterns. Other patterns have unique behaviors.</div>
                             </div>
@@ -1242,6 +1299,75 @@ button.ctrl.clear-list-btn-red {
       </details>
     </div>
 
+    <div class="section" id="secWizardModifiers" style="display: none;">
+        <details id="detailsWizardModifiers">
+            <summary>
+                🧙 Wizard Mode Modifiers <span class="hint">customize your god mode</span>
+            </summary>
+            <div class="content">
+                <div class="stack">
+                    <label><input type="checkbox" id="wizardEnableSubgoals"> Enable Subgoals (Educational)</label>
+                    <div class="helper">Add nested subgoals under parent items. Parent auto-completes when all subgoals are done.</div>
+                </div>
+                <div class="hr"></div>
+                
+                <div class="stack">
+                    <label><input type="checkbox" id="wizardEnableMultiStage"> Enable Multi-Stage Workflow</label>
+                    <div class="helper">Items progress through customizable stages instead of simple pending/complete.</div>
+                    
+                    <!-- Multi-Stage Settings (shown when enabled) -->
+                    <div id="wizardMultiStageSettings" class="stack" style="display:none; margin-top: 10px; border:1px solid var(--border); border-radius:8px; padding:10px; gap: 10px;">
+                        <div id="wizardStagesList" class="stack"></div>
+                        <div class="row">
+                            <input type="text" id="wizardNewStageName" placeholder="New stage name..." style="flex-grow:1;">
+                            <button id="wizardAddStageBtn">Add Stage</button>
+                        </div>
+                        <div class="row" style="margin-top: 8px;">
+                            <button id="wizardResetStagesBtn" type="button" style="flex-grow: 1;">Reset to Default</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="hr"></div>
+                
+                <div class="stack">
+                    <label><input type="checkbox" id="wizardEnableTimer"> Enable Timer Integration (Call Behaviors)</label>
+                    <div class="helper">Timer resets when you clear the list. Useful for tracking time per session.</div>
+                    
+                    <!-- Timer Settings (shown when enabled) -->
+                    <div id="wizardTimerSettings" class="stack" style="display:none; margin-top: 10px; border:1px solid var(--border); border-radius:8px; padding:10px; gap: 10px;">
+                        <label><input type="checkbox" id="wizardAutoEnableSecCounter"> Auto-Enable Second Counter</label>
+                        <div class="stack" id="wizardTimerPositionWrapper">
+                            <label for="wizardTimerPosition">Timer Position</label>
+                            <select id="wizardTimerPosition">
+                                <option value="pos-top-left">Top Left</option>
+                                <option value="pos-top-center">Top Center</option>
+                                <option value="pos-top-right" selected>Top Right</option>
+                                <option value="pos-bottom-left">Bottom Left</option>
+                                <option value="pos-bottom-center">Bottom Center</option>
+                                <option value="pos-bottom-right">Bottom Right</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="hr"></div>
+                
+                <div class="stack">
+                    <label for="wizardControlStyle">Control Buttons Style</label>
+                    <select id="wizardControlStyle">
+                        <option value="standard">Standard (Clear + Delete)</option>
+                        <option value="call-behavior">Call Behavior (New Call)</option>
+                        <option value="workflow">Workflow (Delete Only)</option>
+                    </select>
+                </div>
+                <div class="hr"></div>
+                <div class="helper">
+                    🧙 <strong>Wizard Mode</strong> lets you mix and match features from different list types. 
+                    Combine subgoals with multi-stage workflows, or add timer tracking to any list type!
+          </div>
+        </div>
+      </details>
+    </div>
+
     <div class="section" id="secUtility">
         <details id="detailsUtility">
             <summary>
@@ -1466,7 +1592,13 @@ button.ctrl.clear-list-btn-red {
   const bubbleLifeSeconds = document.getElementById('bubbleLifeSeconds');
   const enableAnimations = document.getElementById('enableAnimations');
   const enableEndless = document.getElementById('enableEndless');
+  const enableTrail = document.getElementById('enableTrail');
+  const trailLength = document.getElementById('trailLength');
+  const trailLengthRow = document.getElementById('trailLengthRow');
+  const trailThickness = document.getElementById('trailThickness');
+  const trailThicknessRow = document.getElementById('trailThicknessRow');
   const resetAnimBtn = document.getElementById('resetAnimBtn');
+  const panicBtn = document.getElementById('panicBtn');
 
   // Percent labels
   const pct = {
@@ -1476,8 +1608,11 @@ button.ctrl.clear-list-btn-red {
     size: document.getElementById('bubbleSizePct'),
     speed: document.getElementById('bubbleSpeedPct'),
     life: document.getElementById('bubbleLifePct'),
+    trailLength: document.getElementById('trailLengthPct'),
+    trailThickness: document.getElementById('trailThicknessPct'),
     windI: document.getElementById('windIntensityPct'),
     windDir: document.getElementById('windDirectionPct'),
+    windRotateSpeed: document.getElementById('windRotateSpeedPct'),
     glass: document.getElementById('glassOpacityPct'),
     glassBlur: document.getElementById('glassBlurPct'),
     glassSaturation: document.getElementById('glassSaturationPct'),
@@ -1520,6 +1655,9 @@ button.ctrl.clear-list-btn-red {
   const windIntensity = document.getElementById('windIntensity');
   const windDirection = document.getElementById('windDirection');
   const windDirectionRow = document.getElementById('windDirectionRow');
+  const windAutoRotate = document.getElementById('windAutoRotate');
+  const windRotateSpeed = document.getElementById('windRotateSpeed');
+  const windRotateSpeedRow = document.getElementById('windRotateSpeedRow');
 
   // Appearance
   const uiStyleSelect = document.getElementById('uiStyleSelect');
@@ -1577,6 +1715,19 @@ button.ctrl.clear-list-btn-red {
   const simpleModeToggle = document.getElementById('simpleModeToggle');
   const exportStateBtn = document.getElementById('exportStateBtn');
   const secWorkflowStages = document.getElementById('secWorkflowStages');
+  const secWizardModifiers = document.getElementById('secWizardModifiers');
+  const wizardEnableSubgoals = document.getElementById('wizardEnableSubgoals');
+  const wizardEnableMultiStage = document.getElementById('wizardEnableMultiStage');
+  const wizardEnableTimer = document.getElementById('wizardEnableTimer');
+  const wizardControlStyle = document.getElementById('wizardControlStyle');
+  const wizardMultiStageSettings = document.getElementById('wizardMultiStageSettings');
+  const wizardStagesList = document.getElementById('wizardStagesList');
+  const wizardNewStageName = document.getElementById('wizardNewStageName');
+  const wizardAddStageBtn = document.getElementById('wizardAddStageBtn');
+  const wizardResetStagesBtn = document.getElementById('wizardResetStagesBtn');
+  const wizardTimerSettings = document.getElementById('wizardTimerSettings');
+  const wizardAutoEnableSecCounter = document.getElementById('wizardAutoEnableSecCounter');
+  const wizardTimerPosition = document.getElementById('wizardTimerPosition');
   const workflowStagesList = document.getElementById('workflowStagesList');
   const newStageName = document.getElementById('newStageName');
   const addStageBtn = document.getElementById('addStageBtn');
@@ -2010,6 +2161,7 @@ button.ctrl.clear-list-btn-red {
   let lastSnapshot = null;
   let currentAccentColor = '#2563eb';
   let savedPatterns = [];
+  let windRotationAngle = 0; // Auto-rotating wind direction angle
   let gradientAnimationAngle = 0;
   let screenFlash = 0;
   let lightningBolts = [];
@@ -2117,8 +2269,11 @@ button.ctrl.clear-list-btn-red {
     store('animationsEnabled',enableAnimations.checked); store('colorMode',colorMode.value); store('bubbleColor',bubbleColor.value);
     store('bubbleStartColor',bubbleStartColor.value); store('bubbleEndColor',bubbleEndColor.value); store('shape',shapeSelect.value);
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
+    store('enableTrail', enableTrail.checked); store('trailLength', trailLength.value); store('trailThickness', trailThickness.value);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
-    store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); store('endlessEnabled',enableEndless.checked);
+    store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); 
+    store('windAutoRotate', windAutoRotate.checked); store('windRotateSpeed', windRotateSpeed.value);
+    store('endlessEnabled',enableEndless.checked);
     store('darkMode',document.documentElement.classList.contains('dark')); 
     store('glassOpacity', glassOpacity.value);
     store('glassBlur', glassBlurSlider.value);
@@ -2280,10 +2435,15 @@ button.ctrl.clear-list-btn-red {
     shapeSelect.value = get('shape', 'circle');
     bubbleOutline.value = get('bubbleOutline', 'none');
     containParticles.checked = (get('containParticles', 'false') === 'true');
+    enableTrail.checked = (get('enableTrail', 'false') === 'true');
+    trailLength.value = get('trailLength', '0.5');
+    trailThickness.value = get('trailThickness', '0.3');
     enableWind.checked = (get('enableWind', 'false') === 'true');
     windPattern.value = get('windPattern', 'steady');
     windIntensity.value = get('windIntensity', '30');
     windDirection.value = get('windDirection', '0');
+    windAutoRotate.checked = (get('windAutoRotate', 'false') === 'true');
+    windRotateSpeed.value = get('windRotateSpeed', '30');
     enableAnimations.checked = (get('animationsEnabled', 'true') === 'true');
     enableEndless.checked = (get('endlessEnabled', 'false') === 'true');
     enableSecCounter.checked = (get('secCounter', 'false') === 'true');
@@ -2303,9 +2463,16 @@ button.ctrl.clear-list-btn-red {
     glassBorderSlider.value = get('glassBorder', '23');
     populateStyleSelector('glass');
     uiStyleSelect.value = get('uiStyle', 'graphite');
-    completionCheckedColor.value = get('completionCheckedColor', '#22c55e');
-    completionUncheckedColor.value = get('completionUncheckedColor', '#f87171');
-    completionInProgressColor.value = get('completionInProgressColor', '#3b82f6');
+    
+    // Load completion colors - use theme-appropriate defaults if not set
+    const isDark = document.documentElement.classList.contains('dark');
+    const defaultCheckedColor = isDark ? '#22c55e' : '#16a34a';
+    const defaultUncheckedColor = isDark ? '#f87171' : '#ef4444';
+    const defaultProgressColor = isDark ? '#3b82f6' : '#2563eb';
+    
+    completionCheckedColor.value = get('completionCheckedColor', defaultCheckedColor);
+    completionUncheckedColor.value = get('completionUncheckedColor', defaultUncheckedColor);
+    completionInProgressColor.value = get('completionInProgressColor', defaultProgressColor);
     completionGlow.value = get('completionGlow', '6');
     completionSpeed.value = get('completionSpeed', '900');
     enableCustomBackground.checked = (get('enableCustomBackground', 'true') === 'true');
@@ -2376,6 +2543,9 @@ button.ctrl.clear-list-btn-red {
     updatePercentages(); 
     syncColorControlVisibility(); 
     syncWindControls(); 
+    windRotateSpeedRow.style.display = windAutoRotate.checked ? 'flex' : 'none';
+    trailLengthRow.style.display = enableTrail.checked ? 'flex' : 'none';
+    trailThicknessRow.style.display = enableTrail.checked ? 'flex' : 'none';
     applyGlassOpacity(); 
     applyGlassBlur();
     applyGlassSaturation();
@@ -2390,6 +2560,7 @@ button.ctrl.clear-list-btn-red {
     applyAmbianceSettings(); 
     renderPatternsList();
     syncAnimationSettingsUI(); 
+    populatePresetSelector(animationStyleSelect.value); // Populate preset dropdown
     applyLogoTheme();
     syncCustomBackgroundVisibility();
     clickCount.textContent = totalClicks; 
@@ -2677,7 +2848,11 @@ button.ctrl.clear-list-btn-red {
     let isPending = true;
     let isIntermediate = false;
 
-    if (currentList.type === 'Workflow') {
+    // Check if multi-stage is enabled (Workflow or Wizard with multi-stage)
+    const hasMultiStage = (currentList.type === 'Workflow') || 
+                         (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableMultiStage);
+
+    if (hasMultiStage) {
         const stageIndex = currentList.stages.indexOf(status);
         const lastStageIndex = currentList.stages.length - 1;
         isComplete = (stageIndex === lastStageIndex);
@@ -2701,9 +2876,13 @@ button.ctrl.clear-list-btn-red {
     }
   }
 
-  function addItem(text, status, silentAnim = false) {
+  function addItem(text, status, silentAnim = false, itemData = null, isSubgoal = false) {
+    const currentList = lists[activeListIndex];
     const li = document.createElement('li');
     li.className = 'item';
+    if (isSubgoal) {
+        li.classList.add('subgoal');
+    }
     li.draggable = true;
     const cb = document.createElement('input');
     cb.type = 'checkbox';
@@ -2718,7 +2897,23 @@ button.ctrl.clear-list-btn-red {
     const rm = document.createElement('button');
     rm.className = 'remove';
     rm.textContent = '✖';
+    
+    // Add subgoal button for Educational lists OR Wizard Mode with subgoals enabled (only for parent items)
+    const shouldShowSubgoalButton = !isSubgoal && (
+        (currentList?.type === 'Educational') || 
+        (currentList?.type === 'Wizard Mode' && currentList.wizardModifiers?.enableSubgoals)
+    );
+    
+    if (shouldShowSubgoalButton) {
+        li.classList.add('has-subgoal-controls');
+        const addSubgoalBtn = document.createElement('button');
+        addSubgoalBtn.className = 'add-subgoal-btn';
+        addSubgoalBtn.textContent = '+';
+        addSubgoalBtn.title = 'Add subgoal';
+        li.append(cb, lbl, addSubgoalBtn, rm); // Plus before X, both in separate grid columns
+    } else {
     li.append(cb, lbl, rm);
+    }
     
     updateItemUI(li, status); // Set initial UI
     
@@ -2727,13 +2922,46 @@ button.ctrl.clear-list-btn-red {
 
     cb.onchange = function() {
         const currentList = lists[activeListIndex];
-        const itemIndex = Array.from(list.children).indexOf(li);
-        if (itemIndex === -1) return;
-        const currentItem = currentList.items[itemIndex];
+        
+        // Calculate proper item index (accounting for subgoals in DOM)
+        let currentItem;
+        if (isSubgoal && itemData) {
+            currentItem = currentList.items[itemData.parentIndex].subgoals[itemData.subgoalIndex];
+        } else {
+            // Find the parent item index by counting non-subgoal items before this one
+            const allListItems = Array.from(list.children);
+            const thisIndex = allListItems.indexOf(li);
+            let parentItemCount = 0;
+            for (let i = 0; i <= thisIndex; i++) {
+                if (!allListItems[i].classList.contains('subgoal')) {
+                    parentItemCount++;
+                }
+            }
+            currentItem = currentList.items[parentItemCount - 1];
+        }
+        
+        if (!currentItem) return;
         const oldStatus = currentItem.status;
 
+        // For Educational lists OR Wizard Mode with subgoals enabled, handle parent-subgoal relationship
+        const hasSubgoalsFeature = (currentList.type === 'Educational') || 
+                                   (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableSubgoals);
+        const hasMultiStageWithSubgoals = (currentList.type === 'Wizard Mode' && 
+                                           currentList.wizardModifiers?.enableSubgoals && 
+                                           currentList.wizardModifiers?.enableMultiStage);
+        
+        if (hasSubgoalsFeature && !isSubgoal && currentItem.subgoals && currentItem.subgoals.length > 0) {
+            // Block parent checkbox clicks when subgoals are attached
+            // User must use subgoals to progress the parent
+            cb.checked = !cb.checked; // Revert the checkbox state
+            alert('This item has subgoals attached. Please use the subgoals to track progress.');
+            return;
+        }
+
         let newStatus;
-        let stageChange = { oldIndex: -1, newIndex: -1, isWorkflow: currentList.type === 'Workflow' };
+        const hasMultiStage = (currentList.type === 'Workflow') || 
+                             (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableMultiStage);
+        let stageChange = { oldIndex: -1, newIndex: -1, isWorkflow: hasMultiStage };
 
         if (stageChange.isWorkflow) {
             stageChange.oldIndex = currentList.stages.indexOf(oldStatus);
@@ -2743,6 +2971,116 @@ button.ctrl.clear-list-btn-red {
             newStatus = (oldStatus === 'pending') ? 'complete' : 'pending';
         }
         currentItem.status = newStatus;
+
+        // If this is a subgoal, update parent based on subgoal progress
+        if (hasSubgoalsFeature && isSubgoal && itemData && itemData.parentIndex !== undefined) {
+            const parentItem = currentList.items[itemData.parentIndex];
+            if (parentItem && parentItem.subgoals) {
+                // Find parent DOM element
+                let parentLi = null;
+                let parentCount = 0;
+                for (let i = 0; i < list.children.length; i++) {
+                    if (!list.children[i].classList.contains('subgoal')) {
+                        if (parentCount === itemData.parentIndex) {
+                            parentLi = list.children[i];
+                            break;
+                        }
+                        parentCount++;
+                    }
+                }
+                
+                if (hasMultiStageWithSubgoals) {
+                    // Wizard Mode with both subgoals + multi-stage enabled
+                    const lastStageIndex = currentList.stages.length - 1;
+                    const firstStageIndex = 0;
+                    
+                    // Check subgoal statuses
+                    const allSubgoalsComplete = parentItem.subgoals.every(sg => {
+                        const stageIndex = currentList.stages.indexOf(sg.status);
+                        return stageIndex === lastStageIndex;
+                    });
+                    
+                    const anySubgoalProgressed = parentItem.subgoals.some(sg => {
+                        const stageIndex = currentList.stages.indexOf(sg.status);
+                        return stageIndex > firstStageIndex;
+                    });
+                    
+                    const allSubgoalsPending = parentItem.subgoals.every(sg => {
+                        const stageIndex = currentList.stages.indexOf(sg.status);
+                        return stageIndex === firstStageIndex;
+                    });
+                    
+                    // Auto-update parent status based on subgoal progress
+                    if (allSubgoalsComplete) {
+                        // All subgoals at final stage - set parent to complete
+                        parentItem.status = currentList.stages[lastStageIndex];
+                        if (parentLi) {
+                            updateItemUI(parentLi, parentItem.status);
+                            if (enableAnimations.checked) {
+                                const parentCb = parentLi.querySelector('input[type="checkbox"]');
+                                if (parentCb) spawnParticlesFromEl(parentCb);
+                            }
+                            parentLi.classList.add('pulse');
+                            setTimeout(() => parentLi.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+                        }
+                    } else if (anySubgoalProgressed && !allSubgoalsPending) {
+                        // Some subgoals have progressed - set parent to "In Progress" (stage 1)
+                        const currentParentStageIndex = currentList.stages.indexOf(parentItem.status);
+                        if (currentParentStageIndex === firstStageIndex || currentParentStageIndex === lastStageIndex) {
+                            // Only auto-update if parent is at first stage or was at complete
+                            parentItem.status = currentList.stages[1]; // Second stage (usually "In Progress")
+                            if (parentLi) {
+                                updateItemUI(parentLi, parentItem.status);
+                            }
+                        }
+                    } else if (allSubgoalsPending) {
+                        // All subgoals reverted to pending - revert parent to pending too
+                        parentItem.status = currentList.stages[firstStageIndex];
+                        if (parentLi) {
+                            updateItemUI(parentLi, parentItem.status);
+                            parentLi.classList.add('warn');
+                            if (enableScanLine.checked) {
+                                parentLi.classList.remove('scan-effect-done', 'scan-effect-warn', 'scan-effect-progress');
+                                void parentLi.offsetWidth;
+                                parentLi.classList.add('scan-effect-warn');
+                            }
+                            setTimeout(() => parentLi.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+                        }
+                    }
+                } else {
+                    // Standard Educational mode behavior
+                    const allSubgoalsComplete = parentItem.subgoals.every(sg => sg.status === 'complete');
+                    
+                    if (allSubgoalsComplete && parentItem.status === 'pending') {
+                        // All subgoals complete - auto-check parent
+                        parentItem.status = 'complete';
+                        if (parentLi) {
+                            updateItemUI(parentLi, 'complete');
+                            // Trigger animation on parent
+                            if (enableAnimations.checked) {
+                                const parentCb = parentLi.querySelector('input[type="checkbox"]');
+                                if (parentCb) spawnParticlesFromEl(parentCb);
+                            }
+                            parentLi.classList.add('pulse');
+                            setTimeout(() => parentLi.classList.remove('pulse'), parseInt(completionSpeed.value, 10) + 50);
+                        }
+                    } else if (!allSubgoalsComplete && parentItem.status === 'complete') {
+                        // A subgoal was unchecked - uncheck parent too
+                        parentItem.status = 'pending';
+                        if (parentLi) {
+                            updateItemUI(parentLi, 'pending');
+                            parentLi.classList.add('warn');
+                            if (enableScanLine.checked) {
+                                parentLi.classList.remove('scan-effect-done', 'scan-effect-warn', 'scan-effect-progress');
+                                void parentLi.offsetWidth;
+                                parentLi.classList.add('scan-effect-warn');
+                            }
+                            setTimeout(() => parentLi.classList.remove('warn'), parseInt(completionSpeed.value, 10) + 50);
+                        }
+                    }
+                }
+            }
+        }
 
         updateItemUI(li, newStatus);
         
@@ -2791,12 +3129,148 @@ button.ctrl.clear-list-btn-red {
     });
     ['pointerup','pointercancel','pointerleave'].forEach(ev=>{ cb.addEventListener(ev,(e)=>{ stopParticleStream(e.pointerId); },{passive:true}); });
 
-    rm.onclick = ()=>{ 
-      const itemIndex = Array.from(list.children).indexOf(li);
-      lists[activeListIndex].items.splice(itemIndex, 1);
+    // Add subgoal button click handler (Educational or Wizard with subgoals enabled)
+    if (shouldShowSubgoalButton && !isSubgoal) {
+        const addSubgoalBtn = li.querySelector('.add-subgoal-btn');
+        if (addSubgoalBtn) {
+            addSubgoalBtn.onclick = () => {
+                // Calculate correct parent index
+                const allListItems = Array.from(list.children);
+                const thisIndex = allListItems.indexOf(li);
+                let parentItemCount = 0;
+                for (let i = 0; i <= thisIndex; i++) {
+                    if (!allListItems[i].classList.contains('subgoal')) {
+                        parentItemCount++;
+                    }
+                }
+                const actualParentIndex = parentItemCount - 1;
+                const parentItem = currentList.items[actualParentIndex];
+                
+                const subgoalText = prompt('Enter subgoal:');
+                if (subgoalText && subgoalText.trim()) {
+                    // Initialize subgoals array if it doesn't exist
+                    if (!parentItem.subgoals) {
+                        parentItem.subgoals = [];
+                    }
+                    
+                    // Check current list mode
+                    const hasMultiStageWithSubgoals = (currentList.type === 'Wizard Mode' && 
+                                                       currentList.wizardModifiers?.enableSubgoals && 
+                                                       currentList.wizardModifiers?.enableMultiStage);
+                    
+                    // Determine initial status for new subgoal
+                    let newSubgoalStatus = 'pending';
+                    if (hasMultiStageWithSubgoals && currentList.stages) {
+                        newSubgoalStatus = currentList.stages[0]; // First stage
+                    }
+                    
+                    // Add new subgoal
+                    const newSubgoal = { text: subgoalText.trim(), status: newSubgoalStatus };
+                    parentItem.subgoals.push(newSubgoal);
+                    
+                    // Recalculate parent status after adding subgoal
+                    if (hasMultiStageWithSubgoals && currentList.stages) {
+                        const lastStageIndex = currentList.stages.length - 1;
+                        const allSubgoalsComplete = parentItem.subgoals.every(sg => {
+                            const stageIndex = currentList.stages.indexOf(sg.status);
+                            return stageIndex === lastStageIndex;
+                        });
+                        
+                        // If parent was complete but now has a pending subgoal, move to In Progress
+                        const parentStageIndex = currentList.stages.indexOf(parentItem.status);
+                        if (parentStageIndex === lastStageIndex && !allSubgoalsComplete) {
+                            parentItem.status = currentList.stages[1]; // Move to In Progress
+                        }
+                    }
+                    
+                    // Re-render the entire list to show new subgoal
+                    renderList();
+                    saveData();
+                }
+            };
+        }
+    }
+
+    rm.onclick = ()=> { 
+      if (isSubgoal && itemData && itemData.parentIndex !== undefined) {
+          // Removing a subgoal
+          const parentItem = currentList.items[itemData.parentIndex];
+          if (parentItem && parentItem.subgoals) {
+              parentItem.subgoals.splice(itemData.subgoalIndex, 1);
+              
+              // Recalculate parent status after subgoal removal
+              const hasMultiStageWithSubgoals = (currentList.type === 'Wizard Mode' && 
+                                                 currentList.wizardModifiers?.enableSubgoals && 
+                                                 currentList.wizardModifiers?.enableMultiStage);
+              const hasSubgoalsFeature = (currentList.type === 'Educational') || 
+                                         (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableSubgoals);
+              
+              if (hasMultiStageWithSubgoals && currentList.stages) {
+                  const lastStageIndex = currentList.stages.length - 1;
+                  const firstStageIndex = 0;
+                  
+                  if (parentItem.subgoals.length === 0) {
+                      // No more subgoals - parent can be manually controlled again
+                      // Leave parent at current stage
+                  } else {
+                      // Check remaining subgoals
+                      const allSubgoalsComplete = parentItem.subgoals.every(sg => {
+                          const stageIndex = currentList.stages.indexOf(sg.status);
+                          return stageIndex === lastStageIndex;
+                      });
+                      
+                      const anySubgoalProgressed = parentItem.subgoals.some(sg => {
+                          const stageIndex = currentList.stages.indexOf(sg.status);
+                          return stageIndex > firstStageIndex;
+                      });
+                      
+                      const allSubgoalsPending = parentItem.subgoals.every(sg => {
+                          const stageIndex = currentList.stages.indexOf(sg.status);
+                          return stageIndex === firstStageIndex;
+                      });
+                      
+                      // Update parent based on remaining subgoals
+                      if (allSubgoalsComplete) {
+                          parentItem.status = currentList.stages[lastStageIndex]; // Complete
+                      } else if (anySubgoalProgressed) {
+                          parentItem.status = currentList.stages[1]; // In Progress
+                      } else if (allSubgoalsPending) {
+                          parentItem.status = currentList.stages[firstStageIndex]; // Pending
+                      }
+                  }
+              } else if (hasSubgoalsFeature) {
+                  // Educational mode - recalculate
+                  if (parentItem.subgoals.length === 0) {
+                      // No more subgoals
+                  } else {
+                      const allSubgoalsComplete = parentItem.subgoals.every(sg => sg.status === 'complete');
+                      if (allSubgoalsComplete) {
+                          parentItem.status = 'complete';
+                      } else {
+                          parentItem.status = 'pending';
+                      }
+                  }
+              }
+          }
+      } else {
+          // Removing a parent item (calculate correct index)
+          const allListItems = Array.from(list.children);
+          const thisIndex = allListItems.indexOf(li);
+          let parentItemCount = 0;
+          for (let i = 0; i <= thisIndex; i++) {
+              if (!allListItems[i].classList.contains('subgoal')) {
+                  parentItemCount++;
+              }
+          }
+          const actualIndex = parentItemCount - 1;
+          currentList.items.splice(actualIndex, 1);
+      }
       
       streams = streams.filter(s=>!(s.el===cb)); 
-      animateRemove(li, saveData); 
+      animateRemove(li, () => {
+          renderList(); // Re-render to update indices and parent status
+          saveData();
+      }); 
     };
     li.ondragstart = e=>{ li.classList.add('dragging'); e.dataTransfer.setData('text/plain',''); };
     li.ondragend = ()=> li.classList.remove('dragging');
@@ -2806,7 +3280,12 @@ button.ctrl.clear-list-btn-red {
     if(input.value.trim()){ 
       const currentList = lists[activeListIndex];
       let initialStatus = 'pending';
-      if (currentList.type === 'Workflow' && currentList.stages && currentList.stages.length > 0) {
+      
+      // Check if multi-stage is enabled (Workflow or Wizard with multi-stage)
+      const hasMultiStage = (currentList.type === 'Workflow') || 
+                           (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableMultiStage);
+      
+      if (hasMultiStage && currentList.stages && currentList.stages.length > 0) {
           initialStatus = currentList.stages[0];
       }
       const newItem = { text: input.value.trim(), status: initialStatus };
@@ -2851,7 +3330,7 @@ button.ctrl.clear-list-btn-red {
     applyMaterialStyle();
     applyLogoTheme();
     applyGlassBorderOpacity(); // Re-apply border for theme change
-    resetCompletionEffectSettings(); // Reset colors to match theme
+    applyCompletionEffectSettings(); // Re-apply user's custom completion colors (don't reset them)
     saveData();
   };
 
@@ -2916,8 +3395,8 @@ button.ctrl.clear-list-btn-red {
 
   function collectSettings(){
     return {
-      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked },
-      wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value },
+      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, trail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value },
+      wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value, autoRotate: windAutoRotate.checked, rotateSpeed: windRotateSpeed.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
       completion: { checkedColor: completionCheckedColor.value, uncheckedColor: completionUncheckedColor.value, inProgressColor: completionInProgressColor.value, glow: completionGlow.value, speed: completionSpeed.value, scanAngle: scanAngle.value },
@@ -2936,10 +3415,15 @@ button.ctrl.clear-list-btn-red {
           shapeSelect.value = s.animations.shape; bubbleOutline.value = s.animations.outline; colorMode.value = s.animations.colorMode;
           bubbleColor.value = s.animations.color; bubbleStartColor.value = s.animations.startColor; bubbleEndColor.value = s.animations.endColor;
           containParticles.checked = s.animations.contain;
+          enableTrail.checked = s.animations.trail ?? false;
+          trailLength.value = s.animations.trailLength ?? 0.5;
+          trailThickness.value = s.animations.trailThickness ?? 0.3;
       }
       if (s.wind) {
           enableWind.checked = s.wind.enabled; windPattern.value = s.wind.pattern;
           windIntensity.value = s.wind.intensity; windDirection.value = s.wind.direction;
+          windAutoRotate.checked = s.wind.autoRotate ?? false;
+          windRotateSpeed.value = s.wind.rotateSpeed ?? 30;
       }
       if (s.toggles) {
           enableAnimations.checked = s.toggles.animations; enableEndless.checked = s.toggles.endless;
@@ -3002,7 +3486,14 @@ button.ctrl.clear-list-btn-red {
     const pctOf=(el)=> Math.round(((parseFloat(el.value)-parseFloat(el.min))/(parseFloat(el.max)-parseFloat(el.min)))*100); 
     pct.anim.textContent=pctOf(animIntensity)+'%'; pct.escale.textContent=pctOf(emissionScale)+'%'; pct.hold.textContent=pctOf(holdRate)+'%'; 
     pct.size.textContent=pctOf(bubbleSize)+'%'; pct.speed.textContent=pctOf(bubbleSpeed)+'%';
-    pct.windI.textContent=pctOf(windIntensity)+'%'; pct.windDir.textContent=pctOf(windDirection)+'%';
+    if(pct.trailLength) pct.trailLength.textContent=trailLength.value+'s';
+    if(pct.trailThickness) pct.trailThickness.textContent=pctOf(trailThickness)+'%';
+    pct.windI.textContent=pctOf(windIntensity)+'%'; 
+    // Only update windDir from slider if auto-rotate is off (auto-rotate updates it in mainLoop)
+    if (!windAutoRotate.checked) {
+      pct.windDir.textContent = Math.round(windDirection.value) + '°';
+    }
+    if(pct.windRotateSpeed) pct.windRotateSpeed.textContent=pctOf(windRotateSpeed)+'%';
     pct.glass.textContent=Math.max(10, Math.min(100, parseInt(glassOpacity.value,10)||75)) + '%'; 
     pct.slide.textContent = slideSpeed.value + 'ms';
     pct.completionGlow.textContent = completionGlow.value + 'px';
@@ -3169,6 +3660,25 @@ button.ctrl.clear-list-btn-red {
     animationPresetSelect.selectedIndex = 0;
   }
 
+  function updateExistingParticles() {
+    // Update existing particles with new settings in real-time
+    const settings = getCommonSettings();
+    
+    particles.forEach(p => {
+      // Update shape
+      p.shape = settings.shape;
+      
+      // Update color mode and colors
+      p.mode = settings.mode;
+      p.colorSingle = settings.cSingle;
+      p.colorStart = settings.cStart;
+      p.colorEnd = settings.cEnd;
+      
+      // Size changes affect visual rendering (p.size stays as is for consistency)
+      // Trails are controlled by global enableTrail checkbox, no per-particle update needed
+    });
+  }
+
   function resetAnimationToDefault() {
     if (!enableAnimations.checked) {
         enableAnimations.checked = true;
@@ -3236,6 +3746,71 @@ button.ctrl.clear-list-btn-red {
     ctx.closePath();
   }
 
+  function getShapeCollisionRadius(shape, size) {
+    switch(shape){
+      case 'circle': return size;
+      case 'square': return size * Math.SQRT2; // diagonal distance
+      case 'triangle': return size * 1.1547; // circumradius of equilateral triangle
+      case 'star': return size; // outer radius
+      case 'heart': return size * 0.096; // approximate based on the heart equation
+      case 'hexagon': return size;
+      case 'boomerang': return size * 1.05; // approximate max extent
+      default: return size;
+    }
+  }
+
+  function getShapePhysicsProperties(shape) {
+    switch(shape){
+      case 'circle':
+        return { restitution: 0.9, rotationalInertia: 2.0 }; // High bounce, resists spinning (like a ball)
+      case 'square':
+        return { restitution: 0.7, rotationalInertia: 1.0 }; // Moderate bounce, spins easily (like a dice)
+      case 'triangle':
+        return { restitution: 0.6, rotationalInertia: 0.8 }; // Lower bounce, spins moderately
+      case 'star':
+        return { restitution: 0.5, rotationalInertia: 0.6 }; // Low bounce, spins easily (complex shape)
+      case 'heart':
+        return { restitution: 0.8, rotationalInertia: 1.2 }; // Good bounce, moderate spin
+      case 'hexagon':
+        return { restitution: 0.75, rotationalInertia: 1.1 }; // Decent bounce, moderate spin
+      case 'boomerang':
+        return { restitution: 0.4, rotationalInertia: 0.5 }; // Low bounce, spins very easily
+      default:
+        return { restitution: 0.8, rotationalInertia: 1.0 }; // Default moderate properties
+    }
+  }
+
+  function getStableOrientations(shape) {
+    // Return angles (in radians) where shapes naturally want to rest
+    // These represent the orientations where flat faces are downward
+    switch(shape){
+      case 'square':
+        // 4 stable orientations (90-degree rotations)
+        return [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+      case 'triangle':
+        // 3 stable orientations (120-degree rotations)
+        return [0, 2*Math.PI/3, 4*Math.PI/3];
+      case 'hexagon':
+        // 6 stable orientations (60-degree rotations)
+        return [0, Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3];
+      case 'star':
+        // Stars have many possible stable orientations (points down)
+        // For a 5-pointed star, stable when a point is down
+        return [0, 2*Math.PI/5, 4*Math.PI/5, 6*Math.PI/5, 8*Math.PI/5];
+      case 'heart':
+        // Hearts are more complex, but generally stable when flat
+        return [0, Math.PI]; // Two main orientations
+      case 'boomerang':
+        // Boomerangs are unstable, fewer stable positions
+        return [0, Math.PI]; // Two main orientations
+      case 'circle':
+        // Circles don't have preferred orientations
+        return [0]; // Any orientation is fine
+      default:
+        return [0]; // Default single stable orientation
+    }
+  }
+
   function drawParticle(ctx, p){
     const scaledSize = p.size * p.pushScale;
     ctx.save();
@@ -3243,8 +3818,17 @@ button.ctrl.clear-list-btn-red {
     ctx.rotate(p.rot || 0);
     
     if (p.animType === 'energy') {
-        ctx.lineWidth = scaledSize;
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(p.vx, p.vy); ctx.stroke();
+        // Energy can use shapes or lines
+        // Draw a trail from center to velocity vector (line mode)
+        ctx.lineWidth = scaledSize * 0.3;
+        ctx.beginPath(); 
+        ctx.moveTo(0, 0); 
+        ctx.lineTo(p.vx * 2, p.vy * 2); // Extended trail based on velocity
+        ctx.stroke();
+        
+        // Also draw the actual particle shape at the end
+        defineShapePath(ctx, p.shape, scaledSize);
+        ctx.fill();
     } else {
         defineShapePath(ctx, p.shape, scaledSize);
         ctx.fill();
@@ -3276,7 +3860,18 @@ button.ctrl.clear-list-btn-red {
   /* ---------- Particle Creation & Spawning ---------- */
   function createParticle(x, y, settings) {
     if (particles.length >= PARTICLE_CAP) return null;
-    const p = { x, y, ox: x, oy: y, vx: settings.vx ?? 0, vy: settings.vy ?? 0, size: Math.max(1, (settings.size ?? 6) * (0.85 + Math.random() * 0.3)), life: settings.life, lifeMax: settings.life, mode: settings.mode, colorSingle: settings.cSingle, colorStart: settings.cStart, colorEnd: settings.cEnd, shape: settings.shape || 'circle', rot: Math.random() * Math.PI * 2, tieJitter: Math.random() * 120, pushScale: 1, animType: settings.animType, particleType: settings.particleType || 'default', randomOffset: Math.random() * 360 };
+    const p = { x, y, ox: x, oy: y, vx: settings.vx ?? 0, vy: settings.vy ?? 0, size: Math.max(1, (settings.size ?? 6) * (0.85 + Math.random() * 0.3)), life: settings.life, lifeMax: settings.life, mode: settings.mode, colorSingle: settings.cSingle, colorStart: settings.cStart, colorEnd: settings.cEnd, shape: settings.shape || 'circle', rot: Math.random() * Math.PI * 2, tieJitter: Math.random() * 120, pushScale: 1, animType: settings.animType, particleType: settings.particleType || 'default', randomOffset: Math.random() * 360, rotSpeed: 0, trail: [] };
+    
+    // Give all particles an initial random rotation based on initial velocity
+    // This simulates the "throw" of a dice - each particle starts with slightly different spin
+    const initialSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+    if (initialSpeed > 0.1) {
+        // Initial rotation varies based on shape and throw speed
+        const shapeProps = getShapePhysicsProperties(settings.shape || 'circle');
+        const initialSpin = (Math.random() - 0.5) * initialSpeed * 0.02 / shapeProps.rotationalInertia;
+        p.rotSpeed = initialSpin;
+    }
+    
     if (p.animType === 'boomerang') { p.rotSpeed = (Math.random() - 0.5) * 0.4; }
     particles.push(p);
     return p;
@@ -3322,7 +3917,7 @@ button.ctrl.clear-list-btn-red {
   function spawnFireworksAtPoint(cx, cy) {
       const s = getCommonSettings(), count = Math.floor(s.density * 0.5 * Math.max(0, s.scale)) + 1;
       for (let i = 0; i < count; i++) {
-          const p = createParticle(cx, cy, { ...s, life: s.lifeFrames * 0.5, animType: 'fireworks', particleType: 'rocket', shape: 'circle', size: s.size * 0.5 });
+          const p = createParticle(cx, cy, { ...s, life: s.lifeFrames * 0.5, animType: 'fireworks', particleType: 'rocket', shape: pickShape(), size: s.size * 0.5 });
           if (!p) break;
           p.vx = (Math.random() - 0.5) * s.speed * 0.5; p.vy = -s.speed * (1.5 + Math.random() * 0.5);
       }
@@ -3332,7 +3927,8 @@ button.ctrl.clear-list-btn-red {
       const s = getCommonSettings(), count = Math.floor(s.density * 2 * Math.max(0, s.scale)), spread = 2;
       for (let i = 0; i < count; i++) {
           const pt = { x: cx + (Math.random() - 0.5) * spread * 2, y: cy + (Math.random() - 0.5) * spread * 2 };
-          const p = createParticle(pt.x, pt.y, { ...s, life: s.lifeFrames * 0.4, animType: 'energy', size: s.size * 0.3 });
+          // Use full user settings for life and size, and respect shape selection
+          const p = createParticle(pt.x, pt.y, { ...s, life: s.lifeFrames, animType: 'energy', size: s.size, shape: pickShape() });
           if (!p) break;
           const angle = Math.random() * Math.PI * 2, force = s.speed * 2.5;
           p.vx = Math.cos(angle) * force; p.vy = Math.sin(angle) * force;
@@ -3411,18 +4007,63 @@ button.ctrl.clear-list-btn-red {
   function stopParticleStream(pointerId){ streams.forEach(s=>{ if(s.pointerId===pointerId) s.active=false; }); }
 
   /* ---------- Wind & Physics ---------- */
-  function syncWindControls(){ windDirectionRow.style.display = ['inward','push1','push2','vortex','crosswind'].includes(windPattern.value)?'none':'flex'; }
+  function syncWindControls(){ 
+    // All wind patterns now respect direction, so always show when auto-rotate is enabled
+    // Or always show for manual control since all patterns are affected
+    windDirectionRow.style.display = 'flex';
+  }
   function windField(p){ 
     if(!enableWind.checked) return {fx:0, fy:0, gScale:1, push:0}; 
     const intensity = (parseInt(windIntensity.value,10)||0)/100; if(intensity<=0) return {fx:0, fy:0, gScale:1, push:0}; 
     const base = 0.25 * (0.5 + intensity*1.5), w = windPattern.value; 
     const screenW = bubblesCanvas.width / (window.devicePixelRatio || 1);
     const screenH = bubblesCanvas.height / (window.devicePixelRatio || 1);
-    if(w==='inward'){ const dx = screenW/2 - p.x, dy = screenH/2 - p.y, len = Math.hypot(dx,dy) || 1; return { fx: (dx/len)*base, fy: (dy/len)*base, gScale: Math.max(0.6, 1 - 0.35*intensity), push:0 }; }
-    if(w==='push1' || w==='push2'){ const dx = p.x - (p.ox ?? p.x), dy = p.y - (p.oy ?? p.y), r = Math.hypot(dx,dy) || 1, rx = dx/r, ry = dy/r, tx = ry, ty = -rx, spiral = base * (w==='push2' ? 2.0 : 1.3), swirl = (0.7 + 0.5*Math.sin(t*1.3 + r*0.04)); return {fx: tx*spiral*swirl + rx*base*0.3, fy: ty*spiral*swirl + ry*base*0.3, gScale: Math.max(0.4, 1 - 0.55*intensity), push: (w==='push2' ? 0.022 : 0.012) * (0.5 + intensity*1.5)};}
-    if(w==='vortex'){ const dx = screenW/2 - p.x, dy = screenH/2 - p.y; return { fx: dy * 0.005 * intensity, fy: -dx * 0.005 * intensity, gScale: 1, push: 0 }; }
-    if(w==='crosswind'){ return { fx: base * 3, fy: 0, gScale: 1, push: 0 }; }
-    const ang = (parseFloat(windDirection.value)||0) * Math.PI/180, dirx = Math.cos(ang), diry = Math.sin(ang);
+    
+    // Use auto-rotating angle if enabled, otherwise use manual slider
+    const ang = windAutoRotate.checked ? (windRotationAngle * Math.PI / 180) : ((parseFloat(windDirection.value)||0) * Math.PI/180);
+    const dirx = Math.cos(ang), diry = Math.sin(ang);
+    
+    // All patterns now respect auto-rotation and intensity
+    if(w==='inward'){ 
+        // Pull toward center, but rotated by current wind direction
+        const dx = screenW/2 - p.x, dy = screenH/2 - p.y, len = Math.hypot(dx,dy) || 1;
+        const inwardX = (dx/len), inwardY = (dy/len);
+        // Rotate the inward force by wind direction
+        const rotatedX = inwardX * Math.cos(ang) - inwardY * Math.sin(ang);
+        const rotatedY = inwardX * Math.sin(ang) + inwardY * Math.cos(ang);
+        return { fx: rotatedX * base, fy: rotatedY * base, gScale: Math.max(0.6, 1 - 0.35*intensity), push:0 }; 
+    }
+    
+    if(w==='push1' || w==='push2'){ 
+        const dx = p.x - (p.ox ?? p.x), dy = p.y - (p.oy ?? p.y), r = Math.hypot(dx,dy) || 1, rx = dx/r, ry = dy/r;
+        // Perpendicular force (spiral)
+        let tx = ry, ty = -rx;
+        // Rotate by wind direction
+        const rotatedTx = tx * Math.cos(ang) - ty * Math.sin(ang);
+        const rotatedTy = tx * Math.sin(ang) + ty * Math.cos(ang);
+        const spiral = base * (w==='push2' ? 2.0 : 1.3), swirl = (0.7 + 0.5*Math.sin(t*1.3 + r*0.04)); 
+        return {fx: rotatedTx*spiral*swirl + rx*base*0.3, fy: rotatedTy*spiral*swirl + ry*base*0.3, gScale: Math.max(0.4, 1 - 0.55*intensity), push: (w==='push2' ? 0.022 : 0.012) * (0.5 + intensity*1.5)};
+    }
+    
+    if(w==='vortex'){ 
+        // Circular vortex around center, affected by intensity and rotation
+        const dx = screenW/2 - p.x, dy = screenH/2 - p.y;
+        // Perpendicular force (clockwise vortex)
+        let vortexX = dy * 0.005, vortexY = -dx * 0.005;
+        // Scale by intensity
+        vortexX *= intensity * 3;
+        vortexY *= intensity * 3;
+        // Rotate by wind direction
+        const rotatedVx = vortexX * Math.cos(ang) - vortexY * Math.sin(ang);
+        const rotatedVy = vortexX * Math.sin(ang) + vortexY * Math.cos(ang);
+        return { fx: rotatedVx, fy: rotatedVy, gScale: 1, push: 0 }; 
+    }
+    
+    if(w==='crosswind'){ 
+        // Horizontal wind, now respects direction and intensity
+        return { fx: dirx * base * 3, fy: diry * base * 3, gScale: 1, push: 0 }; 
+    }
+    
     if(w==='steady'){ return { fx: dirx * base, fy: diry * base * 0.6, gScale: Math.max(0.7, 1 - 0.25*intensity), push:0 }; }
     if(w==='sine'){ const osc = Math.sin(t*1.5 + p.x*0.004 + p.y*0.003); return { fx: dirx * base * osc, fy: diry * base * osc, gScale: Math.max(0.75, 1 - 0.2*intensity), push:0 }; }
     if(w==='gusts'){ const g = (Math.sin(t*0.9 + p.x*0.01)+Math.sin(t*1.7+p.y*0.01)+Math.sin(t*0.53+2.1))/3, mag = (0.1 + 0.9*Math.abs(g)**2) * base * 1.5; return { fx: dirx * mag, fy: diry * mag * 0.7, gScale: Math.max(0.7, 1 - 0.22*intensity*(0.5+0.5*Math.abs(g))), push:0 }; }
@@ -3444,7 +4085,7 @@ button.ctrl.clear-list-btn-red {
   }
   function saveCurrentPattern() {
       const name = patternNameInput.value.trim(); if (!name) { alert('Please enter a name for the pattern.'); return; }
-      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, containParticles: containParticles.checked } };
+      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, enableTrail: enableTrail.checked, trailLength: trailLength.value, trailThickness: trailThickness.value } };
       savedPatterns.push(newPattern); patternNameInput.value = ''; renderPatternsList(); saveData();
   }
   function loadPattern(id) {
@@ -3460,7 +4101,9 @@ button.ctrl.clear-list-btn-red {
       shapeSelect.value = s.shape; bubbleOutline.value = s.bubbleOutline; colorMode.value = s.colorMode;
       bubbleColor.value = s.bubbleColor; bubbleStartColor.value = s.bubbleStartColor; bubbleEndColor.value = s.bubbleEndColor;
       enableWind.checked = s.enableWind; windPattern.value = s.windPattern; windIntensity.value = s.windIntensity; windDirection.value = s.windDirection;
+      windAutoRotate.checked = s.windAutoRotate ?? false; windRotateSpeed.value = s.windRotateSpeed ?? 30;
       containParticles.checked = s.containParticles;
+      enableTrail.checked = s.enableTrail ?? false; trailLength.value = s.trailLength ?? 0.5; trailThickness.value = s.trailThickness ?? 0.3;
       applyAllSettings();
       
       populatePresetSelector(s.animationStyle);
@@ -3541,6 +4184,16 @@ button.ctrl.clear-list-btn-red {
       streams = streams.filter(st=>st.active && document.body.contains(st.el));
       for(const st of streams){ if(particles.length>=PARTICLE_CAP) break; spawnParticlesFromEl(st.el); }
     }
+    
+    // Update auto-rotating wind direction
+    if (windAutoRotate.checked && enableWind.checked) {
+      const rotateSpeed = (parseInt(windRotateSpeed.value, 10) || 30) / 100;
+      windRotationAngle = (windRotationAngle + rotateSpeed) % 360;
+      // Update the direction slider to show current rotation angle
+      windDirection.value = Math.round(windRotationAngle);
+      pct.windDir.textContent = Math.round(windRotationAngle) + '°';
+    }
+    
     ctxBubbles.clearRect(0,0,bubblesCanvas.width,bubblesCanvas.height);
     const dpr = window.devicePixelRatio || 1, screenW = bubblesCanvas.width/dpr, screenH = bubblesCanvas.height/dpr;
     for(let i=particles.length-1;i>=0;i--){
@@ -3559,23 +4212,200 @@ button.ctrl.clear-list-btn-red {
           p.vx += dx * returnForce; p.vy += dy * returnForce;
           p.vx *= 0.98; p.vy *= 0.98;
       }
-      p.x += p.vx; p.y += p.vy; p.life--;
+      // Apply general damping for settling behavior
+      const totalSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (totalSpeed < 0.1) {
+          // Very slow particles lose energy quickly (settling)
+          p.vx *= 0.8;
+          p.vy *= 0.8;
+          if (totalSpeed < 0.01) {
+              p.vx = 0;
+              p.vy = 0;
+          }
+      }
+
+      // Handle containment BEFORE moving the particle
+      if (containParticles.checked) {
+          const scaledSize = p.size * p.pushScale;
+          const collisionRadius = getShapeCollisionRadius(p.shape, scaledSize);
+          const shapeProperties = getShapePhysicsProperties(p.shape);
+          const restitution = shapeProperties.restitution;
+
+          let newX = p.x + p.vx;
+          let newY = p.y + p.vy;
+
+          // Handle bottom boundary (most important for gravity)
+          if (newY + collisionRadius > screenH) {
+              // Simple bounce: reverse vertical velocity with energy loss
+              const bounceEnergy = Math.abs(p.vy) * restitution;
+              p.vy = -bounceEnergy;
+              newY = screenH - collisionRadius;
+
+              // Stop very slow bounces (settling behavior)
+              if (bounceEnergy < 0.05) {
+                  p.vy = 0;
+                  p.vx *= 0.1; // Kill horizontal movement too
+              } else {
+                  // Realistic dice physics: chaotic tumbling based on impact conditions
+                  const rotationalInertia = shapeProperties.rotationalInertia;
+                  const totalSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                  
+                  // Impact angle affects spin (dice landing on corners spin differently than edges)
+                  const impactAngle = Math.atan2(p.vy, p.vx);
+                  const currentRotation = p.rot || 0;
+                  
+                  // Calculate "contact point" based on current rotation and impact angle
+                  // This simulates which part of the shape hits the ground first
+                  const contactOffset = Math.sin(currentRotation + impactAngle) * collisionRadius;
+                  
+                  // Torque is based on:
+                  // 1. Which part of the shape hits (contact offset)
+                  // 2. Horizontal velocity (creates rolling motion)
+                  // 3. Impact speed (harder hits create more spin)
+                  const torqueFromContact = contactOffset * totalSpeed * 0.015 / rotationalInertia;
+                  const torqueFromHorizontal = p.vx * 0.08 / rotationalInertia;
+                  const torqueFromImpact = bounceEnergy * (Math.random() - 0.5) * 0.05 / rotationalInertia;
+                  
+                  // Combine all torque sources (chaos theory in action)
+                  const totalTorque = torqueFromContact + torqueFromHorizontal + torqueFromImpact;
+                  p.rotSpeed = (p.rotSpeed || 0) + totalTorque;
+                  
+                  // Small variations in bounce angle (surface imperfections)
+                  const angleVariation = (Math.random() - 0.5) * 0.1;
+                  p.vx += Math.sin(impactAngle) * angleVariation * totalSpeed;
+                  
+                  // Apply friction to horizontal velocity after bounce (like rolling on ground)
+                  p.vx *= 0.92;
+              }
+          }
+          // Handle top boundary
+          else if (newY - collisionRadius < 0 && p.vy < 0) {
+              p.vy = Math.abs(p.vy) * restitution;
+              newY = collisionRadius;
+              
+              // Chaotic spin on top hits
+              const rotationalInertia = shapeProperties.rotationalInertia;
+              const totalSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+              const impactAngle = Math.atan2(p.vy, p.vx);
+              const contactOffset = Math.sin((p.rot || 0) + impactAngle) * collisionRadius;
+              
+              const torqueFromContact = -contactOffset * totalSpeed * 0.015 / rotationalInertia;
+              const torqueFromHorizontal = -p.vx * 0.08 / rotationalInertia;
+              const randomTorque = (Math.random() - 0.5) * totalSpeed * 0.04 / rotationalInertia;
+              
+              p.rotSpeed = (p.rotSpeed || 0) + torqueFromContact + torqueFromHorizontal + randomTorque;
+          }
+
+          // Handle left boundary
+          if (newX - collisionRadius < 0) {
+              p.vx = Math.abs(p.vx) * restitution;
+              newX = collisionRadius;
+              
+              // Chaotic spin on left wall hits
+              const rotationalInertia = shapeProperties.rotationalInertia;
+              const totalSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+              const impactAngle = Math.atan2(p.vy, p.vx);
+              const contactOffset = Math.cos((p.rot || 0) + impactAngle) * collisionRadius;
+              
+              const torqueFromContact = contactOffset * totalSpeed * 0.015 / rotationalInertia;
+              const torqueFromVertical = p.vy * 0.08 / rotationalInertia;
+              const randomTorque = (Math.random() - 0.5) * totalSpeed * 0.04 / rotationalInertia;
+              
+              p.rotSpeed = (p.rotSpeed || 0) + torqueFromContact + torqueFromVertical + randomTorque;
+          }
+          // Handle right boundary
+          else if (newX + collisionRadius > screenW) {
+              p.vx = -Math.abs(p.vx) * restitution;
+              newX = screenW - collisionRadius;
+              
+              // Chaotic spin on right wall hits
+              const rotationalInertia = shapeProperties.rotationalInertia;
+              const totalSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+              const impactAngle = Math.atan2(p.vy, p.vx);
+              const contactOffset = Math.cos((p.rot || 0) + impactAngle) * collisionRadius;
+              
+              const torqueFromContact = -contactOffset * totalSpeed * 0.015 / rotationalInertia;
+              const torqueFromVertical = -p.vy * 0.08 / rotationalInertia;
+              const randomTorque = (Math.random() - 0.5) * totalSpeed * 0.04 / rotationalInertia;
+              
+              p.rotSpeed = (p.rotSpeed || 0) + torqueFromContact + torqueFromVertical + randomTorque;
+          }
+
+          // Update position
+          p.x = newX;
+          p.y = newY;
+      } else {
+          // Normal movement when containment is disabled
+          p.x += p.vx;
+          p.y += p.vy;
+      }
+
+      // Store position in trail history if trails are enabled
+      if (enableTrail.checked) {
+          p.trail.push({ x: p.x, y: p.y, time: t });
+          // Remove old trail positions based on trail length setting
+          const trailDuration = parseFloat(trailLength.value) || 0.5;
+          p.trail = p.trail.filter(pos => (t - pos.time) < trailDuration);
+      } else {
+          p.trail = []; // Clear trail if disabled
+      }
+
+      p.life--;
+
       if (p.particleType === 'rocket' && p.vy >= 0) {
           const s = getCommonSettings(), count = Math.floor(s.density * 2 * Math.max(0, s.scale));
           for (let j = 0; j < count; j++) {
-              const spark = createParticle(p.x, p.y, { ...s, life: s.lifeFrames * (0.5 + Math.random()*0.5), animType: 'fireworks', particleType: 'spark', shape: 'circle', size: s.size * 0.3 });
+              const spark = createParticle(p.x, p.y, { ...s, life: s.lifeFrames * (0.5 + Math.random()*0.5), animType: 'fireworks', particleType: 'spark', shape: pickShape(), size: s.size * 0.3 });
               if (!spark) break;
               const angle = Math.random() * Math.PI * 2, force = Math.random() * s.speed * 1.2;
               spark.vx = Math.cos(angle) * force; spark.vy = Math.sin(angle) * force;
           }
           p.life = 0;
       }
-      if (containParticles.checked) {
-          const scaledSize = p.size * p.pushScale, damp = -0.65;
-          if (p.x > screenW - scaledSize) { p.x = screenW - scaledSize; p.vx *= damp; }
-          if (p.x < scaledSize) { p.x = scaledSize; p.vx *= damp; }
-          if (p.y > screenH - scaledSize) { p.y = screenH - scaledSize; p.vy *= damp; }
-          if (p.y < scaledSize && p.vy < 0) { p.y = scaledSize; p.vy *= damp; }
+
+      // Apply rotation physics - ALL particles can rotate
+      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      
+      // Air resistance affects rotation (tumbling through air)
+      if (speed > 0.5 && p.shape !== 'circle') {
+          // Fast-moving non-circular shapes experience air turbulence
+          const airTurbulence = (Math.random() - 0.5) * speed * 0.001;
+          p.rotSpeed = (p.rotSpeed || 0) + airTurbulence;
+      }
+      
+      if (p.rotSpeed !== undefined && p.rotSpeed !== 0) {
+          // Stronger damping when particle is near rest (settling behavior)
+          const rotationalDamping = speed < 0.1 ? 0.85 : 0.98; // Much stronger damping when slow
+          p.rotSpeed *= rotationalDamping;
+
+          // Add orientation stability - shapes tend to settle on stable faces
+          if (Math.abs(p.rotSpeed) < 0.01 && speed < 0.5) {
+              // Snap to nearest stable orientation based on shape
+              const stableAngles = getStableOrientations(p.shape);
+              let nearestAngle = stableAngles[0];
+              let minDiff = Math.PI * 2; // Start with max difference
+
+              // Normalize current rotation to 0-2π range
+              const normalizedRot = ((p.rot % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+
+              for (const angle of stableAngles) {
+                  const diff = Math.abs(normalizedRot - angle);
+                  const wrappedDiff = Math.min(diff, Math.PI * 2 - diff); // Handle wraparound
+                  if (wrappedDiff < minDiff) {
+                      minDiff = wrappedDiff;
+                      nearestAngle = angle;
+                  }
+              }
+
+              // Gradually snap to stable orientation
+              if (minDiff > 0.05) {
+                  const rotDiff = nearestAngle - normalizedRot;
+                  const shortestRotation = rotDiff > Math.PI ? rotDiff - Math.PI * 2 : (rotDiff < -Math.PI ? rotDiff + Math.PI * 2 : rotDiff);
+                  p.rot += shortestRotation * 0.15;
+              }
+          }
+
+          p.rot += p.rotSpeed;
       }
       const lifeRatio = p.life / (p.lifeMax || 1);
       ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
@@ -3587,6 +4417,29 @@ button.ctrl.clear-list-btn-red {
       else if(p.mode==='party'){ const hue = (t * 300 + p.randomOffset) % 360; drawColor = hslToHex(hue, 100, 55); }
       else { drawColor = p.colorSingle; }
       ctxBubbles.fillStyle = drawColor; ctxBubbles.strokeStyle = drawColor;
+      
+      // Draw trail if enabled
+      if (enableTrail.checked && p.trail && p.trail.length > 1) {
+          const trailDuration = parseFloat(trailLength.value) || 0.5;
+          const thicknessMult = parseFloat(trailThickness.value) || 0.3;
+          ctxBubbles.beginPath();
+          for (let i = 0; i < p.trail.length; i++) {
+              const trailPos = p.trail[i];
+              const age = t - trailPos.time;
+              const trailAlpha = Math.max(0, 1 - (age / trailDuration));
+              
+              if (i === 0) {
+                  ctxBubbles.moveTo(trailPos.x, trailPos.y);
+              } else {
+                  ctxBubbles.lineTo(trailPos.x, trailPos.y);
+              }
+          }
+          ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
+          ctxBubbles.globalAlpha = ctxBubbles.globalAlpha * 0.6;
+          ctxBubbles.stroke();
+          ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
+      }
+      
       drawParticle(ctxBubbles, p);
       if(p.life<=0 || (!containParticles.checked && (p.x<-80 || p.x>screenW+80 || p.y<-120 || p.y>screenH+120))){ particles.splice(i,1); }
     }
@@ -3617,7 +4470,7 @@ button.ctrl.clear-list-btn-red {
   /* ---------- Event Wiring ---------- */
   window.addEventListener('resize', ()=>{ resizeCanvas(bubblesCanvas); resizeCanvas(ambianceCanvas); applyAmbianceSettings(); updateTabScrollIndicators(); });
   
-  const animControls = [animIntensity, emissionScale, holdRate, bubbleSize, bubbleSpeed, bubbleLifeSlider, bubbleLifeSeconds, shapeSelect, bubbleOutline, colorMode, bubbleColor, bubbleStartColor, bubbleEndColor, enableWind, windPattern, windIntensity, windDirection, containParticles];
+  const animControls = [animIntensity, emissionScale, holdRate, bubbleSize, bubbleSpeed, bubbleLifeSlider, bubbleLifeSeconds, shapeSelect, bubbleOutline, colorMode, bubbleColor, bubbleStartColor, bubbleEndColor, enableWind, windPattern, windIntensity, windDirection, windAutoRotate, windRotateSpeed, containParticles, enableTrail, trailLength, trailThickness];
   
   animControls.forEach(el => {
     const eventType = (el.type === 'range' || el.type === 'number' || el.type === 'color') ? 'input' : 'change';
@@ -3634,6 +4487,24 @@ button.ctrl.clear-list-btn-red {
             syncColorControlVisibility();
         }
 
+        if (el.id === 'windAutoRotate') {
+            windRotateSpeedRow.style.display = windAutoRotate.checked ? 'flex' : 'none';
+            syncWindControls(); // Update direction slider visibility
+        }
+
+        if (el.id === 'enableTrail') {
+            trailLengthRow.style.display = enableTrail.checked ? 'flex' : 'none';
+            trailThicknessRow.style.display = enableTrail.checked ? 'flex' : 'none';
+            if (enableTrail.checked) {
+                bubbleOutline.value = 'none'; // Auto-set outline to none
+            }
+        }
+
+        // Update existing particles when certain settings change
+        if (['shapeSelect', 'colorMode', 'bubbleColor', 'bubbleStartColor', 'bubbleEndColor', 'bubbleOutline'].includes(el.id)) {
+            updateExistingParticles();
+        }
+
         updatePercentages();
         switchToCustomPreset();
     });
@@ -3641,7 +4512,7 @@ button.ctrl.clear-list-btn-red {
     el.addEventListener('change', saveData);
   });
 
-  document.querySelectorAll('input[type=range]:not(#animIntensity, #emissionScale, #holdRate, #bubbleSize, #bubbleSpeed, #bubbleLifeSlider, #windIntensity, #windDirection)').forEach(el=> el.addEventListener('input', ()=>{ 
+  document.querySelectorAll('input[type=range]:not(#animIntensity, #emissionScale, #holdRate, #bubbleSize, #bubbleSpeed, #bubbleLifeSlider, #windIntensity, #windDirection, #windRotateSpeed)').forEach(el=> el.addEventListener('input', ()=>{ 
       if(el===glassOpacity) applyGlassOpacity(); 
       if(el===glassBlurSlider) applyGlassBlur();
       if(el===glassSaturationSlider) applyGlassSaturation();
@@ -3707,8 +4578,113 @@ button.ctrl.clear-list-btn-red {
     })
   });
   simpleModeToggle.addEventListener('change', () => { const hasLaunched = localStorage.getItem('mysparklist.hasLaunchedBefore') === 'true'; updateSectionVisibility(hasLaunched); applySimplifiedMode(simpleModeToggle.checked); saveData(); });
+  
+  // Wizard Mode Modifiers event listeners
+  if (wizardEnableSubgoals) {
+    wizardEnableSubgoals.addEventListener('change', () => {
+      const currentList = lists[activeListIndex];
+      if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers) {
+        currentList.wizardModifiers.enableSubgoals = wizardEnableSubgoals.checked;
+        updateUIForActiveList();
+        saveData();
+      }
+    });
+  }
+  
+  if (wizardEnableMultiStage) {
+    wizardEnableMultiStage.addEventListener('change', () => {
+      const currentList = lists[activeListIndex];
+      if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers) {
+        currentList.wizardModifiers.enableMultiStage = wizardEnableMultiStage.checked;
+        
+        // Show/hide multi-stage settings
+        wizardMultiStageSettings.style.display = wizardEnableMultiStage.checked ? 'flex' : 'none';
+        
+        // Render the stages list if enabled
+        if (wizardEnableMultiStage.checked) {
+          renderWizardStages();
+        }
+        
+        updateUIForActiveList();
+        saveData();
+      }
+    });
+  }
+  
+  if (wizardEnableTimer) {
+    wizardEnableTimer.addEventListener('change', () => {
+      const currentList = lists[activeListIndex];
+      if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers) {
+        currentList.wizardModifiers.enableTimer = wizardEnableTimer.checked;
+        
+        // Show/hide timer settings
+        wizardTimerSettings.style.display = wizardEnableTimer.checked ? 'flex' : 'none';
+        
+        // Auto-enable second counter if checkbox is checked
+        if (wizardEnableTimer.checked && wizardAutoEnableSecCounter.checked) {
+          enableSecCounter.checked = true;
+          updateCountersVisibility();
+          startCounter();
+        }
+        
+        updateUIForActiveList();
+        saveData();
+      }
+    });
+  }
+  
+  if (wizardAutoEnableSecCounter) {
+    wizardAutoEnableSecCounter.addEventListener('change', () => {
+      const currentList = lists[activeListIndex];
+      if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers) {
+        currentList.wizardModifiers.autoEnableSecCounter = wizardAutoEnableSecCounter.checked;
+        
+        // Toggle counter
+        if (wizardAutoEnableSecCounter.checked && wizardEnableTimer.checked) {
+          enableSecCounter.checked = true;
+          updateCountersVisibility();
+          startCounter();
+        }
+        
+        saveData();
+      }
+    });
+  }
+  
+  if (wizardTimerPosition) {
+    wizardTimerPosition.addEventListener('change', () => {
+      const currentList = lists[activeListIndex];
+      if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers) {
+        currentList.wizardModifiers.timerPosition = wizardTimerPosition.value;
+        
+        // Update the actual timer position
+        const posClass = wizardTimerPosition.value || 'pos-top-right';
+        secCounter.className = `counter-display glass ${posClass}`;
+        
+        saveData();
+      }
+    });
+  }
+  
+  if (wizardControlStyle) {
+    wizardControlStyle.addEventListener('change', () => {
+      const currentList = lists[activeListIndex];
+      if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers) {
+        currentList.wizardModifiers.controlStyle = wizardControlStyle.value;
+        updateUIForActiveList(); // Refresh controls
+        saveData();
+      }
+    });
+  }
   uiStyleResetBtn.addEventListener('click', ()=>{ resetUiStyleToDefault(); saveData(); });
   resetAnimBtn.addEventListener('click', ()=>{ resetAnimationToDefault(); saveData(); });
+  panicBtn.addEventListener('click', ()=> {
+    // Immediately clear all particles
+    particles = [];
+    streams = [];
+    // Clear trails from any remaining particles
+    particles.forEach(p => p.trail = []);
+  });
   panicResetBtn.addEventListener('click', panicReset);
   exportStateBtn.addEventListener('click', exportState);
   savePatternBtn.addEventListener('click', saveCurrentPattern);
@@ -3730,6 +4706,23 @@ button.ctrl.clear-list-btn-red {
         });
     } else {
         secWorkflowStages.style.display = 'none';
+    }
+  }
+
+  function renderWizardStages() {
+    const currentList = lists[activeListIndex];
+    if (currentList && currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableMultiStage) {
+        wizardStagesList.innerHTML = '';
+        currentList.stages.forEach((stage, index) => {
+            const stageEl = document.createElement('div');
+            stageEl.className = 'row';
+            stageEl.innerHTML = `
+                <span style="flex-grow: 1; text-align: left; font-size: 14px;">${stage}</span>
+                <button class="wizard-edit-stage-btn" data-index="${index}" style="font-size: 11px; padding: 4px 8px;">Edit</button>
+                <button class="wizard-delete-stage-btn" data-index="${index}" style="background: var(--danger); font-size: 11px; padding: 4px 8px;">Delete</button>
+            `;
+            wizardStagesList.appendChild(stageEl);
+        });
     }
   }
 
@@ -3765,6 +4758,63 @@ button.ctrl.clear-list-btn-red {
           saveData();
       }
   });
+
+  // Wizard Mode stage management
+  wizardStagesList.addEventListener('click', (e) => {
+      const currentList = lists[activeListIndex];
+      if (e.target.classList.contains('wizard-delete-stage-btn')) {
+          const index = parseInt(e.target.dataset.index, 10);
+          if (currentList.stages.length > 2) {
+              currentList.stages.splice(index, 1);
+              renderWizardStages();
+              saveData();
+          } else {
+              alert('A workflow must have at least two stages.');
+          }
+      } else if (e.target.classList.contains('wizard-edit-stage-btn')) {
+          const index = parseInt(e.target.dataset.index, 10);
+          const newName = prompt('Enter new stage name:', currentList.stages[index]);
+          if (newName && newName.trim()) {
+              currentList.stages[index] = newName.trim();
+              renderWizardStages();
+              saveData();
+          }
+      }
+  });
+
+  if (wizardAddStageBtn) {
+    wizardAddStageBtn.addEventListener('click', () => {
+        const currentList = lists[activeListIndex];
+        const name = wizardNewStageName.value.trim();
+        if (name) {
+            currentList.stages.push(name);
+            wizardNewStageName.value = '';
+            renderWizardStages();
+            saveData();
+        }
+    });
+  }
+
+  if (wizardResetStagesBtn) {
+    wizardResetStagesBtn.addEventListener('click', () => {
+        const currentList = lists[activeListIndex];
+        if (currentList && currentList.type === 'Wizard Mode') {
+            if (confirm('Are you sure you want to reset the stages for this list to the default?')) {
+                currentList.stages = ['Pending', 'In Progress', 'Complete'];
+                
+                currentList.items.forEach(item => {
+                    if (!currentList.stages.includes(item.status)) {
+                        item.status = currentList.stages[0];
+                    }
+                });
+
+                renderWizardStages();
+                renderList();
+                saveData();
+            }
+        }
+    });
+  }
 
   exportPatternsBtn.addEventListener('click', () => {
     if (savedPatterns.length === 0) { alert('There are no saved patterns to export.'); return; }
@@ -3884,6 +4934,19 @@ button.ctrl.clear-list-btn-red {
           if (temp_listType === 'Workflow') {
               newListData.stages = ['Pending', 'In Progress', 'Complete'];
           }
+          if (temp_listType === 'Wizard Mode') {
+              // Wizard Mode starts with default settings (all modifiers disabled)
+              newListData.wizardModifiers = {
+                  enableSubgoals: false,
+                  enableMultiStage: false,
+                  enableTimer: false,
+                  controlStyle: 'standard',
+                  autoEnableSecCounter: false,
+                  timerPosition: 'pos-top-right'
+              };
+              // Also add default stages in case multi-stage gets enabled
+              newListData.stages = ['Pending', 'In Progress', 'Complete'];
+          }
           if (listCreationCallback) {
               listCreationCallback(newListData);
           }
@@ -3924,7 +4987,8 @@ button.ctrl.clear-list-btn-red {
         "Milestones": "Add a milestone...",
         "Educational": "Add a learning goal...",
         "Call Behaviors": "Add a checkpoint...",
-        "Workflow": "Add a workflow step..."
+        "Workflow": "Add a workflow step...",
+        "Wizard Mode": "Add an item..."
     };
 
     function updateUIForActiveList() {
@@ -3955,9 +5019,57 @@ button.ctrl.clear-list-btn-red {
 
         clearControlsContainer.innerHTML = '';
         const listType = currentList.type;
-        const isStandardList = ['General Tasks', 'Milestones', 'Educational'].includes(listType);
+        
+        // Show/hide Wizard Mode Modifiers section
+        if (listType === 'Wizard Mode') {
+            secWizardModifiers.style.display = 'block';
+            // Load wizard modifiers into UI
+            if (currentList.wizardModifiers) {
+                wizardEnableSubgoals.checked = currentList.wizardModifiers.enableSubgoals || false;
+                wizardEnableMultiStage.checked = currentList.wizardModifiers.enableMultiStage || false;
+                wizardEnableTimer.checked = currentList.wizardModifiers.enableTimer || false;
+                wizardControlStyle.value = currentList.wizardModifiers.controlStyle || 'standard';
+                
+                // Load timer settings
+                wizardAutoEnableSecCounter.checked = currentList.wizardModifiers.autoEnableSecCounter || false;
+                if (currentList.wizardModifiers.timerPosition) {
+                    wizardTimerPosition.value = currentList.wizardModifiers.timerPosition;
+                }
+                
+                // Show/hide settings panels based on enabled modifiers
+                wizardMultiStageSettings.style.display = wizardEnableMultiStage.checked ? 'flex' : 'none';
+                wizardTimerSettings.style.display = wizardEnableTimer.checked ? 'flex' : 'none';
+                
+                // Render stages if multi-stage is enabled
+                if (wizardEnableMultiStage.checked) {
+                    renderWizardStages();
+                }
+                
+                // Auto-enable timer if timer integration is on and auto-enable is checked
+                if (wizardEnableTimer.checked && wizardAutoEnableSecCounter.checked) {
+                    enableSecCounter.checked = true;
+                    updateCountersVisibility();
+                    startCounter();
+                }
+            }
+        } else {
+            secWizardModifiers.style.display = 'none';
+        }
+        
+        // Determine effective list type (for Wizard Mode, use modifiers to determine behavior)
+        let effectiveType = listType;
+        let wizardMods = null;
+        if (listType === 'Wizard Mode' && currentList.wizardModifiers) {
+            wizardMods = currentList.wizardModifiers;
+            // Wizard Mode acts like General Tasks by default, modified by settings
+            effectiveType = 'General Tasks';
+        }
+        
+        const isStandardList = ['General Tasks', 'Milestones', 'Educational'].includes(effectiveType);
+        const useCallBehaviorControls = (listType === 'Call Behaviors') || (wizardMods && wizardMods.controlStyle === 'call-behavior');
+        const useWorkflowControls = (wizardMods && wizardMods.controlStyle === 'workflow');
 
-        if (isStandardList) {
+        if (isStandardList && !useCallBehaviorControls && !useWorkflowControls) {
             const clearChecksBtn = document.createElement('button');
             clearChecksBtn.id = 'clearChecksBtn';
             clearChecksBtn.className = 'ctrl clear-checks-btn';
@@ -3972,14 +5084,14 @@ button.ctrl.clear-list-btn-red {
             clearListBtn.onclick = () => animateAndClearList(true);
             clearControlsContainer.appendChild(clearListBtn);
 
-        } else if (listType === 'Call Behaviors') {
+        } else if (useCallBehaviorControls) {
             const newCallBtn = document.createElement('button');
             newCallBtn.id = 'clearBtn';
             newCallBtn.className = 'ctrl clear-btn';
             newCallBtn.innerHTML = '<strong>New Call</strong>';
             newCallBtn.onclick = () => animateAndClearList(false);
             clearControlsContainer.appendChild(newCallBtn);
-        } else {
+        } else if (useWorkflowControls || listType === 'Workflow') {
             const defaultClearBtn = document.createElement('button');
             defaultClearBtn.id = 'clearBtn';
             defaultClearBtn.className = 'ctrl clear-btn';
@@ -3990,10 +5102,18 @@ button.ctrl.clear-list-btn-red {
 
         renderList();
         renderTabs();
+        
+        // Show workflow stages section if Workflow or Wizard with multi-stage enabled
+        const shouldShowWorkflowStages = (listType === 'Workflow') || (wizardMods && wizardMods.enableMultiStage);
+        if (shouldShowWorkflowStages) {
         renderWorkflowStages();
+        } else {
+            secWorkflowStages.style.display = 'none';
+        }
 
         // Show/hide the 'In Progress' color setting
-        completionInProgressColorRow.style.display = currentList.type === 'Workflow' ? 'flex' : 'none';
+        const shouldShowProgressColor = (listType === 'Workflow') || (wizardMods && wizardMods.enableMultiStage);
+        completionInProgressColorRow.style.display = shouldShowProgressColor ? 'flex' : 'none';
     }
 
     function animateAndClearChecks() {
@@ -4009,9 +5129,41 @@ button.ctrl.clear-list-btn-red {
         });
 
         setTimeout(() => {
-            lists[activeListIndex].items.forEach(item => {
+            const currentList = lists[activeListIndex];
+            const hasMultiStage = (currentList.type === 'Workflow') || 
+                                 (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableMultiStage);
+            const firstStage = hasMultiStage && currentList.stages ? currentList.stages[0] : 'pending';
+            const lastStage = hasMultiStage && currentList.stages ? currentList.stages[currentList.stages.length - 1] : 'complete';
+            
+            currentList.items.forEach(item => {
+                // Reset items that are at the final stage
+                if (hasMultiStage) {
+                    // In multi-stage mode, check if at last stage
+                    const stageIndex = currentList.stages.indexOf(item.status);
+                    if (stageIndex === currentList.stages.length - 1) {
+                        item.status = firstStage;
+                    }
+                } else {
+                    // In simple mode, reset if complete
                 if (item.status === 'complete') {
                     item.status = 'pending';
+                    }
+                }
+                
+                // Also clear subgoals if they exist
+                if (item.subgoals && item.subgoals.length > 0) {
+                    item.subgoals.forEach(subgoal => {
+                        if (hasMultiStage) {
+                            const sgStageIndex = currentList.stages.indexOf(subgoal.status);
+                            if (sgStageIndex === currentList.stages.length - 1) {
+                                subgoal.status = firstStage;
+                            }
+                        } else {
+                            if (subgoal.status === 'complete') {
+                                subgoal.status = 'pending';
+                            }
+                        }
+                    });
                 }
             });
             renderList();
@@ -4037,18 +5189,36 @@ button.ctrl.clear-list-btn-red {
         }
 
         setTimeout(() => {
-            const currentListType = lists[activeListIndex]?.type;
+            const currentList = lists[activeListIndex];
+            const currentListType = currentList?.type;
+            const hasMultiStage = (currentList.type === 'Workflow') || 
+                                 (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableMultiStage);
+            const firstStage = hasMultiStage && currentList.stages ? currentList.stages[0] : 'pending';
 
             if (isFullClear) {
-                 lists[activeListIndex].items = [];
+                 currentList.items = [];
             } else { 
-                lists[activeListIndex].items.forEach(item => item.status = 'pending');
+                // Reset all items to first stage (or pending if not multi-stage)
+                currentList.items.forEach(item => {
+                    item.status = firstStage;
+                    
+                    // Also reset subgoals if they exist
+                    if (item.subgoals && item.subgoals.length > 0) {
+                        item.subgoals.forEach(subgoal => {
+                            subgoal.status = firstStage;
+                        });
+                    }
+                });
             }
 
             renderList();
             saveData();
 
-            if (currentListType === 'Call Behaviors') {
+            // Reset timer for Call Behaviors OR Wizard Mode with timer enabled
+            const shouldResetTimer = (currentListType === 'Call Behaviors') || 
+                                    (currentListType === 'Wizard Mode' && currentList.wizardModifiers?.enableTimer);
+            
+            if (shouldResetTimer) {
                 seconds=0; counterPaused=false; updateSecondCounter(); stopCounter(); startCounter();
             }
         }, checkedItems.length > 0 ? animationDuration : 0);
@@ -4059,8 +5229,20 @@ button.ctrl.clear-list-btn-red {
     list.innerHTML = '';
     const currentList = lists[activeListIndex];
     if (currentList && currentList.items) {
-      currentList.items.forEach(item => {
-        addItem(item.text, item.status, true);
+      // Check if subgoals should be displayed
+      const shouldShowSubgoals = (currentList.type === 'Educational') || 
+                                 (currentList.type === 'Wizard Mode' && currentList.wizardModifiers?.enableSubgoals);
+      
+      currentList.items.forEach((item, parentIndex) => {
+        // Add parent item
+        addItem(item.text, item.status, true, null, false);
+        
+        // Add subgoals if they exist and feature is enabled
+        if (shouldShowSubgoals && item.subgoals && item.subgoals.length > 0) {
+          item.subgoals.forEach((subgoal, subgoalIndex) => {
+            addItem(subgoal.text, subgoal.status, true, { parentIndex, subgoalIndex }, true);
+          });
+        }
       });
     }
   }
