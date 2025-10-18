@@ -431,6 +431,7 @@ button.ctrl.clear-list-btn-red {
 .pos-bottom-right{ bottom:10px; right:10px; }
 
 .click-counter.pos-top-right{ top:60px; }
+.dock-fps-display{ font-size:11px; font-weight:500; padding:4px 8px; background:rgba(0,0,0,0.1); border-radius:4px; color:var(--text); display:flex; align-items:center; }
 .counter-display{ display:flex; align-items:center; gap:8px; }
 
 /* Version tag */
@@ -878,6 +879,7 @@ button.ctrl.clear-list-btn-red {
       <button id="darkToggle" class="ctrl dark-toggle">🌙 Dark</button>
       <div style="justify-self: end; display: flex; gap: 8px;">
         <button id="dockPanicBtn" class="ctrl menu-btn" aria-label="Panic - Stop Animations" style="display: none; background: #dc2626; color: white;" title="Immediately stop all particle animations">🛑</button>
+        <div id="dockFpsDisplay" class="dock-fps-display" style="display: none;">60 FPS</div>
         <button id="shareBtn" class="ctrl menu-btn" aria-label="Share List">
             <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24"><path d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L16.04,7.15C16.56,7.62 17.24,7.92 18,7.92C19.66,7.92 21,6.58 21,5C21,3.42 19.66,2 18,2C16.34,2 15,3.42 15,5C15,5.24 15.04,5.47 15.09,5.7L7.96,9.85C7.44,9.38 6.76,9.08 6,9.08C4.34,9.08 3,10.42 3,12C3,13.58 4.34,15 6,15C6.76,15 7.44,14.62 7.96,14.15L15.09,18.3C15.04,18.53 15,18.76 15,19C15,20.58 16.34,22 18,22C19.66,22 21,20.58 21,19C21,17.42 19.66,16.08 18,16.08Z" /></svg>
         </button>
@@ -1038,6 +1040,13 @@ button.ctrl.clear-list-btn-red {
                                     <input type="range" id="bounceIntensity" min="0.1" max="1" step="0.1" value="0.8" />
                                     <span class="pct" id="bounceIntensityPct">0%</span>
                                 </div>
+                                <div class="row" id="allWallsBounceRow" style="display: none;">
+                                    <label class="switch">
+                                      <input type="checkbox" id="allWallsBounce" checked>
+                                      <span class="switch-slider"></span>
+                                    </label>
+                                    <span class="helper">Wild Bounce Intensity</span>
+                                </div>
                                 <div class="row">
                                     <label class="switch">
                                       <input type="checkbox" id="enableTrail">
@@ -1082,6 +1091,13 @@ button.ctrl.clear-list-btn-red {
                                                       <span class="switch-slider"></span>
                                                     </label>
                                                     <span class="helper">Smooth Trail Fade-Out</span>
+                                                </div>
+                                                <div class="row">
+                                                    <label class="switch">
+                                                      <input type="checkbox" id="enableTrailGradual" checked>
+                                                      <span class="switch-slider"></span>
+                                                    </label>
+                                                    <span class="helper">Gradual Trail Thinning</span>
                                                 </div>
                                             </div>
                                         </details>
@@ -1753,6 +1769,24 @@ button.ctrl.clear-list-btn-red {
                 <div class="hr"></div>
                 <div class="row">
                   <label class="switch">
+                    <input type="checkbox" id="enableFpsCounter">
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="helper">Show FPS Counter</span>
+                </div>
+                <div class="row" id="fpsAutoStopRow" style="display: none;">
+                  <label class="switch">
+                    <input type="checkbox" id="enableFpsAutoStop">
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="helper">Auto-stop on low FPS</span>
+                </div>
+                <div class="row" id="fpsThresholdRow" style="display: none;">
+                  <label for="fpsThreshold" style="min-width: 100px;">FPS Threshold</label>
+                  <input type="number" id="fpsThreshold" min="5" max="60" value="15" style="width: 60px;" />
+                </div>
+                <div class="row">
+                  <label class="switch">
                     <input type="checkbox" id="enableDockPanicBtn">
                     <span class="switch-slider"></span>
                   </label>
@@ -1863,6 +1897,7 @@ button.ctrl.clear-list-btn-red {
   const trailLength = document.getElementById('trailLength');
   const trailThickness = document.getElementById('trailThickness');
   const enableTrailFade = document.getElementById('enableTrailFade');
+  const enableTrailGradual = document.getElementById('enableTrailGradual');
   const resetAnimBtn = document.getElementById('resetAnimBtn');
   const panicBtn = document.getElementById('panicBtn');
 
@@ -1920,6 +1955,8 @@ button.ctrl.clear-list-btn-red {
   const containParticles = document.getElementById('containParticles');
   const bounceIntensity = document.getElementById('bounceIntensity');
   const bounceIntensityRow = document.getElementById('bounceIntensityRow');
+  const allWallsBounce = document.getElementById('allWallsBounce');
+  const allWallsBounceRow = document.getElementById('allWallsBounceRow');
   const windPattern = document.getElementById('windPattern');
   const windIntensity = document.getElementById('windIntensity');
   const windDirection = document.getElementById('windDirection');
@@ -2372,11 +2409,22 @@ button.ctrl.clear-list-btn-red {
   // Utility
   const panicResetBtn = document.getElementById('panicResetBtn');
   const enableDockPanicBtn = document.getElementById('enableDockPanicBtn');
+  const enableFpsCounter = document.getElementById('enableFpsCounter');
   const enableClock = document.getElementById('enableClock');
   const clockDisplay = document.getElementById('clockDisplay');
   const clockPosition = document.getElementById('clockPosition');
   const clockDetail = document.getElementById('clockDetail');
   const clockOptionsWrapper = document.getElementById('clockOptionsWrapper');
+  const dockFpsDisplay = document.getElementById('dockFpsDisplay');
+  const enableFpsAutoStop = document.getElementById('enableFpsAutoStop');
+  const fpsThreshold = document.getElementById('fpsThreshold');
+  const fpsAutoStopRow = document.getElementById('fpsAutoStopRow');
+  const fpsThresholdRow = document.getElementById('fpsThresholdRow');
+
+  // FPS counter variables
+  let fpsFrameCount = 0;
+  let fpsLastTime = performance.now();
+  let fpsCurrent = 60;
   const versionTag = document.getElementById('versionTag');
 
   // Saved Patterns
@@ -2870,8 +2918,8 @@ button.ctrl.clear-list-btn-red {
     store('animationsEnabled',enableAnimations.checked); store('colorMode',colorMode.value); store('bubbleColor',bubbleColor.value);
     store('bubbleStartColor',bubbleStartColor.value); store('bubbleEndColor',bubbleEndColor.value); store('shape',shapeSelect.value);
     store('bubbleOutline', bubbleOutline.value); store('containParticles', containParticles.checked);
-    store('bounceIntensity', bounceIntensity.value);
-    store('enableTrail', enableTrail.checked); store('trailEffect', trailEffectSelect.value); store('trailCustomColor', trailCustomColor.value); store('trailLength', trailLength.value); store('trailThickness', trailThickness.value); store('enableTrailFade', enableTrailFade.checked);
+    store('bounceIntensity', bounceIntensity.value); store('allWallsBounce', allWallsBounce.checked);
+    store('enableTrail', enableTrail.checked); store('trailEffect', trailEffectSelect.value); store('trailCustomColor', trailCustomColor.value); store('trailLength', trailLength.value); store('trailThickness', trailThickness.value); store('enableTrailFade', enableTrailFade.checked); store('enableTrailGradual', enableTrailGradual.checked);
     store('enableWind',enableWind.checked); store('windPattern',windPattern.value); 
     store('windIntensity',windIntensity.value); store('windDirection',windDirection.value); 
     store('windAutoRotate', windAutoRotate.checked); store('windRotateSpeed', windRotateSpeed.value);
@@ -2898,7 +2946,7 @@ button.ctrl.clear-list-btn-red {
     store('wallpaperColor1', wallpaperColor1.value); store('wallpaperColor2', wallpaperColor2.value); store('wallpaperColor3', wallpaperColor3.value);
     store('gradientAngle', gradientAngle.value); store('gradientSpread', gradientSpread.value); store('gradientSpinEnabled', gradientSpinToggle.checked);
     store('gradientSpinSpeed', gradientSpinSpeed.value);
-    store('secCounter',enableSecCounter.checked); store('clickCounter',enableClickCounter.checked); store('clickCount',totalClicks);
+    store('secCounter',enableSecCounter.checked); store('clickCounter',enableClickCounter.checked); store('clickCount',totalClicks); store('fpsCounter', enableFpsCounter.checked); store('fpsAutoStop', enableFpsAutoStop.checked); store('fpsThreshold', fpsThreshold.value);
     store('seconds',seconds);
     store('naturalSlide', enableNaturalSlide.checked);
     store('enableScanLine', enableScanLine.checked);
@@ -3038,12 +3086,14 @@ button.ctrl.clear-list-btn-red {
     bubbleOutline.value = get('bubbleOutline', 'none');
     containParticles.checked = (get('containParticles', 'false') === 'true');
     bounceIntensity.value = get('bounceIntensity', '0.8');
+    allWallsBounce.checked = (get('allWallsBounce', 'true') === 'true');
     enableTrail.checked = (get('enableTrail', 'false') === 'true');
     trailEffectSelect.value = get('trailEffect', 'default');
     trailCustomColor.value = get('trailCustomColor', '#ffffff');
     trailLength.value = get('trailLength', '0.5');
     trailThickness.value = get('trailThickness', '0.3');
     enableTrailFade.checked = (get('enableTrailFade', 'true') === 'true');
+    enableTrailGradual.checked = (get('enableTrailGradual', 'true') === 'true');
     enableWind.checked = (get('enableWind', 'false') === 'true');
     windPattern.value = get('windPattern', 'steady');
     windIntensity.value = get('windIntensity', '30');
@@ -3054,6 +3104,9 @@ button.ctrl.clear-list-btn-red {
     enableEndless.checked = (get('endlessEnabled', 'false') === 'true');
     enableSecCounter.checked = (get('secCounter', 'false') === 'true');
     enableClickCounter.checked = (get('clickCounter', 'false') === 'true');
+    enableFpsCounter.checked = (get('fpsCounter', 'false') === 'true');
+    enableFpsAutoStop.checked = (get('fpsAutoStop', 'false') === 'true');
+    fpsThreshold.value = get('fpsThreshold', '15');
     totalClicks = parseInt(get('clickCount', '0'), 10) || 0;
     seconds = parseInt(get('seconds', '0'), 10) || 0;
 
@@ -3151,6 +3204,7 @@ button.ctrl.clear-list-btn-red {
     syncWindControls();
     windRotateSpeedRow.style.display = windAutoRotate.checked ? 'flex' : 'none';
     bounceIntensityRow.style.display = containParticles.checked ? 'flex' : 'none';
+    allWallsBounceRow.style.display = containParticles.checked ? 'flex' : 'none';
     trailEffectsContainer.style.display = enableTrail.checked ? 'block' : 'none';
     trailCustomColorRow.style.display = trailEffectSelect.value === 'custom' ? 'flex' : 'none';
     applyGlassOpacity();
@@ -4002,12 +4056,18 @@ button.ctrl.clear-list-btn-red {
   function syncClockOptionsVisibility() {
       clockOptionsWrapper.style.display = enableClock.checked ? 'flex' : 'none';
   }
-  function updateCountersVisibility(){ 
-    secCounter.style.display = enableSecCounter.checked ? 'flex' : 'none'; 
+  function updateCountersVisibility(){
+    secCounter.style.display = enableSecCounter.checked ? 'flex' : 'none';
     clickCounter.style.display = enableClickCounter.checked ? 'block' : 'none';
+    dockFpsDisplay.style.display = enableFpsCounter.checked ? 'flex' : 'none';
+    fpsAutoStopRow.style.display = enableFpsCounter.checked ? 'flex' : 'none';
+    fpsThresholdRow.style.display = (enableFpsCounter.checked && enableFpsAutoStop.checked) ? 'flex' : 'none';
   }
   enableSecCounter.onchange = ()=>{ updateCountersVisibility(); saveData(); };
   enableClickCounter.onchange = ()=>{ updateCountersVisibility(); saveData(); };
+  enableFpsCounter.onchange = ()=>{ updateCountersVisibility(); saveData(); };
+  enableFpsAutoStop.onchange = ()=>{ updateCountersVisibility(); saveData(); };
+  fpsThreshold.onchange = ()=>{ saveData(); };
   enableAnimations.onchange = ()=>{ if(!enableAnimations.checked){ streams.length=0; } saveData(); };
   resetClickCounter.onclick = ()=>{ totalClicks=0; clickCount.textContent='0'; saveData(); };
   document.addEventListener('click',(e)=>{ if(enableClickCounter.checked){ totalClicks++; clickCount.textContent=totalClicks; if(totalClicks%5===0) saveData(); } }, true);
@@ -4097,7 +4157,7 @@ button.ctrl.clear-list-btn-red {
 
   function collectSettings(){
     return {
-      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, bounceIntensity: bounceIntensity.value, trail: enableTrail.checked, trailEffect: trailEffectSelect.value, trailCustomColor: trailCustomColor.value, trailLength: trailLength.value, trailThickness: trailThickness.value, trailFade: enableTrailFade.checked },
+      animations: { style: animationStyleSelect.value, intensity: animIntensity.value, scale: emissionScale.value, holdRate: holdRate.value, size: bubbleSize.value, speed: bubbleSpeed.value, life: bubbleLifeSlider.value, shape: shapeSelect.value, outline: bubbleOutline.value, colorMode: colorMode.value, color: bubbleColor.value, startColor: bubbleStartColor.value, endColor: bubbleEndColor.value, contain: containParticles.checked, bounceIntensity: bounceIntensity.value, allWallsBounce: allWallsBounce.checked, trail: enableTrail.checked, trailEffect: trailEffectSelect.value, trailCustomColor: trailCustomColor.value, trailLength: trailLength.value, trailThickness: trailThickness.value, trailFade: enableTrailFade.checked, trailGradual: enableTrailGradual.checked },
       wind: { enabled: enableWind.checked, pattern: windPattern.value, intensity: windIntensity.value, direction: windDirection.value, autoRotate: windAutoRotate.checked, rotateSpeed: windRotateSpeed.value },
       toggles: { animations: enableAnimations.checked, endless: enableEndless.checked, secCounter: enableSecCounter.checked, clickCounter: enableClickCounter.checked, naturalSlide: enableNaturalSlide.checked, enableScanLine: enableScanLine.checked, clock: enableClock.checked, ambiance: enableAmbiance.checked, customBackground: enableCustomBackground.checked, dockPanicBtn: enableDockPanicBtn.checked },
       appearance: { glassOpacity: glassOpacity.value, glassBlur: glassBlurSlider.value, glassSaturation: glassSaturationSlider.value, glassBorder: glassBorderSlider.value, uiStyle: uiStyleSelect.value, dark: document.documentElement.classList.contains('dark'), backgroundType: backgroundType.value, wallpaperFit: wallpaperFit.value, colorWallpaperType: colorWallpaperType.value, wallpaperColor1: wallpaperColor1.value, wallpaperColor2: wallpaperColor2.value, wallpaperColor3: wallpaperColor3.value, gradientAngle: gradientAngle.value, gradientSpread: gradientSpread.value, gradientSpinEnabled: gradientSpinToggle.checked, gradientSpinSpeed: gradientSpinSpeed.value },
@@ -4118,12 +4178,14 @@ button.ctrl.clear-list-btn-red {
           bubbleColor.value = s.animations.color; bubbleStartColor.value = s.animations.startColor; bubbleEndColor.value = s.animations.endColor;
           containParticles.checked = s.animations.contain;
           bounceIntensity.value = s.animations.bounceIntensity ?? 0.8;
+          allWallsBounce.checked = s.animations.allWallsBounce ?? true;
           enableTrail.checked = s.animations.trail ?? false;
           trailEffectSelect.value = s.animations.trailEffect ?? 'default';
           trailCustomColor.value = s.animations.trailCustomColor ?? '#ffffff';
           trailLength.value = s.animations.trailLength ?? 0.5;
           trailThickness.value = s.animations.trailThickness ?? 0.3;
           enableTrailFade.checked = s.animations.trailFade ?? true;
+          enableTrailGradual.checked = s.animations.trailGradual ?? true;
       }
       if (s.wind) {
           enableWind.checked = s.wind.enabled; windPattern.value = s.wind.pattern;
@@ -4796,7 +4858,7 @@ button.ctrl.clear-list-btn-red {
   }
   function saveCurrentPattern() {
       const name = patternNameInput.value.trim(); if (!name) { alert('Please enter a name for the pattern.'); return; }
-      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, bounceIntensity: bounceIntensity.value, enableTrail: enableTrail.checked, trailEffect: trailEffectSelect.value, trailCustomColor: trailCustomColor.value, trailLength: trailLength.value, trailThickness: trailThickness.value, enableTrailFade: enableTrailFade.checked } };
+      const newPattern = { id: Date.now(), name: name, settings: { animationStyle: animationStyleSelect.value, animIntensity: animIntensity.value, emissionScale: emissionScale.value, holdRate: holdRate.value, bubbleSize: bubbleSize.value, bubbleSpeed: bubbleSpeed.value, bubbleLife: bubbleLifeSlider.value, shape: shapeSelect.value, bubbleOutline: bubbleOutline.value, colorMode: colorMode.value, bubbleColor: bubbleColor.value, bubbleStartColor: bubbleStartColor.value, bubbleEndColor: bubbleEndColor.value, enableWind: enableWind.checked, windPattern: windPattern.value, windIntensity: windIntensity.value, windDirection: windDirection.value, windAutoRotate: windAutoRotate.checked, windRotateSpeed: windRotateSpeed.value, containParticles: containParticles.checked, bounceIntensity: bounceIntensity.value, allWallsBounce: allWallsBounce.checked, enableTrail: enableTrail.checked, trailEffect: trailEffectSelect.value, trailCustomColor: trailCustomColor.value, trailLength: trailLength.value, trailThickness: trailThickness.value, enableTrailFade: enableTrailFade.checked, enableTrailGradual: enableTrailGradual.checked } };
       savedPatterns.push(newPattern); patternNameInput.value = ''; renderPatternsList(); saveData();
   }
   function loadPattern(id) {
@@ -4815,7 +4877,8 @@ button.ctrl.clear-list-btn-red {
       windAutoRotate.checked = s.windAutoRotate ?? false; windRotateSpeed.value = s.windRotateSpeed ?? 30;
       containParticles.checked = s.containParticles;
       bounceIntensity.value = s.bounceIntensity ?? 0.8;
-      enableTrail.checked = s.enableTrail ?? false; trailEffectSelect.value = s.trailEffect ?? 'default'; trailCustomColor.value = s.trailCustomColor ?? '#ffffff'; trailLength.value = s.trailLength ?? 0.5; trailThickness.value = s.trailThickness ?? 0.3; enableTrailFade.checked = s.enableTrailFade ?? true;
+      allWallsBounce.checked = s.allWallsBounce ?? true;
+      enableTrail.checked = s.enableTrail ?? false; trailEffectSelect.value = s.trailEffect ?? 'default'; trailCustomColor.value = s.trailCustomColor ?? '#ffffff'; trailLength.value = s.trailLength ?? 0.5; trailThickness.value = s.trailThickness ?? 0.3; enableTrailFade.checked = s.enableTrailFade ?? true; enableTrailGradual.checked = s.enableTrailGradual ?? true;
       applyAllSettings();
       
       populatePresetSelector(s.animationStyle);
@@ -4891,6 +4954,33 @@ button.ctrl.clear-list-btn-red {
   
   /* ---------- Render Loop ---------- */
   function mainLoop(){
+    // Update FPS counter
+    fpsFrameCount++;
+    const currentTime = performance.now();
+    if (currentTime - fpsLastTime >= 1000) { // Update every second
+      fpsCurrent = Math.round((fpsFrameCount * 1000) / (currentTime - fpsLastTime));
+      fpsFrameCount = 0;
+      fpsLastTime = currentTime;
+
+      // Update display if enabled
+      if (enableFpsCounter.checked) {
+        dockFpsDisplay.textContent = fpsCurrent + ' FPS';
+      }
+
+      // Auto-stop animations if FPS is too low
+      if (enableFpsAutoStop.checked && enableAnimations.checked) {
+        const threshold = parseInt(fpsThreshold.value, 10) || 15;
+        if (fpsCurrent < threshold) {
+          // Run panic - stop animations (clear particles and streams)
+          particles = [];
+          streams = [];
+          // Clear trails from any remaining particles
+          particles.forEach(p => p.trail = []);
+          console.log(`Animations panic-stopped due to low FPS (${fpsCurrent} < ${threshold})`);
+        }
+      }
+    }
+
     ambianceLoop();
     if(enableAnimations.checked && enableEndless.checked && streams.length){
       streams = streams.filter(st=>st.active && document.body.contains(st.el));
@@ -4955,8 +5045,8 @@ button.ctrl.clear-list-btn-red {
           if (newY + collisionRadius > screenH) {
               // Simple bounce: reverse vertical velocity with energy loss
               const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
-              // Make bounce exponentially more intense at higher settings for "wild" bounces
-              const wildMultiplier = Math.pow(userBounceMultiplier, 1.5) * 2.5;
+              // Make bounce exponentially more intense at higher settings for "wild" bounces when all walls bounce is enabled
+              const wildMultiplier = allWallsBounce.checked ? Math.pow(userBounceMultiplier, 1.5) * 2.5 : userBounceMultiplier;
               const bounceEnergy = Math.abs(p.vy) * restitution * wildMultiplier;
               p.vy = -bounceEnergy;
               newY = screenH - collisionRadius;
@@ -5001,7 +5091,9 @@ button.ctrl.clear-list-btn-red {
           // Handle top boundary
           else if (newY - collisionRadius < 0 && p.vy < 0) {
               const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
-              p.vy = Math.abs(p.vy) * restitution * userBounceMultiplier;
+              // Make bounce exponentially more intense at higher settings for "wild" bounces when all walls bounce is enabled
+              const wildMultiplier = allWallsBounce.checked ? Math.pow(userBounceMultiplier, 1.5) * 2.5 : userBounceMultiplier;
+              p.vy = Math.abs(p.vy) * restitution * wildMultiplier;
               newY = collisionRadius;
               
               // Chaotic spin on top hits
@@ -5020,7 +5112,9 @@ button.ctrl.clear-list-btn-red {
           // Handle left boundary
           if (newX - collisionRadius < 0) {
               const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
-              p.vx = Math.abs(p.vx) * restitution * userBounceMultiplier;
+              // Make bounce exponentially more intense at higher settings for "wild" bounces when all walls bounce is enabled
+              const wildMultiplier = allWallsBounce.checked ? Math.pow(userBounceMultiplier, 1.5) * 2.5 : userBounceMultiplier;
+              p.vx = Math.abs(p.vx) * restitution * wildMultiplier;
               newX = collisionRadius;
               
               // Chaotic spin on left wall hits
@@ -5038,7 +5132,9 @@ button.ctrl.clear-list-btn-red {
           // Handle right boundary
           else if (newX + collisionRadius > screenW) {
               const userBounceMultiplier = parseFloat(bounceIntensity.value) || 0.8;
-              p.vx = -Math.abs(p.vx) * restitution * userBounceMultiplier;
+              // Make bounce exponentially more intense at higher settings for "wild" bounces when all walls bounce is enabled
+              const wildMultiplier = allWallsBounce.checked ? Math.pow(userBounceMultiplier, 1.5) * 2.5 : userBounceMultiplier;
+              p.vx = -Math.abs(p.vx) * restitution * wildMultiplier;
               newX = screenW - collisionRadius;
               
               // Chaotic spin on right wall hits
@@ -5189,25 +5285,45 @@ button.ctrl.clear-list-btn-red {
                       ctxBubbles.beginPath();
                       ctxBubbles.moveTo(prevPos.x, prevPos.y);
                       ctxBubbles.lineTo(currentPos.x, currentPos.y);
-                      ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
+                      // Gradual thinning: thickness decreases from head to tail
+                      const thicknessMultiplier = enableTrailGradual.checked ?
+                          (1 - ((p.trail.length - 1 - i) / (p.trail.length - 1)) * 0.7) : 1; // Reduce thickness by up to 70% gradually from head to tail
+                      ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult * thicknessMultiplier);
                       ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1) * trailAlpha;
                       ctxBubbles.stroke();
                   }
               }
           } else {
               // Simple trail without fade-out for better performance
-              ctxBubbles.beginPath();
-              for (let i = 0; i < p.trail.length; i++) {
-                  const trailPos = p.trail[i];
-                  if (i === 0) {
-                      ctxBubbles.moveTo(trailPos.x, trailPos.y);
-                  } else {
-                      ctxBubbles.lineTo(trailPos.x, trailPos.y);
+              if (enableTrailGradual.checked) {
+                  // Draw each segment with gradual thinning
+                  for (let i = 1; i < p.trail.length; i++) {
+                      const currentPos = p.trail[i];
+                      const prevPos = p.trail[i - 1];
+                      ctxBubbles.beginPath();
+                      ctxBubbles.moveTo(prevPos.x, prevPos.y);
+                      ctxBubbles.lineTo(currentPos.x, currentPos.y);
+                      // Gradual thinning: thickness decreases from head to tail
+                      const thicknessMultiplier = 1 - ((p.trail.length - 1 - i) / (p.trail.length - 1)) * 0.7; // Reduce thickness by up to 70% gradually from head to tail
+                      ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult * thicknessMultiplier);
+                      ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
+                      ctxBubbles.stroke();
                   }
+              } else {
+                  // Standard trail rendering
+                  ctxBubbles.beginPath();
+                  for (let i = 0; i < p.trail.length; i++) {
+                      const trailPos = p.trail[i];
+                      if (i === 0) {
+                          ctxBubbles.moveTo(trailPos.x, trailPos.y);
+                      } else {
+                          ctxBubbles.lineTo(trailPos.x, trailPos.y);
+                      }
+                  }
+                  ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
+                  ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
+                  ctxBubbles.stroke();
               }
-              ctxBubbles.lineWidth = Math.max(1, p.size * thicknessMult);
-              ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
-              ctxBubbles.stroke();
           }
           ctxBubbles.globalAlpha = Math.max(0, lifeRatio < 0.25 ? lifeRatio / 0.25 : 1);
           // Reset stroke style back to particle color for the particle itself
@@ -5245,7 +5361,7 @@ button.ctrl.clear-list-btn-red {
   /* ---------- Event Wiring ---------- */
   window.addEventListener('resize', ()=>{ resizeCanvas(bubblesCanvas); resizeCanvas(ambianceCanvas); applyAmbianceSettings(); updateTabScrollIndicators(); });
   
-  const animControls = [animIntensity, emissionScale, holdRate, bubbleSize, bubbleSpeed, bubbleLifeSlider, bubbleLifeSeconds, shapeSelect, bubbleOutline, colorMode, bubbleColor, bubbleStartColor, bubbleEndColor, enableWind, windPattern, windIntensity, windDirection, windAutoRotate, windRotateSpeed, containParticles, bounceIntensity, enableTrail, trailLength, trailThickness];
+  const animControls = [animIntensity, emissionScale, holdRate, bubbleSize, bubbleSpeed, bubbleLifeSlider, bubbleLifeSeconds, shapeSelect, bubbleOutline, colorMode, bubbleColor, bubbleStartColor, bubbleEndColor, enableWind, windPattern, windIntensity, windDirection, windAutoRotate, windRotateSpeed, containParticles, bounceIntensity, allWallsBounce, enableTrail, trailLength, trailThickness];
   
   animControls.forEach(el => {
     const eventType = (el.type === 'range' || el.type === 'number' || el.type === 'color') ? 'input' : 'change';
@@ -5269,6 +5385,7 @@ button.ctrl.clear-list-btn-red {
 
         if (el.id === 'containParticles') {
             bounceIntensityRow.style.display = containParticles.checked ? 'flex' : 'none';
+            allWallsBounceRow.style.display = containParticles.checked ? 'flex' : 'none';
         }
 
         if (el.id === 'enableTrail') {
